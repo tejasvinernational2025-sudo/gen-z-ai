@@ -33,6 +33,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [photoName, setPhotoName] = useState("");
+
   const [user, setUser] = useState<User | null>(null);
   const [supabaseReady, setSupabaseReady] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -67,12 +70,13 @@ export default function Home() {
   }, [user]);
 
   const placeholder = useMemo(() => {
+    if (photoDataUrl) return "Photo ke baare me kya solve/samjhana hai? (optional)";
     if (mode === "notes") return "Topic ya chapter bhejo — main exam-ready notes banaunga...";
     if (mode === "quiz") return "Kis topic par quiz chahiye?";
     if (mode === "explain") return "Koi concept simple language me samjhana hai?";
     if (mode === "exam") return "Exam + subject + topic likho...";
     return "Kuch bhi pucho — Hindi, Hinglish ya apni language me...";
-  }, [mode]);
+  }, [mode, photoDataUrl]);
 
   async function submitLogin(e: FormEvent) {
     e.preventDefault();
@@ -106,7 +110,38 @@ export default function Home() {
     setConversationId(null);
     setInput("");
     setError("");
+    setPhotoDataUrl(null);
+    setPhotoName("");
     setHistoryOpen(false);
+  }
+
+  function removePhoto() {
+    setPhotoDataUrl(null);
+    setPhotoName("");
+  }
+
+  function handlePhotoChange(file?: File) {
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+      setError("JPEG, PNG, WebP ya GIF image upload karo.");
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      setError("Photo 8 MB se chhoti honi chahiye.");
+      return;
+    }
+
+    setError("");
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : null;
+      setPhotoDataUrl(result);
+      setPhotoName(file.name);
+    };
+    reader.onerror = () => setError("Photo read nahi ho pai.");
+    reader.readAsDataURL(file);
   }
 
   async function openConversation(item: SavedConversation) {
@@ -117,6 +152,8 @@ export default function Home() {
       setMessages(savedMessages);
       setConversationId(item.id);
       setLanguage(item.language || "Hinglish");
+      setPhotoDataUrl(null);
+      setPhotoName("");
       if (["chat", "explain", "notes", "quiz", "exam"].includes(item.mode)) {
         setMode(item.mode as StudyMode);
       }
@@ -138,9 +175,12 @@ export default function Home() {
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
     const question = input.trim();
-    if (!question || loading) return;
+    if ((!question && !photoDataUrl) || loading) return;
 
-    const nextMessages: Message[] = [...messages, { role: "user", content: question }];
+    const userText = question || "Is photo me jo study question hai use step-by-step solve karo.";
+    const visibleText = photoDataUrl ? `📷 ${userText}` : userText;
+    const nextMessages: Message[] = [...messages, { role: "user", content: visibleText }];
+
     setMessages(nextMessages);
     setInput("");
     setError("");
@@ -148,10 +188,15 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const endpoint = photoDataUrl ? "/api/photo-solve" : "/api/chat";
+      const requestBody = photoDataUrl
+        ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode }
+        : { messages: nextMessages, language, mode };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages, language, mode }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -159,6 +204,8 @@ export default function Home() {
 
       const assistantMessage: Message = { role: "assistant", content: data.reply };
       setMessages((current) => [...current, assistantMessage]);
+      setPhotoDataUrl(null);
+      setPhotoName("");
 
       if (user) {
         try {
@@ -167,7 +214,7 @@ export default function Home() {
             conversationId,
             mode,
             language,
-            userText: question,
+            userText: visibleText,
             assistantText: data.reply,
           });
           if (id) setConversationId(id);
@@ -267,7 +314,7 @@ export default function Home() {
       <section className="hero">
         <span className="badge">Built for Indian students</span>
         <h2>Learn anything, <span>in your language.</span></h2>
-        <p>Ask doubts, understand concepts, make notes, practice quizzes and prepare for exams.</p>
+        <p>Ask doubts, understand concepts, solve questions from photos, make notes and prepare for exams.</p>
       </section>
 
       <section className="modes" aria-label="Study modes">
@@ -289,7 +336,7 @@ export default function Home() {
             <div className="empty">
               <div className="spark">✦</div>
               <h3>Namaste! Main Gen-z AI hoon.</h3>
-              <p>Apna question likho. Main {language} me help karunga.</p>
+              <p>Question type karo ya photo upload karo. Main {language} me help karunga.</p>
               <div className="quickGrid">
                 <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ Explain a chapter</button>
                 <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 Make notes</button>
@@ -311,11 +358,30 @@ export default function Home() {
         {error && <div className="error">{error}</div>}
 
         <form className="composer" onSubmit={sendMessage}>
+          {photoDataUrl && (
+            <div className="photoPreview">
+              <img src={photoDataUrl} alt="Selected study question" />
+              <div>
+                <strong>Photo ready</strong>
+                <span>{photoName || "Study image"}</span>
+              </div>
+              <button type="button" onClick={removePhoto} aria-label="Remove photo">✕</button>
+            </div>
+          )}
+
           <div className="comingRow">
-            <span>📷 Photo Solve <small>next</small></span>
+            <label className="uploadLabel" htmlFor="photo-upload">📷 Photo Solve</label>
+            <input
+              id="photo-upload"
+              className="fileInput"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={(e) => handlePhotoChange(e.target.files?.[0])}
+            />
             <span>📄 Ask PDF <small>next</small></span>
             {user ? <span>☁️ History on</span> : <span>👤 Guest mode</span>}
           </div>
+
           <div className="inputRow">
             <textarea
               value={input}
@@ -323,7 +389,7 @@ export default function Home() {
               placeholder={placeholder}
               rows={2}
             />
-            <button type="submit" disabled={loading || !input.trim()}>
+            <button type="submit" disabled={loading || (!input.trim() && !photoDataUrl)}>
               {loading ? "…" : "➤"}
             </button>
           </div>
