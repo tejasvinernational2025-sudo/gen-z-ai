@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
 
 export const runtime = "nodejs";
@@ -8,6 +9,7 @@ type PhotoSolveBody = {
   prompt?: string;
   language?: string;
   mode?: StudyMode;
+  studentContext?: string;
 };
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
@@ -72,6 +74,8 @@ export async function POST(req: NextRequest) {
         ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
         : "Hinglish";
 
+    const studentContext = normalizeStudyContext(body.studentContext);
+
     const requestedMode = body.mode;
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "explain";
@@ -82,7 +86,7 @@ export async function POST(req: NextRequest) {
     }
 
     const model = process.env.DEEPSEEK_VISION_MODEL || "deepseek-flash";
-    const system = buildSystemPrompt(language, mode);
+    const system = buildSystemPrompt(language, mode, studentContext);
 
     const response = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
