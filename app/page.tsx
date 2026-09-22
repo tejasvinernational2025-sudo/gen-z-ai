@@ -35,6 +35,8 @@ export default function Home() {
 
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [photoName, setPhotoName] = useState("");
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
+  const [pdfName, setPdfName] = useState("");
 
   const [user, setUser] = useState<User | null>(null);
   const [supabaseReady, setSupabaseReady] = useState(false);
@@ -70,13 +72,14 @@ export default function Home() {
   }, [user]);
 
   const placeholder = useMemo(() => {
+    if (pdfDataUrl) return "PDF se kya karna hai? Notes, summary, MCQ ya koi question...";
     if (photoDataUrl) return "Photo ke baare me kya solve/samjhana hai? (optional)";
     if (mode === "notes") return "Topic ya chapter bhejo — main exam-ready notes banaunga...";
     if (mode === "quiz") return "Kis topic par quiz chahiye?";
     if (mode === "explain") return "Koi concept simple language me samjhana hai?";
     if (mode === "exam") return "Exam + subject + topic likho...";
     return "Kuch bhi pucho — Hindi, Hinglish ya apni language me...";
-  }, [mode, photoDataUrl]);
+  }, [mode, photoDataUrl, pdfDataUrl]);
 
   async function submitLogin(e: FormEvent) {
     e.preventDefault();
@@ -112,12 +115,19 @@ export default function Home() {
     setError("");
     setPhotoDataUrl(null);
     setPhotoName("");
+    setPdfDataUrl(null);
+    setPdfName("");
     setHistoryOpen(false);
   }
 
   function removePhoto() {
     setPhotoDataUrl(null);
     setPhotoName("");
+  }
+
+  function removePdf() {
+    setPdfDataUrl(null);
+    setPdfName("");
   }
 
   function handlePhotoChange(file?: File) {
@@ -139,8 +149,45 @@ export default function Home() {
       const result = typeof reader.result === "string" ? reader.result : null;
       setPhotoDataUrl(result);
       setPhotoName(file.name);
+      setPdfDataUrl(null);
+      setPdfName("");
     };
     reader.onerror = () => setError("Photo read nahi ho pai.");
+    reader.readAsDataURL(file);
+  }
+
+  function handlePdfChange(file?: File) {
+    if (!file) return;
+
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      setError("Sirf PDF file upload karo.");
+      return;
+    }
+
+    if (file.size > 6 * 1024 * 1024) {
+      setError("PDF 6 MB se chhoti honi chahiye.");
+      return;
+    }
+
+    setError("");
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      const base64 = result.split(",", 2)[1];
+      if (!base64) {
+        setError("PDF read nahi ho pai.");
+        return;
+      }
+
+      setPdfDataUrl(`data:application/pdf;base64,${base64}`);
+      setPdfName(file.name);
+      setPhotoDataUrl(null);
+      setPhotoName("");
+      setPdfDataUrl(null);
+      setPdfName("");
+    };
+    reader.onerror = () => setError("PDF read nahi ho pai.");
     reader.readAsDataURL(file);
   }
 
@@ -154,6 +201,8 @@ export default function Home() {
       setLanguage(item.language || "Hinglish");
       setPhotoDataUrl(null);
       setPhotoName("");
+      setPdfDataUrl(null);
+      setPdfName("");
       if (["chat", "explain", "notes", "quiz", "exam"].includes(item.mode)) {
         setMode(item.mode as StudyMode);
       }
@@ -175,10 +224,19 @@ export default function Home() {
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
     const question = input.trim();
-    if ((!question && !photoDataUrl) || loading) return;
+    if ((!question && !photoDataUrl && !pdfDataUrl) || loading) return;
 
-    const userText = question || "Is photo me jo study question hai use step-by-step solve karo.";
-    const visibleText = photoDataUrl ? `📷 ${userText}` : userText;
+    const userText =
+      question ||
+      (pdfDataUrl
+        ? "Is PDF ko student ke liye summarize karo aur important revision points do."
+        : "Is photo me jo study question hai use step-by-step solve karo.");
+
+    const visibleText = pdfDataUrl
+      ? `📄 ${userText}`
+      : photoDataUrl
+        ? `📷 ${userText}`
+        : userText;
     const nextMessages: Message[] = [...messages, { role: "user", content: visibleText }];
 
     setMessages(nextMessages);
@@ -188,10 +246,17 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const endpoint = photoDataUrl ? "/api/photo-solve" : "/api/chat";
-      const requestBody = photoDataUrl
-        ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode }
-        : { messages: nextMessages, language, mode };
+      const endpoint = pdfDataUrl
+        ? "/api/pdf-study"
+        : photoDataUrl
+          ? "/api/photo-solve"
+          : "/api/chat";
+
+      const requestBody = pdfDataUrl
+        ? { pdfDataUrl, prompt: userText, language, mode }
+        : photoDataUrl
+          ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode }
+          : { messages: nextMessages, language, mode };
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -314,7 +379,7 @@ export default function Home() {
       <section className="hero">
         <span className="badge">Built for Indian students</span>
         <h2>Learn anything, <span>in your language.</span></h2>
-        <p>Ask doubts, understand concepts, solve questions from photos, make notes and prepare for exams.</p>
+        <p>Ask doubts, understand concepts, solve questions from photos, study PDFs, make notes and prepare for exams.</p>
       </section>
 
       <section className="modes" aria-label="Study modes">
@@ -336,7 +401,7 @@ export default function Home() {
             <div className="empty">
               <div className="spark">✦</div>
               <h3>Namaste! Main Gen-z AI hoon.</h3>
-              <p>Question type karo ya photo upload karo. Main {language} me help karunga.</p>
+              <p>Question type karo, photo ya PDF upload karo. Main {language} me help karunga.</p>
               <div className="quickGrid">
                 <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ Explain a chapter</button>
                 <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 Make notes</button>
@@ -369,6 +434,17 @@ export default function Home() {
             </div>
           )}
 
+          {pdfDataUrl && (
+            <div className="pdfPreview">
+              <div className="pdfIcon">PDF</div>
+              <div>
+                <strong>PDF ready</strong>
+                <span>{pdfName || "Study PDF"}</span>
+              </div>
+              <button type="button" onClick={removePdf} aria-label="Remove PDF">✕</button>
+            </div>
+          )}
+
           <div className="comingRow">
             <label className="uploadLabel" htmlFor="photo-upload">📷 Photo Solve</label>
             <input
@@ -378,7 +454,14 @@ export default function Home() {
               accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={(e) => handlePhotoChange(e.target.files?.[0])}
             />
-            <span>📄 Ask PDF <small>next</small></span>
+            <label className="uploadLabel" htmlFor="pdf-upload">📄 Ask PDF</label>
+            <input
+              id="pdf-upload"
+              className="fileInput"
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={(e) => handlePdfChange(e.target.files?.[0])}
+            />
             {user ? <span>☁️ History on</span> : <span>👤 Guest mode</span>}
           </div>
 
@@ -389,7 +472,7 @@ export default function Home() {
               placeholder={placeholder}
               rows={2}
             />
-            <button type="submit" disabled={loading || (!input.trim() && !photoDataUrl)}>
+            <button type="submit" disabled={loading || (!input.trim() && !photoDataUrl && !pdfDataUrl)}>
               {loading ? "…" : "➤"}
             </button>
           </div>
