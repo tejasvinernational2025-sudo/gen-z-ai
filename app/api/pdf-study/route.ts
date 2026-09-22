@@ -12,26 +12,57 @@ type PdfStudyBody = {
   mode?: StudyMode;
 };
 
+const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
 const MAX_PDF_BYTES = 6 * 1024 * 1024;
 const MAX_EXTRACTED_CHARS = 50000;
+const MAX_PROMPT_CHARS = 4000;
+const MAX_LANGUAGE_CHARS = 80;
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as PdfStudyBody;
     const dataUrl = body.pdfDataUrl;
-    const prompt =
-      body.prompt?.trim() ||
-      "Is PDF ko student ke liye simple language me summarize karo, important points aur likely revision questions do.";
-    const language = body.language || "Hinglish";
-    const mode = body.mode || "notes";
 
-    if (!dataUrl?.startsWith("data:application/pdf;base64,")) {
+    const rawPrompt =
+      typeof body.prompt === "string"
+        ? body.prompt.trim()
+        : "";
+
+    if (rawPrompt.length > MAX_PROMPT_CHARS) {
+      return NextResponse.json(
+        { error: "PDF ke saath prompt bahut lamba hai. Use chhota karke bhejo." },
+        { status: 413 }
+      );
+    }
+
+    const prompt =
+      rawPrompt ||
+      "Is PDF ko student ke liye simple language me summarize karo, important points aur likely revision questions do.";
+
+    const language =
+      typeof body.language === "string" && body.language.trim()
+        ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
+        : "Hinglish";
+
+    const requestedMode = body.mode;
+    const mode: StudyMode =
+      requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "notes";
+
+    if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:application/pdf;base64,")) {
       return NextResponse.json({ error: "Valid PDF required." }, { status: 400 });
     }
 
     const base64 = dataUrl.split(",", 2)[1];
-    if (!base64) {
-      return NextResponse.json({ error: "PDF data missing." }, { status: 400 });
+    if (!base64 || !/^[A-Za-z0-9+/=]+$/.test(base64)) {
+      return NextResponse.json({ error: "PDF data invalid hai." }, { status: 400 });
+    }
+
+    const estimatedBytes =
+      Math.floor((base64.length * 3) / 4) -
+      (base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0);
+
+    if (estimatedBytes > MAX_PDF_BYTES) {
+      return NextResponse.json({ error: "PDF 6 MB se chhoti honi chahiye." }, { status: 413 });
     }
 
     const buffer = Buffer.from(base64, "base64");
