@@ -6,6 +6,7 @@ export type SavedConversation = {
   title: string;
   mode: string;
   language: string;
+  student_context: string;
   updated_at: string;
 };
 
@@ -48,7 +49,7 @@ export async function listConversations(userId: string): Promise<SavedConversati
 
   const { data, error } = await supabase
     .from("conversations")
-    .select("id,title,mode,language,updated_at")
+    .select("id,title,mode,language,student_context,updated_at")
     .eq("user_id", userId)
     .order("updated_at", { ascending: false })
     .limit(30);
@@ -81,6 +82,7 @@ export async function saveTurn(params: {
   conversationId: string | null;
   mode: string;
   language: string;
+  studentContext: string;
   userText: string;
   assistantText: string;
 }) {
@@ -98,6 +100,7 @@ export async function saveTurn(params: {
         title,
         mode: params.mode,
         language: params.language,
+        student_context: params.studentContext,
       })
       .select("id")
       .single();
@@ -129,6 +132,7 @@ export async function saveTurn(params: {
       updated_at: new Date().toISOString(),
       mode: params.mode,
       language: params.language,
+      student_context: params.studentContext,
     })
     .eq("id", conversationId)
     .eq("user_id", params.userId);
