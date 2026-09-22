@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFParse } from "pdf-parse";
 import { callAI } from "@/lib/ai-provider";
+import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
 
 export const runtime = "nodejs";
@@ -10,6 +11,7 @@ type PdfStudyBody = {
   prompt?: string;
   language?: string;
   mode?: StudyMode;
+  studentContext?: string;
 };
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
@@ -43,6 +45,8 @@ export async function POST(req: NextRequest) {
       typeof body.language === "string" && body.language.trim()
         ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
         : "Hinglish";
+
+    const studentContext = normalizeStudyContext(body.studentContext);
 
     const requestedMode = body.mode;
     const mode: StudyMode =
@@ -90,7 +94,7 @@ export async function POST(req: NextRequest) {
     const truncated = extractedText.length > MAX_EXTRACTED_CHARS;
     const studyText = extractedText.slice(0, MAX_EXTRACTED_CHARS);
 
-    const system = buildSystemPrompt(language, mode);
+    const system = buildSystemPrompt(language, mode, studentContext);
     const result = await callAI(system, [
       {
         role: "user",
