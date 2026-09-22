@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callAI, ChatMessage } from "@/lib/ai-provider";
+import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, StudyMode } from "@/lib/prompt";
 
 export const runtime = "nodejs";
@@ -8,6 +9,7 @@ type RequestBody = {
   messages?: ChatMessage[];
   language?: string;
   mode?: StudyMode;
+  studentContext?: string;
 };
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
@@ -62,11 +64,13 @@ export async function POST(req: NextRequest) {
         ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
         : "Hinglish";
 
+    const studentContext = normalizeStudyContext(body.studentContext);
+
     const requestedMode = body.mode;
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "chat";
 
-    const system = buildSystemPrompt(language, mode);
+    const system = buildSystemPrompt(language, mode, studentContext);
     const result = await callAI(system, messages);
 
     return NextResponse.json({
