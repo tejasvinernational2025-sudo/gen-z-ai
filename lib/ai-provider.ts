@@ -1,4 +1,4 @@
-export type ProviderName = "deepseek" | "openai" | "claude";
+export type ProviderName = "gemini" | "deepseek" | "openai" | "claude";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -14,15 +14,70 @@ export type ProviderResult = {
 function preferredProvider(): ProviderName {
   const configured = process.env.GENZ_AI_PROVIDER?.toLowerCase();
 
+  if (configured === "gemini" && process.env.GEMINI_API_KEY) return "gemini";
   if (configured === "openai" && process.env.OPENAI_API_KEY) return "openai";
   if (configured === "claude" && process.env.ANTHROPIC_API_KEY) return "claude";
   if (configured === "deepseek" && process.env.DEEPSEEK_API_KEY) return "deepseek";
 
+  if (process.env.GEMINI_API_KEY) return "gemini";
   if (process.env.DEEPSEEK_API_KEY) return "deepseek";
   if (process.env.OPENAI_API_KEY) return "openai";
   if (process.env.ANTHROPIC_API_KEY) return "claude";
 
   throw new Error("No AI provider API key is configured");
+}
+
+function collectGeminiText(data: any) {
+  const parts = data?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+  return parts
+    .map((part: { text?: string }) => (typeof part?.text === "string" ? part.text : ""))
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+async function callGemini(system: string, messages: ChatMessage[]): Promise<ProviderResult> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
+
+  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+
+  const contents = messages.map((message) => ({
+    role: message.role === "assistant" ? "model" : "user",
+    parts: [{ text: message.content }],
+  }));
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: system }],
+        },
+        contents,
+        generationConfig: {
+          maxOutputTokens: 1200,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Gemini error (${response.status}): ${detail.slice(0, 300)}`);
+  }
+
+  const data = await response.json();
+  const text = collectGeminiText(data);
+  if (!text) throw new Error("Gemini returned an empty response");
+
+  return { text, provider: "gemini", model };
 }
 
 async function callDeepSeek(system: string, messages: ChatMessage[]): Promise<ProviderResult> {
@@ -121,6 +176,7 @@ async function callClaude(system: string, messages: ChatMessage[]): Promise<Prov
 export async function callAI(system: string, messages: ChatMessage[]) {
   const provider = preferredProvider();
 
+  if (provider === "gemini") return callGemini(system, messages);
   if (provider === "openai") return callOpenAI(system, messages);
   if (provider === "claude") return callClaude(system, messages);
   return callDeepSeek(system, messages);
