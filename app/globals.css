@@ -44,6 +44,12 @@ h1 { margin: 0; font-size: 20px; }
 .hero h2 span { background: linear-gradient(90deg,#6346f5,#b449ea); -webkit-background-clip:text; color:transparent; }
 .hero p { color:#66687a; font-size: 16px; margin: 0 auto; max-width: 630px; line-height: 1.6; }
 
+.contextBar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin:0 0 12px; padding:12px 14px; border:1px solid #e6e3f2; background:white; border-radius:16px; }
+.contextBar > div { display:flex; flex-direction:column; gap:3px; }
+.contextBar strong { font-size:13px; color:#35364a; }
+.contextBar span { font-size:11px; color:#7c7e91; }
+.contextSelect { min-width:170px; border:1px solid #ded9ef; background:#f8f6ff; color:#4c3bb6; border-radius:11px; padding:9px 10px; font-weight:800; }
+
 .modes { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 12px; }
 .mode { border:1px solid #e6e3f2; background:white; border-radius:14px; padding:12px 8px; color:#55576d; font-weight:700; cursor:pointer; }
 .mode span { margin-right:5px; }
@@ -100,6 +106,8 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .historyPanel { margin-top:9px; }
   .hero { padding:36px 6px 22px; }
   .hero h2 { letter-spacing:-1.4px; }
+  .contextBar { align-items:flex-start; flex-direction:column; gap:8px; }
+  .contextSelect { width:100%; min-width:0; }
   .modes { grid-template-columns: repeat(3,1fr); }
   .mode { font-size:12px; }
   .quickGrid { grid-template-columns:1fr; }
