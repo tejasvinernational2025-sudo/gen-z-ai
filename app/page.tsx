@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
+import { STUDY_CONTEXTS, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -27,6 +28,7 @@ const MODES: { id: StudyMode; label: string; emoji: string }[] = [
 
 export default function Home() {
   const [language, setLanguage] = useState("Hinglish");
+  const [studentContext, setStudentContext] = useState<StudyContext>("General");
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -197,6 +199,11 @@ export default function Home() {
       setMessages(savedMessages);
       setConversationId(item.id);
       setLanguage(item.language || "Hinglish");
+      if (STUDY_CONTEXTS.includes(item.student_context as StudyContext)) {
+        setStudentContext(item.student_context as StudyContext);
+      } else {
+        setStudentContext("General");
+      }
       setPhotoDataUrl(null);
       setPhotoName("");
       setPdfDataUrl(null);
@@ -251,10 +258,10 @@ export default function Home() {
           : "/api/chat";
 
       const requestBody = pdfDataUrl
-        ? { pdfDataUrl, prompt: userText, language, mode }
+        ? { pdfDataUrl, prompt: userText, language, mode, studentContext }
         : photoDataUrl
-          ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode }
-          : { messages: nextMessages, language, mode };
+          ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode, studentContext }
+          : { messages: nextMessages, language, mode, studentContext };
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -277,6 +284,7 @@ export default function Home() {
             conversationId,
             mode,
             language,
+            studentContext,
             userText: visibleText,
             assistantText: data.reply,
           });
@@ -364,7 +372,7 @@ export default function Home() {
               history.map((item) => (
                 <button key={item.id} onClick={() => openConversation(item)}>
                   <strong>{item.title}</strong>
-                  <span>{item.language} · {item.mode}</span>
+                  <span>{item.student_context || "General"} · {item.language} · {item.mode}</span>
                 </button>
               ))
             )}
@@ -378,6 +386,23 @@ export default function Home() {
         <span className="badge">Built for every Indian student</span>
         <h2>Study smarter, <span>in your language.</span></h2>
         <p>Ask doubts, understand concepts, solve questions from photos, study PDFs, make notes and prepare for exams.</p>
+      </section>
+
+      <section className="contextBar" aria-label="Student context">
+        <div>
+          <strong>Study context</strong>
+          <span>Class/Exam ke hisaab se answer ki depth set karo</span>
+        </div>
+        <select
+          className="contextSelect"
+          value={studentContext}
+          onChange={(e) => setStudentContext(e.target.value as StudyContext)}
+          aria-label="Select class or exam"
+        >
+          {STUDY_CONTEXTS.map((item) => (
+            <option key={item} value={item}>{item}</option>
+          ))}
+        </select>
       </section>
 
       <section className="modes" aria-label="Study modes">
@@ -399,7 +424,7 @@ export default function Home() {
             <div className="empty">
               <div className="spark">✦</div>
               <h3>Namaste! Main Gen-z AI hoon.</h3>
-              <p>Question type karo, photo ya PDF upload karo. Main {language} me help karunga.</p>
+              <p>{studentContext} context me question type karo, photo ya PDF upload karo. Main {language} me help karunga.</p>
               <div className="quickGrid">
                 <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ Explain a chapter</button>
                 <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 Make notes</button>
