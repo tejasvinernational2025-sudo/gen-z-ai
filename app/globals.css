@@ -1,0 +1,69 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #17182f;
+  background: #f7f8fc;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: radial-gradient(circle at top, #efeaff 0, #f7f8fc 36%, #f7f8fc 100%); }
+button, select, textarea { font: inherit; }
+
+.shell { width: min(980px, 100%); margin: 0 auto; min-height: 100vh; padding: 18px 16px 28px; }
+.topbar { display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+.brandWrap { display: flex; align-items: center; gap: 11px; }
+.logo { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-weight: 900; font-size: 22px; color: white; background: linear-gradient(135deg,#6c4cff,#a55dff); box-shadow: 0 10px 30px rgba(108,76,255,.25); }
+h1 { margin: 0; font-size: 20px; }
+.topbar p { margin: 2px 0 0; font-size: 12px; color: #6b6d82; }
+.language { max-width: 220px; border: 1px solid #e0def0; border-radius: 12px; padding: 10px 12px; background: white; color: #24253a; }
+
+.hero { text-align: center; padding: 52px 10px 28px; }
+.badge { display: inline-flex; border: 1px solid #ded7ff; color: #6543e8; background: #f4f1ff; border-radius: 999px; padding: 7px 11px; font-size: 12px; font-weight: 700; }
+.hero h2 { font-size: clamp(34px,7vw,58px); line-height: 1.03; letter-spacing: -2px; margin: 16px auto 12px; max-width: 760px; }
+.hero h2 span { background: linear-gradient(90deg,#6346f5,#b449ea); -webkit-background-clip:text; color:transparent; }
+.hero p { color:#66687a; font-size: 16px; margin: 0 auto; max-width: 630px; line-height: 1.6; }
+
+.modes { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 12px; }
+.mode { border:1px solid #e6e3f2; background:white; border-radius:14px; padding:12px 8px; color:#55576d; font-weight:700; cursor:pointer; }
+.mode span { margin-right:5px; }
+.mode.active { border-color:#8066f6; color:#5a40dd; background:#f3f0ff; box-shadow:0 8px 20px rgba(96,68,220,.08); }
+
+.chatCard { background:white; border:1px solid #e9e6f2; border-radius:24px; box-shadow:0 18px 50px rgba(38,31,79,.08); overflow:hidden; }
+.messages { min-height: 380px; max-height: 58vh; overflow-y:auto; padding:22px; }
+.empty { text-align:center; padding:28px 8px; }
+.spark { width:52px; height:52px; margin:0 auto 12px; display:grid; place-items:center; border-radius:18px; background:#f0ecff; color:#6848ef; font-size:28px; }
+.empty h3 { margin:8px 0; }
+.empty p { color:#717387; margin:0 0 20px; }
+.quickGrid { display:grid; grid-template-columns:1fr 1fr; gap:9px; max-width:620px; margin:0 auto; }
+.quickGrid button { text-align:left; border:1px solid #e8e5f2; background:#fbfbfe; border-radius:14px; padding:13px; color:#3f4053; cursor:pointer; }
+
+.message { max-width:82%; padding:12px 14px; border-radius:16px; margin:10px 0; line-height:1.55; white-space:pre-wrap; }
+.message strong { display:block; font-size:12px; margin-bottom:4px; opacity:.75; }
+.message p { margin:0; }
+.message.user { margin-left:auto; background:#6b4df3; color:white; border-bottom-right-radius:5px; }
+.message.assistant { margin-right:auto; background:#f3f3f8; color:#25263b; border-bottom-left-radius:5px; }
+
+.error { margin:0 18px 10px; padding:10px 12px; border-radius:10px; background:#fff1f1; color:#a73030; font-size:13px; }
+.composer { border-top:1px solid #efedf5; padding:12px; }
+.comingRow { display:flex; gap:8px; margin-bottom:8px; font-size:12px; color:#77798c; }
+.comingRow span { border:1px dashed #dcd8ea; border-radius:999px; padding:5px 9px; }
+.comingRow small { color:#9c81ef; }
+.inputRow { display:flex; gap:8px; align-items:flex-end; }
+textarea { width:100%; resize:none; border:0; outline:0; background:#f7f7fb; border-radius:15px; padding:14px; color:#222338; }
+.inputRow button { width:48px; height:48px; border:0; border-radius:15px; color:white; background:linear-gradient(135deg,#6c4cff,#9b55ec); cursor:pointer; font-size:20px; }
+.inputRow button:disabled { opacity:.45; cursor:not-allowed; }
+
+footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
+
+@media (max-width: 700px) {
+  .shell { padding:12px 10px 22px; }
+  .topbar { align-items:flex-start; }
+  .topbar p { display:none; }
+  .language { max-width:160px; font-size:12px; }
+  .hero { padding:36px 6px 22px; }
+  .hero h2 { letter-spacing:-1.4px; }
+  .modes { grid-template-columns: repeat(3,1fr); }
+  .mode { font-size:12px; }
+  .quickGrid { grid-template-columns:1fr; }
+  .messages { min-height:360px; padding:14px; }
+  .message { max-width:92%; }
+}
