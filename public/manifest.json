@@ -1,0 +1,9 @@
+{
+  "name": "Gen-z AI",
+  "short_name": "Gen-z AI",
+  "description": "India's affordable multilingual AI study assistant",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#6c4cff"
+}
