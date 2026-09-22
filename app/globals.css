@@ -67,8 +67,18 @@ h1 { margin: 0; font-size: 20px; }
 .error { margin:0 18px 10px; padding:10px 12px; border-radius:10px; background:#fff1f1; color:#a73030; font-size:13px; }
 .composer { border-top:1px solid #efedf5; padding:12px; }
 .comingRow { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; font-size:12px; color:#77798c; }
-.comingRow span { border:1px dashed #dcd8ea; border-radius:999px; padding:5px 9px; }
+.comingRow span, .uploadLabel { border:1px dashed #dcd8ea; border-radius:999px; padding:5px 9px; }
 .comingRow small { color:#9c81ef; }
+.uploadLabel { cursor:pointer; color:#5c46d8; background:#faf8ff; font-weight:700; }
+.fileInput { display:none; }
+
+.photoPreview { display:grid; grid-template-columns:58px 1fr auto; align-items:center; gap:10px; padding:9px; margin-bottom:9px; border:1px solid #e7e3f1; background:#faf9ff; border-radius:14px; }
+.photoPreview img { width:58px; height:58px; border-radius:10px; object-fit:cover; border:1px solid #e1deeb; }
+.photoPreview div { min-width:0; display:flex; flex-direction:column; gap:3px; }
+.photoPreview strong { font-size:13px; }
+.photoPreview span { font-size:11px; color:#7c7e91; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.photoPreview button { border:0; background:#efecf8; color:#5f6072; width:32px; height:32px; border-radius:50%; cursor:pointer; }
+
 .inputRow { display:flex; gap:8px; align-items:flex-end; }
 textarea { width:100%; resize:none; border:0; outline:0; background:#f7f7fb; border-radius:15px; padding:14px; color:#222338; }
 .inputRow button { width:48px; height:48px; border:0; border-radius:15px; color:white; background:linear-gradient(135deg,#6c4cff,#9b55ec); cursor:pointer; font-size:20px; }
