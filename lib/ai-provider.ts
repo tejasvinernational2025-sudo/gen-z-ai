@@ -29,7 +29,7 @@ async function callDeepSeek(system: string, messages: ChatMessage[]): Promise<Pr
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) throw new Error("DEEPSEEK_API_KEY is not configured");
 
-  const model = process.env.DEEPSEEK_MODEL || "deepseek-v4-flash";
+  const model = process.env.DEEPSEEK_MODEL || "deepseek-flash";
   const response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: {
