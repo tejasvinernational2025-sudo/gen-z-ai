@@ -26,8 +26,124 @@ function parseImageDataUrl(dataUrl: string) {
   const base64 = match[2];
   if (!ALLOWED_IMAGE_MIME.has(mime)) return null;
 
-  const estimatedBytes = Math.floor((base64.length * 3) / 4) - (base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0);
+  const estimatedBytes =
+    Math.floor((base64.length * 3) / 4) -
+    (base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0);
+
   return { mime, base64, estimatedBytes };
+}
+
+function collectGeminiText(data: any) {
+  const parts = data?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+  return parts
+    .map((part: { text?: string }) => (typeof part?.text === "string" ? part.text : ""))
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+async function solveWithGemini(args: {
+  system: string;
+  prompt: string;
+  mime: string;
+  base64: string;
+}) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: args.system }],
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: args.prompt },
+              {
+                inlineData: {
+                  mimeType: args.mime,
+                  data: args.base64,
+                },
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 1600,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Gemini vision error (${response.status}): ${detail.slice(0, 300)}`);
+  }
+
+  const data = await response.json();
+  const reply = collectGeminiText(data);
+  if (!reply) throw new Error("Gemini vision returned an empty response");
+
+  return { reply, provider: "gemini", model };
+}
+
+async function solveWithDeepSeek(args: {
+  system: string;
+  prompt: string;
+  imageDataUrl: string;
+}) {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) return null;
+
+  const model = process.env.DEEPSEEK_VISION_MODEL || "deepseek-flash";
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: args.system },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: args.prompt },
+            {
+              type: "image_url",
+              image_url: {
+                url: args.imageDataUrl,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 1600,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`DeepSeek vision error (${response.status}): ${detail.slice(0, 300)}`);
+  }
+
+  const data = await response.json();
+  const reply = data?.choices?.[0]?.message?.content;
+  if (!reply) throw new Error("DeepSeek vision returned an empty response");
+
+  return { reply, provider: "deepseek", model };
 }
 
 export async function POST(req: NextRequest) {
@@ -53,11 +169,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const rawPrompt =
-      typeof body.prompt === "string"
-        ? body.prompt.trim()
-        : "";
-
+    const rawPrompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
     if (rawPrompt.length > MAX_PROMPT_CHARS) {
       return NextResponse.json(
         { error: "Photo ke saath prompt bahut lamba hai. Use chhota karke bhejo." },
@@ -80,60 +192,41 @@ export async function POST(req: NextRequest) {
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "explain";
 
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "DEEPSEEK_API_KEY is not configured." }, { status: 500 });
-    }
-
-    const model = process.env.DEEPSEEK_VISION_MODEL || "deepseek-flash";
     const system = buildSystemPrompt(language, mode, studentContext);
 
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: system },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              {
-                type: "image_url",
-                image_url: {
-                  url: body.imageDataUrl,
-                },
-              },
-            ],
-          },
-        ],
-        max_tokens: 1600,
-      }),
-    });
+    const configured = process.env.GENZ_AI_PROVIDER?.toLowerCase();
 
-    if (!response.ok) {
-      const detail = await response.text();
-      return NextResponse.json(
-        { error: `Vision provider error (${response.status}): ${detail.slice(0, 300)}` },
-        { status: 502 }
-      );
+    if (configured === "gemini" || (!configured && process.env.GEMINI_API_KEY)) {
+      const result = await solveWithGemini({
+        system,
+        prompt,
+        mime: parsedImage.mime,
+        base64: parsedImage.base64,
+      });
+      if (result) return NextResponse.json(result);
     }
 
-    const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content;
-    if (!reply) {
-      return NextResponse.json({ error: "Vision model returned an empty response." }, { status: 502 });
-    }
-
-    return NextResponse.json({
-      reply,
-      provider: "deepseek",
-      model,
+    const deepseek = await solveWithDeepSeek({
+      system,
+      prompt,
+      imageDataUrl: body.imageDataUrl,
     });
+
+    if (deepseek) return NextResponse.json(deepseek);
+
+    const gemini = await solveWithGemini({
+      system,
+      prompt,
+      mime: parsedImage.mime,
+      base64: parsedImage.base64,
+    });
+
+    if (gemini) return NextResponse.json(gemini);
+
+    return NextResponse.json(
+      { error: "Photo Solve ke liye Gemini ya DeepSeek API key configure karo." },
+      { status: 500 }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
