@@ -6,7 +6,7 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; background: radial-gradient(circle at top, #efeaff 0, #f7f8fc 36%, #f7f8fc 100%); }
-button, select, textarea { font: inherit; }
+button, select, textarea, input { font: inherit; }
 
 .shell { width: min(980px, 100%); margin: 0 auto; min-height: 100vh; padding: 18px 16px 28px; }
 .topbar { display: flex; justify-content: space-between; gap: 14px; align-items: center; }
@@ -14,7 +14,29 @@ button, select, textarea { font: inherit; }
 .logo { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-weight: 900; font-size: 22px; color: white; background: linear-gradient(135deg,#6c4cff,#a55dff); box-shadow: 0 10px 30px rgba(108,76,255,.25); }
 h1 { margin: 0; font-size: 20px; }
 .topbar p { margin: 2px 0 0; font-size: 12px; color: #6b6d82; }
+.topActions { display:flex; align-items:center; gap:8px; }
 .language { max-width: 220px; border: 1px solid #e0def0; border-radius: 12px; padding: 10px 12px; background: white; color: #24253a; }
+.ghostButton, .accountButton { border:1px solid #e0def0; background:white; color:#4b3db2; cursor:pointer; }
+.ghostButton { border-radius:12px; padding:10px 12px; font-weight:700; }
+.accountButton { width:38px; height:38px; border-radius:50%; font-weight:900; background:#f1edff; }
+.guestPill { border:1px solid #e4e1ed; background:#fff; border-radius:999px; padding:8px 11px; color:#77798b; font-size:12px; }
+
+.authPanel, .historyPanel { margin-top:12px; background:white; border:1px solid #e8e5f2; border-radius:18px; box-shadow:0 12px 32px rgba(38,31,79,.07); }
+.authPanel { display:grid; grid-template-columns:1fr minmax(210px,320px) auto; align-items:center; gap:10px; padding:13px; }
+.authPanel div { display:flex; flex-direction:column; gap:2px; }
+.authPanel span, .historyHeader span { color:#7b7d90; font-size:12px; }
+.authPanel input { border:1px solid #e3e0ec; background:#fafafe; border-radius:11px; padding:11px 12px; outline:none; }
+.authPanel button, .historyHeader button { border:0; border-radius:11px; padding:11px 13px; background:#6b4df3; color:white; font-weight:800; cursor:pointer; }
+
+.historyPanel { padding:13px; }
+.historyHeader { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:10px; border-bottom:1px solid #efedf5; }
+.historyHeader div { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.historyHeader span { overflow:hidden; text-overflow:ellipsis; }
+.historyList { display:grid; gap:7px; padding-top:10px; max-height:250px; overflow-y:auto; }
+.historyList > p { color:#7b7d90; font-size:13px; }
+.historyList button { text-align:left; border:1px solid #ece9f4; background:#fbfbfe; border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; flex-direction:column; gap:3px; color:#303145; }
+.historyList button span { font-size:11px; color:#838598; }
+.notice { margin-top:10px; padding:9px 11px; background:#f0ecff; color:#5d43cf; border:1px solid #dfd7ff; border-radius:11px; font-size:13px; }
 
 .hero { text-align: center; padding: 52px 10px 28px; }
 .badge { display: inline-flex; border: 1px solid #ded7ff; color: #6543e8; background: #f4f1ff; border-radius: 999px; padding: 7px 11px; font-size: 12px; font-weight: 700; }
@@ -44,7 +66,7 @@ h1 { margin: 0; font-size: 20px; }
 
 .error { margin:0 18px 10px; padding:10px 12px; border-radius:10px; background:#fff1f1; color:#a73030; font-size:13px; }
 .composer { border-top:1px solid #efedf5; padding:12px; }
-.comingRow { display:flex; gap:8px; margin-bottom:8px; font-size:12px; color:#77798c; }
+.comingRow { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; font-size:12px; color:#77798c; }
 .comingRow span { border:1px dashed #dcd8ea; border-radius:999px; padding:5px 9px; }
 .comingRow small { color:#9c81ef; }
 .inputRow { display:flex; gap:8px; align-items:flex-end; }
@@ -58,7 +80,13 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .shell { padding:12px 10px 22px; }
   .topbar { align-items:flex-start; }
   .topbar p { display:none; }
-  .language { max-width:160px; font-size:12px; }
+  .topActions { gap:5px; }
+  .language { max-width:128px; font-size:11px; padding:9px 7px; }
+  .ghostButton { padding:9px 8px; font-size:11px; }
+  .accountButton { width:34px; height:34px; }
+  .guestPill { display:none; }
+  .authPanel { grid-template-columns:1fr; }
+  .historyPanel { margin-top:9px; }
   .hero { padding:36px 6px 22px; }
   .hero h2 { letter-spacing:-1.4px; }
   .modes { grid-template-columns: repeat(3,1fr); }
