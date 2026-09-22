@@ -184,8 +184,6 @@ export default function Home() {
       setPdfName(file.name);
       setPhotoDataUrl(null);
       setPhotoName("");
-      setPdfDataUrl(null);
-      setPdfName("");
     };
     reader.onerror = () => setError("PDF read nahi ho pai.");
     reader.readAsDataURL(file);
@@ -302,7 +300,7 @@ export default function Home() {
           <div className="logo">G</div>
           <div>
             <h1>Gen-z AI</h1>
-            <p>India’s affordable multilingual AI study assistant</p>
+            <p>India-first affordable AI tutor</p>
           </div>
         </div>
 
@@ -377,8 +375,8 @@ export default function Home() {
       {notice && <div className="notice">{notice}</div>}
 
       <section className="hero">
-        <span className="badge">Built for Indian students</span>
-        <h2>Learn anything, <span>in your language.</span></h2>
+        <span className="badge">Built for every Indian student</span>
+        <h2>Study smarter, <span>in your language.</span></h2>
         <p>Ask doubts, understand concepts, solve questions from photos, study PDFs, make notes and prepare for exams.</p>
       </section>
 
