@@ -6,8 +6,9 @@ India-first affordable multilingual AI study assistant.
 - Mobile-first AI chat
 - 22 scheduled Indian languages + English + Hinglish
 - Study modes: Ask AI, Explain, Notes, Quiz, Exam Prep
-- DeepSeek-first low-cost backend
+- DeepSeek V4 Flash-first low-cost backend
 - Provider-ready env structure for OpenAI and Anthropic/Claude
+- Supabase-ready login and private chat-history schema with RLS
 - Photo Solve and Ask PDF prepared as next features
 
 ## Run locally
@@ -18,7 +19,7 @@ India-first affordable multilingual AI study assistant.
 
 ## Production plan
 1. Deploy on Vercel or compatible Next.js host
-2. Add Supabase Auth + chat history
+2. Connect Supabase Auth + chat history
 3. Add image question flow
 4. Add PDF/RAG study flow
 5. Add usage quotas + Razorpay/UPI plans
