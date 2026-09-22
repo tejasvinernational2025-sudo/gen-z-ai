@@ -1,8 +1,19 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
 import type { StudyMode } from "@/lib/prompt";
+import { getSupabaseClient } from "@/lib/supabase";
+import {
+  getCurrentUser,
+  listConversations,
+  loadConversation,
+  saveTurn,
+  sendMagicLink,
+  signOutUser,
+  type SavedConversation,
+} from "@/lib/chat-history";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -22,6 +33,39 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [user, setUser] = useState<User | null>(null);
+  const [supabaseReady, setSupabaseReady] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [notice, setNotice] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<SavedConversation[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    setSupabaseReady(Boolean(supabase));
+    if (!supabase) return;
+
+    getCurrentUser().then(setUser).catch(() => setUser(null));
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setHistory([]);
+      return;
+    }
+
+    listConversations(user.id)
+      .then(setHistory)
+      .catch(() => setNotice("History load nahi ho pai."));
+  }, [user]);
+
   const placeholder = useMemo(() => {
     if (mode === "notes") return "Topic ya chapter bhejo — main exam-ready notes banaunga...";
     if (mode === "quiz") return "Kis topic par quiz chahiye?";
@@ -29,6 +73,67 @@ export default function Home() {
     if (mode === "exam") return "Exam + subject + topic likho...";
     return "Kuch bhi pucho — Hindi, Hinglish ya apni language me...";
   }, [mode]);
+
+  async function submitLogin(e: FormEvent) {
+    e.preventDefault();
+    const email = authEmail.trim();
+    if (!email) return;
+
+    setNotice("");
+    try {
+      await sendMagicLink(email);
+      setNotice("Login link email par bhej diya gaya hai.");
+      setAuthOpen(false);
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Login start nahi ho saka.");
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      await signOutUser();
+      setMessages([]);
+      setConversationId(null);
+      setHistory([]);
+      setHistoryOpen(false);
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Sign out nahi ho saka.");
+    }
+  }
+
+  function newChat() {
+    setMessages([]);
+    setConversationId(null);
+    setInput("");
+    setError("");
+    setHistoryOpen(false);
+  }
+
+  async function openConversation(item: SavedConversation) {
+    if (!user) return;
+
+    try {
+      const savedMessages = await loadConversation(user.id, item.id);
+      setMessages(savedMessages);
+      setConversationId(item.id);
+      setLanguage(item.language || "Hinglish");
+      if (["chat", "explain", "notes", "quiz", "exam"].includes(item.mode)) {
+        setMode(item.mode as StudyMode);
+      }
+      setHistoryOpen(false);
+    } catch {
+      setNotice("Saved chat open nahi ho pai.");
+    }
+  }
+
+  async function refreshHistory() {
+    if (!user) return;
+    try {
+      setHistory(await listConversations(user.id));
+    } catch {
+      setNotice("History refresh nahi ho pai.");
+    }
+  }
 
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
@@ -39,6 +144,7 @@ export default function Home() {
     setMessages(nextMessages);
     setInput("");
     setError("");
+    setNotice("");
     setLoading(true);
 
     try {
@@ -51,7 +157,25 @@ export default function Home() {
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || "AI response failed");
 
-      setMessages((current) => [...current, { role: "assistant", content: data.reply }]);
+      const assistantMessage: Message = { role: "assistant", content: data.reply };
+      setMessages((current) => [...current, assistantMessage]);
+
+      if (user) {
+        try {
+          const id = await saveTurn({
+            userId: user.id,
+            conversationId,
+            mode,
+            language,
+            userText: question,
+            assistantText: data.reply,
+          });
+          if (id) setConversationId(id);
+          await refreshHistory();
+        } catch {
+          setNotice("Answer mil gaya, lekin chat history save nahi ho pai.");
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -69,17 +193,76 @@ export default function Home() {
             <p>India’s affordable multilingual AI study assistant</p>
           </div>
         </div>
-        <select
-          className="language"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          aria-label="Select response language"
-        >
-          {LANGUAGES.map((item) => (
-            <option key={item} value={item}>{item}</option>
-          ))}
-        </select>
+
+        <div className="topActions">
+          <select
+            className="language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            aria-label="Select response language"
+          >
+            {LANGUAGES.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
+
+          {user ? (
+            <>
+              <button className="ghostButton" onClick={() => setHistoryOpen((value) => !value)}>History</button>
+              <button className="accountButton" onClick={handleSignOut} title="Sign out">
+                {user.email?.slice(0, 1).toUpperCase() || "U"}
+              </button>
+            </>
+          ) : supabaseReady ? (
+            <button className="ghostButton" onClick={() => setAuthOpen((value) => !value)}>Sign in</button>
+          ) : (
+            <span className="guestPill">Guest</span>
+          )}
+        </div>
       </header>
+
+      {authOpen && (
+        <form className="authPanel" onSubmit={submitLogin}>
+          <div>
+            <strong>Save your chats</strong>
+            <span>Email par secure login link milega.</span>
+          </div>
+          <input
+            type="email"
+            value={authEmail}
+            onChange={(e) => setAuthEmail(e.target.value)}
+            placeholder="student@example.com"
+            required
+          />
+          <button type="submit">Send link</button>
+        </form>
+      )}
+
+      {historyOpen && user && (
+        <section className="historyPanel">
+          <div className="historyHeader">
+            <div>
+              <strong>Your chats</strong>
+              <span>{user.email}</span>
+            </div>
+            <button onClick={newChat}>+ New chat</button>
+          </div>
+          <div className="historyList">
+            {history.length === 0 ? (
+              <p>Abhi koi saved chat nahi hai.</p>
+            ) : (
+              history.map((item) => (
+                <button key={item.id} onClick={() => openConversation(item)}>
+                  <strong>{item.title}</strong>
+                  <span>{item.language} · {item.mode}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </section>
+      )}
+
+      {notice && <div className="notice">{notice}</div>}
 
       <section className="hero">
         <span className="badge">Built for Indian students</span>
@@ -131,6 +314,7 @@ export default function Home() {
           <div className="comingRow">
             <span>📷 Photo Solve <small>next</small></span>
             <span>📄 Ask PDF <small>next</small></span>
+            {user ? <span>☁️ History on</span> : <span>👤 Guest mode</span>}
           </div>
           <div className="inputRow">
             <textarea
