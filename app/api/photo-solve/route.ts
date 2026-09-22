@@ -10,17 +10,71 @@ type PhotoSolveBody = {
   mode?: StudyMode;
 };
 
+const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
+const ALLOWED_IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_PROMPT_CHARS = 4000;
+const MAX_LANGUAGE_CHARS = 80;
+
+function parseImageDataUrl(dataUrl: string) {
+  const match = /^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
+  if (!match) return null;
+
+  const mime = match[1];
+  const base64 = match[2];
+  if (!ALLOWED_IMAGE_MIME.has(mime)) return null;
+
+  const estimatedBytes = Math.floor((base64.length * 3) / 4) - (base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0);
+  return { mime, base64, estimatedBytes };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as PhotoSolveBody;
-    const imageDataUrl = body.imageDataUrl;
-    const prompt = body.prompt?.trim() || "Is image me jo study question hai use samjho aur step-by-step solve karo.";
-    const language = body.language || "Hinglish";
-    const mode = body.mode || "explain";
 
-    if (!imageDataUrl?.startsWith("data:image/")) {
+    if (typeof body.imageDataUrl !== "string") {
       return NextResponse.json({ error: "Valid image required." }, { status: 400 });
     }
+
+    const parsedImage = parseImageDataUrl(body.imageDataUrl);
+    if (!parsedImage) {
+      return NextResponse.json(
+        { error: "JPEG, PNG, WebP ya GIF image bhejo." },
+        { status: 400 }
+      );
+    }
+
+    if (parsedImage.estimatedBytes > MAX_IMAGE_BYTES) {
+      return NextResponse.json(
+        { error: "Photo 8 MB se chhoti honi chahiye." },
+        { status: 413 }
+      );
+    }
+
+    const rawPrompt =
+      typeof body.prompt === "string"
+        ? body.prompt.trim()
+        : "";
+
+    if (rawPrompt.length > MAX_PROMPT_CHARS) {
+      return NextResponse.json(
+        { error: "Photo ke saath prompt bahut lamba hai. Use chhota karke bhejo." },
+        { status: 413 }
+      );
+    }
+
+    const prompt =
+      rawPrompt ||
+      "Is image me jo study question hai use samjho aur step-by-step solve karo.";
+
+    const language =
+      typeof body.language === "string" && body.language.trim()
+        ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
+        : "Hinglish";
+
+    const requestedMode = body.mode;
+    const mode: StudyMode =
+      requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "explain";
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
@@ -47,7 +101,7 @@ export async function POST(req: NextRequest) {
               {
                 type: "image_url",
                 image_url: {
-                  url: imageDataUrl,
+                  url: body.imageDataUrl,
                 },
               },
             ],
