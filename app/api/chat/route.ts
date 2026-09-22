@@ -22,9 +22,8 @@ async function callDeepSeek(system: string, messages: ChatMessage[]) {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: process.env.DEEPSEEK_MODEL || "deepseek-chat",
+      model: process.env.DEEPSEEK_MODEL || "deepseek-v4-flash",
       messages: [{ role: "system", content: system }, ...messages],
-      temperature: 0.5,
       max_tokens: 1200,
     }),
   });
