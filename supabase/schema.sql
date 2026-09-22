@@ -88,3 +88,7 @@ create index if not exists conversations_user_id_created_at_idx
 
 create index if not exists messages_conversation_id_created_at_idx
   on public.messages(conversation_id, created_at asc);
+
+
+create index if not exists messages_user_id_idx
+  on public.messages(user_id);
