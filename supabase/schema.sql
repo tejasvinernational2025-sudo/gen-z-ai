@@ -14,6 +14,7 @@ create table if not exists public.conversations (
   title text not null default 'New chat',
   mode text not null default 'chat',
   language text not null default 'Hinglish',
+  student_context text not null default 'General',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
