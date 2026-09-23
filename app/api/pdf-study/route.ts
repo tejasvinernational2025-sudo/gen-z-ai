@@ -17,6 +17,7 @@ const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "e
 const MAX_PDF_BYTES = Math.floor(2.5 * 1024 * 1024);
 const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
+const GEMINI_PDF_TIMEOUT_MS = 10_000;
 
 const GEMINI_PDF_FALLBACK_MODELS = [
   "gemini-3.7-flash",
@@ -56,38 +57,46 @@ async function studyPdfWithGemini(args: {
   let lastStatus = 0;
 
   for (const model of geminiPdfModelChain()) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: args.system }],
+    let response: Response;
+
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
           },
-          contents: [
-            {
-              role: "user",
-              parts: [
-                { text: args.prompt },
-                {
-                  inlineData: {
-                    mimeType: "application/pdf",
-                    data: args.base64,
-                  },
-                },
-              ],
+          signal: AbortSignal.timeout(GEMINI_PDF_TIMEOUT_MS),
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: args.system }],
             },
-          ],
-          generationConfig: {
-            maxOutputTokens: 1100,
-          },
-        }),
-      }
-    );
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  { text: args.prompt },
+                  {
+                    inlineData: {
+                      mimeType: "application/pdf",
+                      data: args.base64,
+                    },
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              maxOutputTokens: 800,
+            },
+          }),
+        }
+      );
+    } catch {
+      lastStatus = 408;
+      continue;
+    }
 
     if (response.ok) {
       const data = await response.json();
@@ -108,7 +117,7 @@ async function studyPdfWithGemini(args: {
   }
 
   throw new Error(
-    `Gemini PDF models are temporarily busy/unavailable (${lastStatus || 503}). Please try again shortly.`
+    `PDF AI response timed out or is temporarily unavailable (${lastStatus || 503}). Please retry once.`
   );
 }
 
