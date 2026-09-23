@@ -474,7 +474,8 @@ export default function Home() {
               id="photo-upload"
               className="fileInput"
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
+              accept="image/*"
+              capture="environment"
               onChange={(e) => handlePhotoChange(e.target.files?.[0])}
             />
             <label className="uploadLabel" htmlFor="pdf-upload">📄 Ask PDF</label>
