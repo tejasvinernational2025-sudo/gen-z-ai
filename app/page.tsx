@@ -227,24 +227,39 @@ export default function Home() {
     }
   }
 
-  function handlePdfChange(file?: File) {
+  async function handlePdfChange(file?: File) {
     if (!file) return;
 
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    if (!isPdf) {
-      setError("Sirf PDF file upload karo.");
-      return;
-    }
+    setError("");
 
     if (file.size > 2.5 * 1024 * 1024) {
       setError("PDF 2.5 MB se chhoti honi chahiye.");
       return;
     }
 
-    setError("");
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
+    try {
+      // Android browsers/file pickers sometimes report PDFs as application/octet-stream
+      // or leave the MIME type blank. Verify the actual PDF signature instead.
+      const headerBuffer = await file.slice(0, 5).arrayBuffer();
+      const header = new TextDecoder().decode(headerBuffer);
+      const looksLikePdf =
+        file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf") ||
+        header === "%PDF-";
+
+      if (!looksLikePdf) {
+        setError("Sirf PDF file upload karo.");
+        return;
+      }
+
+      const result = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () =>
+          resolve(typeof reader.result === "string" ? reader.result : "");
+        reader.onerror = () => reject(new Error("PDF read nahi ho pai."));
+        reader.readAsDataURL(file);
+      });
+
       const base64 = result.split(",", 2)[1];
       if (!base64) {
         setError("PDF read nahi ho pai.");
@@ -252,12 +267,12 @@ export default function Home() {
       }
 
       setPdfDataUrl(`data:application/pdf;base64,${base64}`);
-      setPdfName(file.name);
+      setPdfName(file.name || "study.pdf");
       setPhotoDataUrl(null);
       setPhotoName("");
-    };
-    reader.onerror = () => setError("PDF read nahi ho pai.");
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "PDF read nahi ho pai.");
+    }
   }
 
   async function openConversation(item: SavedConversation) {
@@ -552,7 +567,7 @@ export default function Home() {
               id="pdf-upload"
               className="fileInput"
               type="file"
-              accept="application/pdf,.pdf"
+              accept="application/pdf,application/octet-stream,.pdf"
               onChange={(e) => handlePdfChange(e.target.files?.[0])}
             />
             {user ? <span>☁️ History on</span> : <span>👤 Guest mode</span>}
