@@ -14,9 +14,9 @@ type RequestBody = {
 };
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
-const MAX_MESSAGES = 12;
+const MAX_MESSAGES = 8;
 const MAX_MESSAGE_CHARS = 8000;
-const MAX_TOTAL_CHARS = 24000;
+const MAX_TOTAL_CHARS = 16000;
 const MAX_LANGUAGE_CHARS = 80;
 
 export async function POST(req: NextRequest) {
