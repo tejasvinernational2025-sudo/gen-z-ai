@@ -585,6 +585,7 @@ export default function Home() {
               onChange={(e) => handlePhotoChange(e.target.files?.[0])}
             />
             <label className="uploadLabel" htmlFor="pdf-upload">📄 Ask PDF</label>
+            <button type="button" className="uploadLabel" onClick={loadSamplePdf}>⬇ Sample PDF</button>
             <input
               id="pdf-upload"
               className="fileInput"
