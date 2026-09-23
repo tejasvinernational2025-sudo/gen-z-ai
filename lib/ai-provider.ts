@@ -11,11 +11,11 @@ export type ProviderResult = {
   model: string;
 };
 
-const GEMINI_FALLBACK_MODELS = [
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
+const GEMINI_CHAT_MODELS = [
+  "gemini-3.5-flash-lite",
+  "gemini-3.8-flash",
 ];
+const GEMINI_CHAT_TIMEOUT_MS = 8_000;
 
 function preferredProvider(): ProviderName {
   const configured = process.env.GENZ_AI_PROVIDER?.toLowerCase();
@@ -44,10 +44,10 @@ function collectGeminiText(data: any) {
 }
 
 function geminiModelChain() {
-  const primary = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-  return [primary, ...GEMINI_FALLBACK_MODELS].filter(
-    (model, index, models) => models.indexOf(model) === index
-  );
+  const configured = process.env.GEMINI_CHAT_MODEL?.trim();
+  return [configured, ...GEMINI_CHAT_MODELS]
+    .filter((model): model is string => Boolean(model))
+    .filter((model, index, models) => models.indexOf(model) === index);
 }
 
 function canFallbackGemini(status: number) {
@@ -67,25 +67,37 @@ async function callGemini(system: string, messages: ChatMessage[]): Promise<Prov
   let lastDetail = "";
 
   for (const model of geminiModelChain()) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: system }],
+    let response: Response;
+
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
           },
-          contents,
-          generationConfig: {
-            maxOutputTokens: 1200,
-          },
-        }),
-      }
-    );
+          signal: AbortSignal.timeout(GEMINI_CHAT_TIMEOUT_MS),
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: system }],
+            },
+            contents,
+            generationConfig: {
+              maxOutputTokens: 800,
+              thinkingConfig: {
+                thinkingLevel: model.includes("3.8") ? "low" : "minimal",
+              },
+            },
+          }),
+        }
+      );
+    } catch {
+      lastStatus = 408;
+      lastDetail = "Gemini request timed out";
+      continue;
+    }
 
     if (response.ok) {
       const data = await response.json();
