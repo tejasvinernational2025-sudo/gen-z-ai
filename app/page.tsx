@@ -270,6 +270,33 @@ export default function Home() {
     }
   }
 
+  async function loadSamplePdf() {
+    setError("");
+    setNotice("Sample PDF load ho rahi hai…");
+
+    try {
+      const response = await fetch("/genz-ai-test.pdf", { cache: "no-store" });
+      if (!response.ok) throw new Error("Sample PDF load nahi ho pai.");
+
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      let binary = "";
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+      }
+
+      const base64 = btoa(binary);
+      setPdfDataUrl(`data:application/pdf;base64,${base64}`);
+      setPdfName("genz-ai-test.pdf");
+      setPhotoDataUrl(null);
+      setPhotoName("");
+      setNotice("");
+    } catch (err) {
+      setNotice("");
+      setError(err instanceof Error ? err.message : "Sample PDF load nahi ho pai.");
+    }
+  }
+
   async function openConversation(item: SavedConversation) {
     if (!user) return;
 
