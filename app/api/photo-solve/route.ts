@@ -15,7 +15,7 @@ type PhotoSolveBody = {
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
 const ALLOWED_IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_IMAGE_BYTES = Math.floor(2.8 * 1024 * 1024);
 const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
 
@@ -207,7 +207,7 @@ export async function POST(req: NextRequest) {
 
     if (parsedImage.estimatedBytes > MAX_IMAGE_BYTES) {
       return NextResponse.json(
-        { error: "Photo 8 MB se chhoti honi chahiye." },
+        { error: "Optimized photo size zyada hai. Photo ko crop karke dobara try karo." },
         { status: 413 }
       );
     }
