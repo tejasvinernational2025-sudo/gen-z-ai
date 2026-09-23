@@ -54,6 +54,17 @@ export async function POST(req: NextRequest) {
       rawPrompt ||
       "Is PDF ko student ke liye simple language me summarize karo, important points aur likely revision questions do.";
 
+    const requestedCountMatch = rawPrompt.match(
+      /\b(\d{1,2})\s*(?:mcq|mcqs|questions?|sawal|sawaal)\b/i
+    );
+    const requestedCount = requestedCountMatch
+      ? Math.min(20, Math.max(1, Number(requestedCountMatch[1])))
+      : null;
+
+    const completionRule = requestedCount
+      ? `The student explicitly requested ${requestedCount} questions/MCQs. Produce exactly ${requestedCount}, numbered 1 through ${requestedCount}. Complete all ${requestedCount} before ending the response. Keep the summary concise so the required count always fits. Each MCQ must have options A-D and a clearly labeled answer.`
+      : "If the student asks for a specific number of items, questions or MCQs, obey that count exactly and keep earlier sections concise enough to complete the full requested list.";
+
     const language =
       typeof body.language === "string" && body.language.trim()
         ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
@@ -112,7 +123,7 @@ export async function POST(req: NextRequest) {
       {
         role: "user",
         content:
-          `Student request:\n${prompt}\n\nPDF text:\n${studyText}` +
+          `Student request:\n${prompt}\n\nOutput contract:\n${completionRule}\n\nPDF text:\n${studyText}` +
           (truncated
             ? "\n\nNote: PDF was long, so this MVP analyzed the first extracted section only."
             : ""),
