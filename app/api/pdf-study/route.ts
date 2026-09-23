@@ -3,6 +3,7 @@ import { PDFParse } from "pdf-parse";
 import { callAI } from "@/lib/ai-provider";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,17 @@ const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
 
 export async function POST(req: NextRequest) {
+  const rate = enforceRateLimit(req, "pdf", 6, 30 * 60 * 1000);
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "PDF Study ki temporary limit reach ho gai hai. Thodi der baad try karo." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rate.retryAfterSeconds) },
+      }
+    );
+  }
+
   try {
     const body = (await req.json()) as PdfStudyBody;
     const dataUrl = body.pdfDataUrl;
