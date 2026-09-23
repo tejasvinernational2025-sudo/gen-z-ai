@@ -13,17 +13,23 @@ type PdfStudyBody = {
   studentContext?: string;
 };
 
+type StructuredMcq = {
+  question?: string;
+  options?: string[];
+  answer?: string;
+};
+
+type StructuredPdfResult = {
+  summary?: string;
+  mcqs?: StructuredMcq[];
+};
+
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
 const MAX_PDF_BYTES = Math.floor(2.5 * 1024 * 1024);
 const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
-const GEMINI_PDF_TIMEOUT_MS = 10_000;
-
-const GEMINI_PDF_FALLBACK_MODELS = [
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-];
+const GEMINI_TIMEOUT_MS = 12_000;
+const PDF_MODELS = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
 
 function collectGeminiText(data: any) {
   const parts = data?.candidates?.[0]?.content?.parts;
@@ -35,28 +41,93 @@ function collectGeminiText(data: any) {
     .trim();
 }
 
-function geminiPdfModelChain() {
-  const primary = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-  return [primary, ...GEMINI_PDF_FALLBACK_MODELS].filter(
-    (model, index, models) => models.indexOf(model) === index
-  );
+function canFallback(status: number) {
+  return [404, 408, 429, 500, 502, 503, 504].includes(status);
 }
 
-function canFallbackGemini(status: number) {
-  return status === 404 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+function formatStructured(result: StructuredPdfResult, requestedCount: number) {
+  const summary = typeof result.summary === "string" ? result.summary.trim() : "";
+  const mcqs = Array.isArray(result.mcqs) ? result.mcqs.slice(0, requestedCount) : [];
+
+  if (!summary || mcqs.length !== requestedCount) return null;
+
+  const blocks = mcqs.map((mcq, index) => {
+    const options = Array.isArray(mcq.options) ? mcq.options.slice(0, 4) : [];
+    if (!mcq.question || !mcq.answer || options.length !== 4) return null;
+
+    return [
+      `${index + 1}. ${mcq.question}`,
+      `A. ${options[0]}`,
+      `B. ${options[1]}`,
+      `C. ${options[2]}`,
+      `D. ${options[3]}`,
+      `Answer: ${mcq.answer}`,
+    ].join("\n");
+  });
+
+  if (blocks.some((item) => item === null)) return null;
+
+  return `PDF Summary\n\n${summary}\n\nMCQs\n\n${blocks.join("\n\n")}`;
 }
 
-async function studyPdfWithGemini(args: {
+async function callGeminiPdf(args: {
   base64: string;
   prompt: string;
   system: string;
+  requestedCount: number | null;
 }) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
 
   let lastStatus = 0;
 
-  for (const model of geminiPdfModelChain()) {
+  for (const model of PDF_MODELS) {
+    const generationConfig: Record<string, unknown> = {
+      maxOutputTokens: args.requestedCount ? 1800 : 1100,
+    };
+
+    if (args.requestedCount) {
+      generationConfig.responseFormat = {
+        text: {
+          mimeType: "application/json",
+          schema: {
+            type: "object",
+            properties: {
+              summary: {
+                type: "string",
+                description: "A concise complete summary in the requested student language.",
+              },
+              mcqs: {
+                type: "array",
+                minItems: args.requestedCount,
+                maxItems: args.requestedCount,
+                items: {
+                  type: "object",
+                  properties: {
+                    question: { type: "string" },
+                    options: {
+                      type: "array",
+                      minItems: 4,
+                      maxItems: 4,
+                      items: { type: "string" },
+                    },
+                    answer: {
+                      type: "string",
+                      description: "Correct option letter and answer text.",
+                    },
+                  },
+                  required: ["question", "options", "answer"],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ["summary", "mcqs"],
+            additionalProperties: false,
+          },
+        },
+      };
+    }
+
     let response: Response;
 
     try {
@@ -68,7 +139,7 @@ async function studyPdfWithGemini(args: {
             "Content-Type": "application/json",
             "x-goog-api-key": apiKey,
           },
-          signal: AbortSignal.timeout(GEMINI_PDF_TIMEOUT_MS),
+          signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
           body: JSON.stringify({
             systemInstruction: {
               parts: [{ text: args.system }],
@@ -87,9 +158,7 @@ async function studyPdfWithGemini(args: {
                 ],
               },
             ],
-            generationConfig: {
-              maxOutputTokens: 800,
-            },
+            generationConfig,
           }),
         }
       );
@@ -98,26 +167,41 @@ async function studyPdfWithGemini(args: {
       continue;
     }
 
-    if (response.ok) {
-      const data = await response.json();
-      const reply = collectGeminiText(data);
-      if (!reply) {
-        lastStatus = 502;
-        continue;
+    if (!response.ok) {
+      lastStatus = response.status;
+      const detail = (await response.text()).slice(0, 300);
+      if (!canFallback(response.status)) {
+        throw new Error(`Gemini PDF error (${response.status}): ${detail}`);
       }
-      return { reply, provider: "gemini", model };
+      continue;
     }
 
-    lastStatus = response.status;
-    const detail = (await response.text()).slice(0, 300);
-
-    if (!canFallbackGemini(response.status)) {
-      throw new Error(`Gemini PDF error (${response.status}): ${detail}`);
+    const data = await response.json();
+    const raw = collectGeminiText(data);
+    if (!raw) {
+      lastStatus = 502;
+      continue;
     }
+
+    if (!args.requestedCount) {
+      return { reply: raw, provider: "gemini", model };
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as StructuredPdfResult;
+      const formatted = formatStructured(parsed, args.requestedCount);
+      if (formatted) {
+        return { reply: formatted, provider: "gemini", model };
+      }
+    } catch {
+      // Try the fallback model if structured output is incomplete.
+    }
+
+    lastStatus = 502;
   }
 
   throw new Error(
-    `PDF AI response timed out or is temporarily unavailable (${lastStatus || 503}). Please retry once.`
+    `PDF response complete nahi ho saka (${lastStatus || 503}). Please retry once.`
   );
 }
 
@@ -137,11 +221,7 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as PdfStudyBody;
     const dataUrl = body.pdfDataUrl;
 
-    const rawPrompt =
-      typeof body.prompt === "string"
-        ? body.prompt.trim()
-        : "";
-
+    const rawPrompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
     if (rawPrompt.length > MAX_PROMPT_CHARS) {
       return NextResponse.json(
         { error: "PDF ke saath prompt bahut lamba hai. Use chhota karke bhejo." },
@@ -151,7 +231,7 @@ export async function POST(req: NextRequest) {
 
     const prompt =
       rawPrompt ||
-      "Is PDF ko student ke liye simple language me summarize karo, important points aur likely revision questions do.";
+      "Is PDF ko student ke liye simple language me summarize karo aur important revision points do.";
 
     const requestedCountMatch = rawPrompt.match(
       /\b(\d{1,2})\s*(?:mcq|mcqs|questions?|sawal|sawaal)\b/i
@@ -160,17 +240,12 @@ export async function POST(req: NextRequest) {
       ? Math.min(20, Math.max(1, Number(requestedCountMatch[1])))
       : null;
 
-    const completionRule = requestedCount
-      ? `Student ne exactly ${requestedCount} MCQ/questions maange hain. Exactly ${requestedCount} hi do, 1 se ${requestedCount} tak number karo. Har MCQ me A-D options aur Answer do. Summary concise rakho aur ${requestedCount} complete kiye bina response end mat karo.`
-      : "Student agar specific item/question count maange to exact count follow karo.";
-
     const language =
       typeof body.language === "string" && body.language.trim()
         ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
         : "Hinglish";
 
     const studentContext = normalizeStudyContext(body.studentContext);
-
     const requestedMode = body.mode;
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "notes";
@@ -193,10 +268,16 @@ export async function POST(req: NextRequest) {
     }
 
     const system = buildSystemPrompt(language, mode, studentContext);
-    const result = await studyPdfWithGemini({
+
+    const contract = requestedCount
+      ? `Exactly ${requestedCount} MCQs do. Summary short but complete rakho. Har MCQ me 4 options aur correct answer hona chahiye.`
+      : "Student ki request complete karo.";
+
+    const result = await callGeminiPdf({
       base64,
       system,
-      prompt: `Student request:\n${prompt}\n\nOutput contract:\n${completionRule}`,
+      requestedCount,
+      prompt: `Student request:\n${prompt}\n\nRequired output:\n${contract}`,
     });
 
     return NextResponse.json({
@@ -204,6 +285,7 @@ export async function POST(req: NextRequest) {
       provider: result.provider,
       model: result.model,
       directPdf: true,
+      structured: Boolean(requestedCount),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
