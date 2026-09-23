@@ -26,6 +26,72 @@ const MODES: { id: StudyMode; label: string; emoji: string }[] = [
   { id: "exam", label: "Exam Prep", emoji: "📚" },
 ];
 
+async function compressPhotoForUpload(file: File): Promise<string> {
+  const sourceUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Photo decode nahi ho pai."));
+      img.src = sourceUrl;
+    });
+
+    const maxDimension = 1600;
+    const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+    let width = Math.max(1, Math.round(image.naturalWidth * scale));
+    let height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Photo process nahi ho pai.");
+
+    let quality = 0.82;
+    let dataUrl = "";
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      canvas.width = width;
+      canvas.height = height;
+      context.clearRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+
+      // Keep JSON request comfortably below Vercel's function body ceiling.
+      if (dataUrl.length <= 3_200_000) break;
+
+      quality = Math.max(0.58, quality - 0.08);
+      width = Math.max(720, Math.round(width * 0.88));
+      height = Math.max(720, Math.round(height * 0.88));
+    }
+
+    if (!dataUrl || dataUrl.length > 3_600_000) {
+      throw new Error("Photo bahut badi hai. Thoda closer/cropped photo kheench kar try karo.");
+    }
+
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
+async function readApiJson(response: Response) {
+  const raw = await response.text();
+
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    if (response.status === 413) {
+      throw new Error("Upload size zyada hai. Chhoti photo/PDF ke saath dobara try karo.");
+    }
+
+    throw new Error(
+      response.ok
+        ? "Server response read nahi ho saka."
+        : `Server error (${response.status}). Thodi der baad dobara try karo.`
+    );
+  }
+}
+
 export default function Home() {
   const [language, setLanguage] = useState("Hinglish");
   const [studentContext, setStudentContext] = useState<StudyContext>("General");
@@ -132,30 +198,33 @@ export default function Home() {
     setPdfName("");
   }
 
-  function handlePhotoChange(file?: File) {
+  async function handlePhotoChange(file?: File) {
     if (!file) return;
 
-    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
-      setError("JPEG, PNG, WebP ya GIF image upload karo.");
+    if (!file.type.startsWith("image/")) {
+      setError("Photo/image file upload karo.");
       return;
     }
 
-    if (file.size > 8 * 1024 * 1024) {
-      setError("Photo 8 MB se chhoti honi chahiye.");
+    if (file.size > 12 * 1024 * 1024) {
+      setError("Source photo 12 MB se chhoti honi chahiye.");
       return;
     }
 
     setError("");
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : null;
-      setPhotoDataUrl(result);
-      setPhotoName(file.name);
+    setNotice("Photo optimize ho rahi hai…");
+
+    try {
+      const optimized = await compressPhotoForUpload(file);
+      setPhotoDataUrl(optimized);
+      setPhotoName(file.name || "camera-photo.jpg");
       setPdfDataUrl(null);
       setPdfName("");
-    };
-    reader.onerror = () => setError("Photo read nahi ho pai.");
-    reader.readAsDataURL(file);
+      setNotice("");
+    } catch (err) {
+      setNotice("");
+      setError(err instanceof Error ? err.message : "Photo process nahi ho pai.");
+    }
   }
 
   function handlePdfChange(file?: File) {
@@ -167,8 +236,8 @@ export default function Home() {
       return;
     }
 
-    if (file.size > 6 * 1024 * 1024) {
-      setError("PDF 6 MB se chhoti honi chahiye.");
+    if (file.size > 2.5 * 1024 * 1024) {
+      setError("PDF 2.5 MB se chhoti honi chahiye.");
       return;
     }
 
@@ -269,7 +338,7 @@ export default function Home() {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      const data = await readApiJson(response);
       if (!response.ok) throw new Error(data?.error || "AI response failed");
 
       const assistantMessage: Message = { role: "assistant", content: data.reply };
