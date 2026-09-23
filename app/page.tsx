@@ -275,7 +275,7 @@ export default function Home() {
     setNotice("Sample PDF load ho rahi hai…");
 
     try {
-      const response = await fetch("/genz-ai-test.pdf", { cache: "no-store" });
+      const response = await fetch("/api/sample-pdf", { cache: "no-store" });
       if (!response.ok) throw new Error("Sample PDF load nahi ho pai.");
 
       const bytes = new Uint8Array(await response.arrayBuffer());
