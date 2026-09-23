@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { callAI, ChatMessage } from "@/lib/ai-provider";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, StudyMode } from "@/lib/prompt";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,17 @@ const MAX_TOTAL_CHARS = 24000;
 const MAX_LANGUAGE_CHARS = 80;
 
 export async function POST(req: NextRequest) {
+  const rate = enforceRateLimit(req, "chat", 20, 10 * 60 * 1000);
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Thodi der me dobara try karo. Chat request limit temporarily reach ho gai hai." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rate.retryAfterSeconds) },
+      }
+    );
+  }
+
   try {
     const body = (await req.json()) as RequestBody;
 
