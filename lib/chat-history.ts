@@ -22,6 +22,46 @@ export async function getCurrentUser(): Promise<User | null> {
   return data.user ?? null;
 }
 
+export async function completeAuthFromUrl(): Promise<User | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase || typeof window === "undefined") return null;
+
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get("code");
+
+  if (code) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+
+    url.searchParams.delete("code");
+    window.history.replaceState({}, document.title, url.pathname + url.search);
+    return data.session?.user ?? null;
+  }
+
+  if (window.location.hash) {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = hash.get("access_token");
+    const refreshToken = hash.get("refresh_token");
+
+    if (accessToken && refreshToken) {
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+      if (error) throw error;
+
+      window.history.replaceState({}, document.title, url.pathname + url.search);
+      return data.session?.user ?? null;
+    }
+  }
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return session?.user ?? null;
+}
+
 const PRODUCTION_SITE_URL = "https://gen-z-ai-eta.vercel.app";
 
 export async function sendMagicLink(email: string) {
