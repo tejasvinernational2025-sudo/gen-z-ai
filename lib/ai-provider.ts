@@ -11,6 +11,12 @@ export type ProviderResult = {
   model: string;
 };
 
+const GEMINI_FALLBACK_MODELS = [
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+];
+
 function preferredProvider(): ProviderName {
   const configured = process.env.GENZ_AI_PROVIDER?.toLowerCase();
 
@@ -37,47 +43,73 @@ function collectGeminiText(data: any) {
     .trim();
 }
 
+function geminiModelChain() {
+  const primary = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  return [primary, ...GEMINI_FALLBACK_MODELS].filter(
+    (model, index, models) => models.indexOf(model) === index
+  );
+}
+
+function canFallbackGemini(status: number) {
+  return status === 404 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
 async function callGemini(system: string, messages: ChatMessage[]): Promise<ProviderResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
-
-  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
   const contents = messages.map((message) => ({
     role: message.role === "assistant" ? "model" : "user",
     parts: [{ text: message.content }],
   }));
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: system }],
-        },
-        contents,
-        generationConfig: {
-          maxOutputTokens: 1200,
-        },
-      }),
-    }
-  );
+  let lastStatus = 0;
+  let lastDetail = "";
 
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Gemini error (${response.status}): ${detail.slice(0, 300)}`);
+  for (const model of geminiModelChain()) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: system }],
+          },
+          contents,
+          generationConfig: {
+            maxOutputTokens: 1200,
+          },
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const text = collectGeminiText(data);
+      if (!text) {
+        lastStatus = 502;
+        lastDetail = "Gemini returned an empty response";
+        continue;
+      }
+
+      return { text, provider: "gemini", model };
+    }
+
+    lastStatus = response.status;
+    lastDetail = (await response.text()).slice(0, 300);
+
+    if (!canFallbackGemini(response.status)) {
+      throw new Error(`Gemini error (${response.status}): ${lastDetail}`);
+    }
   }
 
-  const data = await response.json();
-  const text = collectGeminiText(data);
-  if (!text) throw new Error("Gemini returned an empty response");
-
-  return { text, provider: "gemini", model };
+  throw new Error(
+    `Gemini models are temporarily busy/unavailable (${lastStatus || 503}). Please try again shortly.`
+  );
 }
 
 async function callDeepSeek(system: string, messages: ChatMessage[]): Promise<ProviderResult> {
