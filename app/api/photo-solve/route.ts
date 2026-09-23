@@ -44,6 +44,23 @@ function collectGeminiText(data: any) {
     .trim();
 }
 
+const GEMINI_VISION_FALLBACK_MODELS = [
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+];
+
+function geminiVisionModelChain() {
+  const primary = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  return [primary, ...GEMINI_VISION_FALLBACK_MODELS].filter(
+    (model, index, models) => models.indexOf(model) === index
+  );
+}
+
+function canFallbackGeminiVision(status: number) {
+  return status === 404 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
 async function solveWithGemini(args: {
   system: string;
   prompt: string;
@@ -53,50 +70,64 @@ async function solveWithGemini(args: {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
 
-  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: args.system }],
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: args.prompt },
-              {
-                inlineData: {
-                  mimeType: args.mime,
-                  data: args.base64,
-                },
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          maxOutputTokens: 1600,
-        },
-      }),
-    }
-  );
+  let lastStatus = 0;
 
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Gemini vision error (${response.status}): ${detail.slice(0, 300)}`);
+  for (const model of geminiVisionModelChain()) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: args.system }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: args.prompt },
+                {
+                  inlineData: {
+                    mimeType: args.mime,
+                    data: args.base64,
+                  },
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            maxOutputTokens: 1600,
+          },
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const reply = collectGeminiText(data);
+      if (!reply) {
+        lastStatus = 502;
+        continue;
+      }
+
+      return { reply, provider: "gemini", model };
+    }
+
+    lastStatus = response.status;
+    const detail = (await response.text()).slice(0, 300);
+
+    if (!canFallbackGeminiVision(response.status)) {
+      throw new Error(`Gemini vision error (${response.status}): ${detail}`);
+    }
   }
 
-  const data = await response.json();
-  const reply = collectGeminiText(data);
-  if (!reply) throw new Error("Gemini vision returned an empty response");
-
-  return { reply, provider: "gemini", model };
+  throw new Error(
+    `Gemini vision models are temporarily busy/unavailable (${lastStatus || 503}). Please try again shortly.`
+  );
 }
 
 async function solveWithDeepSeek(args: {
