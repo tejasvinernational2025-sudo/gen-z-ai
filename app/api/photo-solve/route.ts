@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -147,6 +148,17 @@ async function solveWithDeepSeek(args: {
 }
 
 export async function POST(req: NextRequest) {
+  const rate = enforceRateLimit(req, "photo", 8, 30 * 60 * 1000);
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Photo Solve ki temporary limit reach ho gai hai. Thodi der baad try karo." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rate.retryAfterSeconds) },
+      }
+    );
+  }
+
   try {
     const body = (await req.json()) as PhotoSolveBody;
 
