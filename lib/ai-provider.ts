@@ -1,4 +1,4 @@
-export type ProviderName = "gemini" | "deepseek" | "openai" | "claude";
+export type ProviderName = "groq" | "gemini" | "deepseek" | "openai" | "claude";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -20,11 +20,13 @@ const GEMINI_CHAT_TIMEOUT_MS = 8_000;
 function preferredProvider(): ProviderName {
   const configured = process.env.GENZ_AI_PROVIDER?.toLowerCase();
 
+  if (configured === "groq" && process.env.GROQ_API_KEY) return "groq";
   if (configured === "gemini" && process.env.GEMINI_API_KEY) return "gemini";
   if (configured === "openai" && process.env.OPENAI_API_KEY) return "openai";
   if (configured === "claude" && process.env.ANTHROPIC_API_KEY) return "claude";
   if (configured === "deepseek" && process.env.DEEPSEEK_API_KEY) return "deepseek";
 
+  if (process.env.GROQ_API_KEY) return "groq";
   if (process.env.GEMINI_API_KEY) return "gemini";
   if (process.env.DEEPSEEK_API_KEY) return "deepseek";
   if (process.env.OPENAI_API_KEY) return "openai";
@@ -124,6 +126,45 @@ async function callGemini(system: string, messages: ChatMessage[]): Promise<Prov
   );
 }
 
+
+async function callGroq(system: string, messages: ChatMessage[]): Promise<ProviderResult> {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY is not configured");
+
+  const model = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
+
+  let response: Response;
+  try {
+    response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      signal: AbortSignal.timeout(8_000),
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "system", content: system }, ...messages],
+        max_completion_tokens: 900,
+        temperature: 0.4,
+      }),
+    });
+  } catch {
+    throw new Error("Groq request timed out. Please retry.");
+  }
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Groq error (${response.status}): ${detail.slice(0, 300)}`);
+  }
+
+  const data = await response.json();
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("Groq returned an empty response");
+
+  return { text, provider: "groq", model };
+}
+
 async function callDeepSeek(system: string, messages: ChatMessage[]): Promise<ProviderResult> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) throw new Error("DEEPSEEK_API_KEY is not configured");
@@ -218,8 +259,13 @@ async function callClaude(system: string, messages: ChatMessage[]): Promise<Prov
 }
 
 export async function callAI(system: string, messages: ChatMessage[]) {
+  // Text tutoring prefers Groq when configured for lower latency.
+  // Photo/PDF routes use their own Gemini multimodal path and are unaffected.
+  if (process.env.GROQ_API_KEY) return callGroq(system, messages);
+
   const provider = preferredProvider();
 
+  if (provider === "groq") return callGroq(system, messages);
   if (provider === "gemini") return callGemini(system, messages);
   if (provider === "openai") return callOpenAI(system, messages);
   if (provider === "claude") return callClaude(system, messages);
