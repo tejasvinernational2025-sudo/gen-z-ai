@@ -7,6 +7,7 @@ import { STUDY_CONTEXTS, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
+  completeAuthFromUrl,
   getCurrentUser,
   listConversations,
   loadConversation,
@@ -120,12 +121,39 @@ export default function Home() {
     setSupabaseReady(Boolean(supabase));
     if (!supabase) return;
 
-    getCurrentUser().then(setUser).catch(() => setUser(null));
+    let active = true;
+
+    (async () => {
+      try {
+        const callbackUser = await completeAuthFromUrl();
+        if (active && callbackUser) {
+          setUser(callbackUser);
+          setNotice("Sign in successful. Chat history on hai.");
+          return;
+        }
+
+        const currentUser = await getCurrentUser();
+        if (active) setUser(currentUser);
+      } catch (err) {
+        if (active) {
+          setUser(null);
+          setNotice(
+            err instanceof Error
+              ? `Login complete nahi hua: ${err.message}`
+              : "Login complete nahi hua."
+          );
+        }
+      }
+    })();
+
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (active) setUser(session?.user ?? null);
     });
 
-    return () => data.subscription.unsubscribe();
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
