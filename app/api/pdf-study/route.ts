@@ -52,8 +52,16 @@ function formatStructured(result: StructuredPdfResult, requestedCount: number) {
   if (!summary || mcqs.length !== requestedCount) return null;
 
   const blocks = mcqs.map((mcq, index) => {
-    const options = Array.isArray(mcq.options) ? mcq.options.slice(0, 4) : [];
+    const options = Array.isArray(mcq.options)
+      ? mcq.options.slice(0, 4).map((option) =>
+          String(option).replace(/^\s*[A-D][.)\-:]\s*/i, "").trim()
+        )
+      : [];
     if (!mcq.question || !mcq.answer || options.length !== 4) return null;
+
+    const cleanAnswer = String(mcq.answer)
+      .replace(/^\s*Answer\s*:\s*/i, "")
+      .trim();
 
     return [
       `${index + 1}. ${mcq.question}`,
@@ -61,7 +69,7 @@ function formatStructured(result: StructuredPdfResult, requestedCount: number) {
       `B. ${options[1]}`,
       `C. ${options[2]}`,
       `D. ${options[3]}`,
-      `Answer: ${mcq.answer}`,
+      `Answer: ${cleanAnswer}`,
     ].join("\n");
   });
 
