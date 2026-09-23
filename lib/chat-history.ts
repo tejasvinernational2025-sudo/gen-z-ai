@@ -22,14 +22,21 @@ export async function getCurrentUser(): Promise<User | null> {
   return data.user ?? null;
 }
 
+const PRODUCTION_SITE_URL = "https://gen-z-ai-eta.vercel.app";
+
 export async function sendMagicLink(email: string) {
   const supabase = getSupabaseClient();
   if (!supabase) throw new Error("Supabase is not configured yet.");
 
+  const redirectTo =
+    typeof window !== "undefined" && window.location.origin.startsWith("https://")
+      ? window.location.origin
+      : PRODUCTION_SITE_URL;
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+      emailRedirectTo: redirectTo,
     },
   });
 
