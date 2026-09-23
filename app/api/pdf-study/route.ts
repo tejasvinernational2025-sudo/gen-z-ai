@@ -29,7 +29,7 @@ const MAX_PDF_BYTES = Math.floor(2.5 * 1024 * 1024);
 const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
 const GEMINI_TIMEOUT_MS = 12_000;
-const PDF_MODELS = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
+const PDF_MODELS = ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"];
 
 function collectGeminiText(data: any) {
   const parts = data?.candidates?.[0]?.content?.parts;
