@@ -238,34 +238,29 @@ export default function Home() {
     }
 
     try {
-      // Android browsers/file pickers sometimes report PDFs as application/octet-stream
-      // or leave the MIME type blank. Verify the actual PDF signature instead.
-      const headerBuffer = await file.slice(0, 5).arrayBuffer();
-      const header = new TextDecoder().decode(headerBuffer);
-      const looksLikePdf =
-        file.type === "application/pdf" ||
-        file.name.toLowerCase().endsWith(".pdf") ||
-        header === "%PDF-";
+      const bytes = new Uint8Array(await file.arrayBuffer());
 
-      if (!looksLikePdf) {
-        setError("Sirf PDF file upload karo.");
+      // Trust the file content, not Android's MIME type or display name.
+      const isPdf =
+        bytes.length >= 5 &&
+        bytes[0] === 0x25 && // %
+        bytes[1] === 0x50 && // P
+        bytes[2] === 0x44 && // D
+        bytes[3] === 0x46 && // F
+        bytes[4] === 0x2d;   // -
+
+      if (!isPdf) {
+        setError("Ye file valid PDF nahi lag rahi. Downloaded .pdf file select karo.");
         return;
       }
 
-      const result = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () =>
-          resolve(typeof reader.result === "string" ? reader.result : "");
-        reader.onerror = () => reject(new Error("PDF read nahi ho pai."));
-        reader.readAsDataURL(file);
-      });
-
-      const base64 = result.split(",", 2)[1];
-      if (!base64) {
-        setError("PDF read nahi ho pai.");
-        return;
+      let binary = "";
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
       }
 
+      const base64 = btoa(binary);
       setPdfDataUrl(`data:application/pdf;base64,${base64}`);
       setPdfName(file.name || "study.pdf");
       setPhotoDataUrl(null);
@@ -567,8 +562,8 @@ export default function Home() {
               id="pdf-upload"
               className="fileInput"
               type="file"
-              accept="application/pdf,application/octet-stream,.pdf"
-              onChange={(e) => handlePdfChange(e.target.files?.[0])}
+              accept=".pdf,application/pdf,*/*"
+              onChange={async (e) => { const file = e.target.files?.[0]; await handlePdfChange(file); e.currentTarget.value = ""; }}
             />
             {user ? <span>☁️ History on</span> : <span>👤 Guest mode</span>}
           </div>
