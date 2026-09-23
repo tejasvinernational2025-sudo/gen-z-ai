@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { CanvasFactory } from "pdf-parse/worker";
-import { PDFParse } from "pdf-parse";
-import { callAI } from "@/lib/ai-provider";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -18,9 +15,102 @@ type PdfStudyBody = {
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
 const MAX_PDF_BYTES = Math.floor(2.5 * 1024 * 1024);
-const MAX_EXTRACTED_CHARS = 50000;
 const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
+
+const GEMINI_PDF_FALLBACK_MODELS = [
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+];
+
+function collectGeminiText(data: any) {
+  const parts = data?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+  return parts
+    .map((part: { text?: string }) => (typeof part?.text === "string" ? part.text : ""))
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+function geminiPdfModelChain() {
+  const primary = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  return [primary, ...GEMINI_PDF_FALLBACK_MODELS].filter(
+    (model, index, models) => models.indexOf(model) === index
+  );
+}
+
+function canFallbackGemini(status: number) {
+  return status === 404 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+async function studyPdfWithGemini(args: {
+  base64: string;
+  prompt: string;
+  system: string;
+}) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
+
+  let lastStatus = 0;
+
+  for (const model of geminiPdfModelChain()) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: args.system }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: args.prompt },
+                {
+                  inlineData: {
+                    mimeType: "application/pdf",
+                    data: args.base64,
+                  },
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            maxOutputTokens: 1100,
+          },
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const reply = collectGeminiText(data);
+      if (!reply) {
+        lastStatus = 502;
+        continue;
+      }
+      return { reply, provider: "gemini", model };
+    }
+
+    lastStatus = response.status;
+    const detail = (await response.text()).slice(0, 300);
+
+    if (!canFallbackGemini(response.status)) {
+      throw new Error(`Gemini PDF error (${response.status}): ${detail}`);
+    }
+  }
+
+  throw new Error(
+    `Gemini PDF models are temporarily busy/unavailable (${lastStatus || 503}). Please try again shortly.`
+  );
+}
 
 export async function POST(req: NextRequest) {
   const rate = enforceRateLimit(req, "pdf", 6, 30 * 60 * 1000);
@@ -62,8 +152,8 @@ export async function POST(req: NextRequest) {
       : null;
 
     const completionRule = requestedCount
-      ? `The student explicitly requested ${requestedCount} questions/MCQs. Produce exactly ${requestedCount}, numbered 1 through ${requestedCount}. Complete all ${requestedCount} before ending the response. Keep the summary concise so the required count always fits. Each MCQ must have options A-D and a clearly labeled answer.`
-      : "If the student asks for a specific number of items, questions or MCQs, obey that count exactly and keep earlier sections concise enough to complete the full requested list.";
+      ? `Student ne exactly ${requestedCount} MCQ/questions maange hain. Exactly ${requestedCount} hi do, 1 se ${requestedCount} tak number karo. Har MCQ me A-D options aur Answer do. Summary concise rakho aur ${requestedCount} complete kiye bina response end mat karo.`
+      : "Student agar specific item/question count maange to exact count follow karo.";
 
     const language =
       typeof body.language === "string" && body.language.trim()
@@ -93,49 +183,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "PDF 2.5 MB se chhoti honi chahiye." }, { status: 413 });
     }
 
-    const buffer = Buffer.from(base64, "base64");
-    if (buffer.byteLength > MAX_PDF_BYTES) {
-      return NextResponse.json({ error: "PDF 2.5 MB se chhoti honi chahiye." }, { status: 413 });
-    }
-
-    const parser = new PDFParse({ data: new Uint8Array(buffer), CanvasFactory });
-
-    let extractedText = "";
-    try {
-      const result = await parser.getText();
-      extractedText = result.text?.trim() || "";
-    } finally {
-      await parser.destroy();
-    }
-
-    if (!extractedText) {
-      return NextResponse.json(
-        { error: "PDF me readable text nahi mila. Scanned PDF ke liye Photo Solve use karo." },
-        { status: 422 }
-      );
-    }
-
-    const truncated = extractedText.length > MAX_EXTRACTED_CHARS;
-    const studyText = extractedText.slice(0, MAX_EXTRACTED_CHARS);
-
     const system = buildSystemPrompt(language, mode, studentContext);
-    const result = await callAI(system, [
-      {
-        role: "user",
-        content:
-          `Student request:\n${prompt}\n\nOutput contract:\n${completionRule}\n\nPDF text:\n${studyText}` +
-          (truncated
-            ? "\n\nNote: PDF was long, so this MVP analyzed the first extracted section only."
-            : ""),
-      },
-    ]);
+    const result = await studyPdfWithGemini({
+      base64,
+      system,
+      prompt: `Student request:\n${prompt}\n\nOutput contract:\n${completionRule}`,
+    });
 
     return NextResponse.json({
-      reply: result.text,
+      reply: result.reply,
       provider: result.provider,
       model: result.model,
-      truncated,
-      extractedCharacters: studyText.length,
+      directPdf: true,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
