@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CanvasFactory } from "pdf-parse/worker";
 import { PDFParse } from "pdf-parse";
 import { callAI } from "@/lib/ai-provider";
 import { normalizeStudyContext } from "@/lib/study-contexts";
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "PDF 2.5 MB se chhoti honi chahiye." }, { status: 413 });
     }
 
-    const parser = new PDFParse({ data: new Uint8Array(buffer) });
+    const parser = new PDFParse({ data: new Uint8Array(buffer), CanvasFactory });
 
     let extractedText = "";
     try {
