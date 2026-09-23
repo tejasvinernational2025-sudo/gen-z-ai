@@ -87,44 +87,38 @@ async function callGeminiPdf(args: {
     };
 
     if (args.requestedCount) {
-      generationConfig.responseFormat = {
-        text: {
-          mimeType: "application/json",
-          schema: {
-            type: "object",
-            properties: {
-              summary: {
-                type: "string",
-                description: "A concise complete summary in the requested student language.",
-              },
-              mcqs: {
-                type: "array",
-                minItems: args.requestedCount,
-                maxItems: args.requestedCount,
-                items: {
-                  type: "object",
-                  properties: {
-                    question: { type: "string" },
-                    options: {
-                      type: "array",
-                      minItems: 4,
-                      maxItems: 4,
-                      items: { type: "string" },
-                    },
-                    answer: {
-                      type: "string",
-                      description: "Correct option letter and answer text.",
-                    },
-                  },
-                  required: ["question", "options", "answer"],
-                  additionalProperties: false,
+      generationConfig.responseMimeType = "application/json";
+      generationConfig.responseSchema = {
+        type: "OBJECT",
+        properties: {
+          summary: {
+            type: "STRING",
+            description: "A concise complete summary in the requested student language.",
+          },
+          mcqs: {
+            type: "ARRAY",
+            minItems: args.requestedCount,
+            maxItems: args.requestedCount,
+            items: {
+              type: "OBJECT",
+              properties: {
+                question: { type: "STRING" },
+                options: {
+                  type: "ARRAY",
+                  minItems: 4,
+                  maxItems: 4,
+                  items: { type: "STRING" },
+                },
+                answer: {
+                  type: "STRING",
+                  description: "Correct option letter and answer text.",
                 },
               },
+              required: ["question", "options", "answer"],
             },
-            required: ["summary", "mcqs"],
-            additionalProperties: false,
           },
         },
+        required: ["summary", "mcqs"],
       };
     }
 
