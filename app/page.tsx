@@ -111,6 +111,7 @@ export default function Home() {
   const [supabaseReady, setSupabaseReady] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
+  const [authCooldown, setAuthCooldown] = useState(0);
   const [notice, setNotice] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<SavedConversation[]>([]);
@@ -157,6 +158,16 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (authCooldown <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setAuthCooldown((value) => Math.max(0, value - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [authCooldown]);
+
+  useEffect(() => {
     if (!user) {
       setHistory([]);
       return;
@@ -185,10 +196,17 @@ export default function Home() {
     setNotice("");
     try {
       await sendMagicLink(email);
-      setNotice("Login link email par bhej diya gaya hai.");
+      setAuthCooldown(60);
+      setNotice("Login link email par bhej diya gaya hai. 60 sec tak resend mat karo.");
       setAuthOpen(false);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Login start nahi ho saka.");
+      const message = err instanceof Error ? err.message : "Login start nahi ho saka.";
+      if (/rate limit/i.test(message)) {
+        setAuthCooldown(60);
+        setNotice("Email rate limit hit ho gai hai. Thoda wait karke dobara try karo.");
+      } else {
+        setNotice(message);
+      }
     }
   }
 
@@ -486,7 +504,7 @@ export default function Home() {
             placeholder="student@example.com"
             required
           />
-          <button type="submit">Send link</button>
+          <button type="submit" disabled={authCooldown > 0}>{authCooldown > 0 ? `Wait ${authCooldown}s` : "Send link"}</button>
         </form>
       )}
 
