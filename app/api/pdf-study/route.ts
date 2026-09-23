@@ -16,7 +16,7 @@ type PdfStudyBody = {
 };
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
-const MAX_PDF_BYTES = 6 * 1024 * 1024;
+const MAX_PDF_BYTES = Math.floor(2.5 * 1024 * 1024);
 const MAX_EXTRACTED_CHARS = 50000;
 const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
@@ -78,12 +78,12 @@ export async function POST(req: NextRequest) {
       (base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0);
 
     if (estimatedBytes > MAX_PDF_BYTES) {
-      return NextResponse.json({ error: "PDF 6 MB se chhoti honi chahiye." }, { status: 413 });
+      return NextResponse.json({ error: "PDF 2.5 MB se chhoti honi chahiye." }, { status: 413 });
     }
 
     const buffer = Buffer.from(base64, "base64");
     if (buffer.byteLength > MAX_PDF_BYTES) {
-      return NextResponse.json({ error: "PDF 6 MB se chhoti honi chahiye." }, { status: 413 });
+      return NextResponse.json({ error: "PDF 2.5 MB se chhoti honi chahiye." }, { status: 413 });
     }
 
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
