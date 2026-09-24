@@ -98,6 +98,28 @@ export async function sendMagicLink(email: string) {
   if (error) throw error;
 }
 
+export async function signInWithGoogle() {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Supabase is not configured yet.");
+  if (typeof window === "undefined") return;
+
+  const redirectTo = window.location.origin.startsWith("https://")
+    ? window.location.origin
+    : PRODUCTION_SITE_URL;
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo,
+      queryParams: {
+        prompt: "select_account",
+      },
+    },
+  });
+
+  if (error) throw error;
+}
+
 export async function signOutUser() {
   const supabase = getSupabaseClient();
   if (!supabase) return;
