@@ -18,8 +18,12 @@ export type SavedMessage = {
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = getSupabaseClient();
   if (!supabase) return null;
-  const { data } = await supabase.auth.getUser();
-  return data.user ?? null;
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return session?.user ?? null;
 }
 
 export async function completeAuthFromUrl(): Promise<User | null> {
@@ -27,6 +31,21 @@ export async function completeAuthFromUrl(): Promise<User | null> {
   if (!supabase || typeof window === "undefined") return null;
 
   const url = new URL(window.location.href);
+
+  // Supabase may already have auto-detected and exchanged the callback.
+  // Prefer that persisted session first to avoid exchanging a one-time code twice.
+  const {
+    data: { session: existingSession },
+  } = await supabase.auth.getSession();
+
+  if (existingSession?.user) {
+    if (url.searchParams.has("code") || window.location.hash) {
+      url.searchParams.delete("code");
+      window.history.replaceState({}, document.title, url.pathname + url.search);
+    }
+    return existingSession.user;
+  }
+
   const code = url.searchParams.get("code");
 
   if (code) {
@@ -55,11 +74,7 @@ export async function completeAuthFromUrl(): Promise<User | null> {
     }
   }
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  return session?.user ?? null;
+  return null;
 }
 
 const PRODUCTION_SITE_URL = "https://gen-z-ai-eta.vercel.app";
