@@ -13,6 +13,7 @@ import {
   loadConversation,
   saveTurn,
   sendMagicLink,
+  signInWithGoogle,
   signOutUser,
   type SavedConversation,
 } from "@/lib/chat-history";
@@ -187,6 +188,19 @@ export default function Home() {
     if (mode === "exam") return "Exam + subject + topic likho...";
     return "Kuch bhi pucho — Hindi, Hinglish ya apni language me...";
   }, [mode, photoDataUrl, pdfDataUrl]);
+
+  async function handleGoogleSignIn() {
+    setNotice("");
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      setNotice(
+        err instanceof Error
+          ? `Google sign-in start nahi hua: ${err.message}`
+          : "Google sign-in start nahi hua."
+      );
+    }
+  }
 
   async function submitLogin(e: FormEvent) {
     e.preventDefault();
@@ -495,8 +509,10 @@ export default function Home() {
         <form className="authPanel" onSubmit={submitLogin}>
           <div>
             <strong>Save your chats</strong>
-            <span>Email par secure login link milega.</span>
+            <span>Google se fast sign in karo, ya email link use karo.</span>
           </div>
+          <button type="button" onClick={handleGoogleSignIn}>Continue with Google</button>
+          <span className="authDivider">or</span>
           <input
             type="email"
             value={authEmail}
@@ -504,7 +520,7 @@ export default function Home() {
             placeholder="student@example.com"
             required
           />
-          <button type="submit" disabled={authCooldown > 0}>{authCooldown > 0 ? `Wait ${authCooldown}s` : "Send link"}</button>
+          <button type="submit" disabled={authCooldown > 0}>{authCooldown > 0 ? `Wait ${authCooldown}s` : "Send email link"}</button>
         </form>
       )}
 
