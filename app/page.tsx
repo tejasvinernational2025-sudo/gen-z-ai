@@ -438,11 +438,12 @@ export default function Home() {
       let finalReply = "";
 
       const contentType = response.headers.get("content-type") || "";
+      const streamHeader = response.headers.get("x-genz-stream");
       const isStreamingChat =
         endpoint === "/api/chat" &&
         response.ok &&
-        contentType.startsWith("text/plain") &&
-        Boolean(response.body);
+        Boolean(response.body) &&
+        (streamHeader === "1" || contentType.startsWith("text/plain"));
 
       if (isStreamingChat) {
         setMessages((current) => [...current, { role: "assistant", content: "" }]);
