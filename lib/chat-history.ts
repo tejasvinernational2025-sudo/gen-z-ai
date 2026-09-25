@@ -15,6 +15,17 @@ export type SavedMessage = {
   content: string;
 };
 
+export async function getAccessToken(): Promise<string | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return session?.access_token ?? null;
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = getSupabaseClient();
   if (!supabase) return null;
