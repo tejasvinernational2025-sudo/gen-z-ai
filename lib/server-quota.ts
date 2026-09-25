@@ -65,7 +65,7 @@ export async function consumePersistentQuota(
   return result;
 }
 
-export function quotaHeaders(quota: QuotaResult | null) {
+export function quotaHeaders(quota: QuotaResult | null): Record<string, string> {
   if (!quota) return {};
 
   return {
