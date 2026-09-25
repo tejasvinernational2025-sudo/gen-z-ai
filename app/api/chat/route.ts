@@ -83,6 +83,89 @@ export async function POST(req: NextRequest) {
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "chat";
 
     const system = buildSystemPrompt(language, mode, studentContext);
+
+    // Stream Groq text replies so the student sees the answer immediately.
+    if (process.env.GROQ_API_KEY) {
+      const model = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
+      const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "system", content: system }, ...messages],
+          max_completion_tokens: 900,
+          temperature: 0.4,
+          stream: true,
+        }),
+      });
+
+      if (!groqResponse.ok || !groqResponse.body) {
+        const detail = await groqResponse.text();
+        return NextResponse.json(
+          { error: `Groq error (${groqResponse.status}): ${detail.slice(0, 300)}` },
+          { status: groqResponse.status || 500 }
+        );
+      }
+
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          const reader = groqResponse.body!.getReader();
+          let buffer = "";
+
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const rawLine of lines) {
+                const line = rawLine.trim();
+                if (!line.startsWith("data:")) continue;
+
+                const payload = line.slice(5).trim();
+                if (!payload || payload === "[DONE]") continue;
+
+                try {
+                  const event = JSON.parse(payload);
+                  const token = event?.choices?.[0]?.delta?.content;
+                  if (typeof token === "string" && token) {
+                    controller.enqueue(encoder.encode(token));
+                  }
+                } catch {
+                  // Ignore malformed SSE fragments and continue streaming.
+                }
+              }
+            }
+
+            controller.close();
+          } catch (error) {
+            controller.error(error);
+          } finally {
+            reader.releaseLock();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "X-Accel-Buffering": "no",
+          "X-AI-Provider": "groq",
+          "X-AI-Model": model,
+        },
+      });
+    }
+
     const result = await callAI(system, messages);
 
     return NextResponse.json({
