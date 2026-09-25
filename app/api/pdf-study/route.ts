@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import {
+  consumePersistentQuota,
+  quotaExceededMessage,
+  quotaHeaders,
+} from "@/lib/server-quota";
 
 export const runtime = "nodejs";
 
@@ -385,6 +390,14 @@ export async function POST(req: NextRequest) {
 
     const system = buildSystemPrompt(language, mode, studentContext);
 
+    const quota = await consumePersistentQuota(req, "pdf");
+    if (quota && !quota.allowed) {
+      return NextResponse.json(
+        { error: quotaExceededMessage(quota) },
+        { status: 429, headers: quotaHeaders(quota) }
+      );
+    }
+
     const contract = requestedCount
       ? `Exactly ${requestedCount} MCQs do. Summary short but complete rakho. Har MCQ me 4 options aur correct answer hona chahiye.`
       : "Student ki request complete karo.";
@@ -404,13 +417,16 @@ export async function POST(req: NextRequest) {
           });
 
           if (groq) {
-            return NextResponse.json({
-              reply: groq.reply,
-              provider: groq.provider,
-              model: groq.model,
-              directPdf: false,
-              structured: Boolean(requestedCount),
-            });
+            return NextResponse.json(
+              {
+                reply: groq.reply,
+                provider: groq.provider,
+                model: groq.model,
+                directPdf: false,
+                structured: Boolean(requestedCount),
+              },
+              { headers: quotaHeaders(quota) }
+            );
           }
         }
       } catch (groqError) {
@@ -427,13 +443,16 @@ export async function POST(req: NextRequest) {
       prompt: modelPrompt,
     });
 
-    return NextResponse.json({
-      reply: result.reply,
-      provider: result.provider,
-      model: result.model,
-      directPdf: true,
-      structured: Boolean(requestedCount),
-    });
+    return NextResponse.json(
+      {
+        reply: result.reply,
+        provider: result.provider,
+        model: result.model,
+        directPdf: true,
+        structured: Boolean(requestedCount),
+      },
+      { headers: quotaHeaders(quota) }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
