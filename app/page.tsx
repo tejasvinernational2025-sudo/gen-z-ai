@@ -8,6 +8,7 @@ import type { StudyMode } from "@/lib/prompt";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   completeAuthFromUrl,
+  getAccessToken,
   getCurrentUser,
   listConversations,
   loadConversation,
@@ -429,9 +430,14 @@ export default function Home() {
           ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode, studentContext }
           : { messages: nextMessages, language, mode, studentContext };
 
+      const accessToken = user ? await getAccessToken() : null;
+
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
         body: JSON.stringify(requestBody),
       });
 
