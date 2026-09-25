@@ -1,3 +1,4 @@
+import { CanvasFactory } from "pdf-parse/worker";
 import { PDFParse } from "pdf-parse";
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeStudyContext } from "@/lib/study-contexts";
@@ -81,7 +82,10 @@ function formatStructured(result: StructuredPdfResult, requestedCount: number) {
 }
 
 async function extractPdfText(base64: string) {
-  const parser = new PDFParse({ data: Buffer.from(base64, "base64") });
+  const parser = new PDFParse({
+    data: new Uint8Array(Buffer.from(base64, "base64")),
+    CanvasFactory,
+  });
 
   try {
     const result = await parser.getText();
