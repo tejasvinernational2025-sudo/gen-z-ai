@@ -435,11 +435,51 @@ export default function Home() {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await readApiJson(response);
-      if (!response.ok) throw new Error(data?.error || "AI response failed");
+      let finalReply = "";
 
-      const assistantMessage: Message = { role: "assistant", content: data.reply };
-      setMessages((current) => [...current, assistantMessage]);
+      const contentType = response.headers.get("content-type") || "";
+      const isStreamingChat =
+        endpoint === "/api/chat" &&
+        response.ok &&
+        contentType.startsWith("text/plain") &&
+        Boolean(response.body);
+
+      if (isStreamingChat) {
+        setMessages((current) => [...current, { role: "assistant", content: "" }]);
+
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          finalReply += decoder.decode(value, { stream: true });
+
+          setMessages((current) => {
+            const updated = [...current];
+            const lastIndex = updated.length - 1;
+            if (lastIndex >= 0 && updated[lastIndex].role === "assistant") {
+              updated[lastIndex] = { role: "assistant", content: finalReply };
+            }
+            return updated;
+          });
+        }
+
+        finalReply += decoder.decode();
+
+        if (!finalReply.trim()) {
+          throw new Error("AI ne empty response diya. Dobara try karo.");
+        }
+      } else {
+        const data = await readApiJson(response);
+        if (!response.ok) throw new Error(data?.error || "AI response failed");
+
+        finalReply = data.reply;
+        const assistantMessage: Message = { role: "assistant", content: finalReply };
+        setMessages((current) => [...current, assistantMessage]);
+      }
+
       setPhotoDataUrl(null);
       setPhotoName("");
 
@@ -452,7 +492,7 @@ export default function Home() {
             language,
             studentContext,
             userText: visibleText,
-            assistantText: data.reply,
+            assistantText: finalReply,
           });
           if (id) setConversationId(id);
           await refreshHistory();
