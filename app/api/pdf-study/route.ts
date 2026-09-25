@@ -1,3 +1,4 @@
+import { PDFParse } from "pdf-parse";
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
@@ -28,6 +29,7 @@ const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "e
 const MAX_PDF_BYTES = Math.floor(2.5 * 1024 * 1024);
 const MAX_PROMPT_CHARS = 4000;
 const MAX_LANGUAGE_CHARS = 80;
+const MAX_EXTRACTED_PDF_CHARS = 50_000;
 const GEMINI_TIMEOUT_MS = 12_000;
 const PDF_MODELS = ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"];
 
@@ -76,6 +78,114 @@ function formatStructured(result: StructuredPdfResult, requestedCount: number) {
   if (blocks.some((item) => item === null)) return null;
 
   return `PDF Summary\n\n${summary}\n\nMCQs\n\n${blocks.join("\n\n")}`;
+}
+
+async function extractPdfText(base64: string) {
+  const parser = new PDFParse({ data: Buffer.from(base64, "base64") });
+
+  try {
+    const result = await parser.getText();
+    return String(result.text || "")
+      .replace(/\u0000/g, "")
+      .replace(/[ \t]+\n/g, "\n")
+      .trim()
+      .slice(0, MAX_EXTRACTED_PDF_CHARS);
+  } finally {
+    await parser.destroy();
+  }
+}
+
+async function callGroqPdf(args: {
+  text: string;
+  prompt: string;
+  system: string;
+  requestedCount: number | null;
+}) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return null;
+
+  const model = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
+
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: args.system },
+      {
+        role: "user",
+        content: `${args.prompt}\n\nPDF TEXT:\n${args.text}`,
+      },
+    ],
+    reasoning_effort: "low",
+    temperature: 0.3,
+    max_completion_tokens: args.requestedCount ? 1800 : 1100,
+  };
+
+  if (args.requestedCount) {
+    body.response_format = {
+      type: "json_schema",
+      json_schema: {
+        name: "pdf_study_result",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            summary: { type: "string" },
+            mcqs: {
+              type: "array",
+              minItems: args.requestedCount,
+              maxItems: args.requestedCount,
+              items: {
+                type: "object",
+                properties: {
+                  question: { type: "string" },
+                  options: {
+                    type: "array",
+                    minItems: 4,
+                    maxItems: 4,
+                    items: { type: "string" },
+                  },
+                  answer: { type: "string" },
+                },
+                required: ["question", "options", "answer"],
+                additionalProperties: false,
+              },
+            },
+          },
+          required: ["summary", "mcqs"],
+          additionalProperties: false,
+        },
+      },
+    };
+  }
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    signal: AbortSignal.timeout(15_000),
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Groq PDF error (${response.status}): ${detail.slice(0, 300)}`);
+  }
+
+  const data = await response.json();
+  const raw = data?.choices?.[0]?.message?.content;
+  if (!raw) throw new Error("Groq PDF returned an empty response");
+
+  if (!args.requestedCount) {
+    return { reply: raw, provider: "groq", model };
+  }
+
+  const parsed = JSON.parse(raw) as StructuredPdfResult;
+  const formatted = formatStructured(parsed, args.requestedCount);
+  if (!formatted) throw new Error("Groq PDF structured response incomplete");
+
+  return { reply: formatted, provider: "groq", model };
 }
 
 async function callGeminiPdf(args: {
@@ -275,11 +385,42 @@ export async function POST(req: NextRequest) {
       ? `Exactly ${requestedCount} MCQs do. Summary short but complete rakho. Har MCQ me 4 options aur correct answer hona chahiye.`
       : "Student ki request complete karo.";
 
+    const modelPrompt = `Student request:\n${prompt}\n\nRequired output:\n${contract}`;
+
+    if (process.env.GROQ_API_KEY) {
+      try {
+        const extractedText = await extractPdfText(base64);
+
+        if (extractedText) {
+          const groq = await callGroqPdf({
+            text: extractedText,
+            system,
+            requestedCount,
+            prompt: modelPrompt,
+          });
+
+          if (groq) {
+            return NextResponse.json({
+              reply: groq.reply,
+              provider: groq.provider,
+              model: groq.model,
+              directPdf: false,
+              structured: Boolean(requestedCount),
+            });
+          }
+        }
+      } catch (groqError) {
+        // Some scanned or malformed PDFs cannot be text-extracted.
+        // Fall through to Gemini's native PDF input when configured.
+        if (!process.env.GEMINI_API_KEY) throw groqError;
+      }
+    }
+
     const result = await callGeminiPdf({
       base64,
       system,
       requestedCount,
-      prompt: `Student request:\n${prompt}\n\nRequired output:\n${contract}`,
+      prompt: modelPrompt,
     });
 
     return NextResponse.json({
