@@ -162,6 +162,7 @@ export async function POST(req: NextRequest) {
           "X-Accel-Buffering": "no",
           "X-AI-Provider": "groq",
           "X-AI-Model": model,
+          "X-GenZ-Stream": "1",
         },
       });
     }
