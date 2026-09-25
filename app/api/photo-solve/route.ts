@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import {
+  consumePersistentQuota,
+  quotaExceededMessage,
+  quotaHeaders,
+} from "@/lib/server-quota";
 
 export const runtime = "nodejs";
 
@@ -287,13 +292,21 @@ export async function POST(req: NextRequest) {
 
     const system = buildSystemPrompt(language, mode, studentContext);
 
+    const quota = await consumePersistentQuota(req, "photo");
+    if (quota && !quota.allowed) {
+      return NextResponse.json(
+        { error: quotaExceededMessage(quota) },
+        { status: 429, headers: quotaHeaders(quota) }
+      );
+    }
+
     if (process.env.GROQ_API_KEY) {
       const groq = await solveWithGroqVision({
         system,
         prompt,
         imageDataUrl: body.imageDataUrl,
       });
-      if (groq) return NextResponse.json(groq);
+      if (groq) return NextResponse.json(groq, { headers: quotaHeaders(quota) });
     }
 
     const configured = process.env.GENZ_AI_PROVIDER?.toLowerCase();
@@ -305,7 +318,7 @@ export async function POST(req: NextRequest) {
         mime: parsedImage.mime,
         base64: parsedImage.base64,
       });
-      if (result) return NextResponse.json(result);
+      if (result) return NextResponse.json(result, { headers: quotaHeaders(quota) });
     }
 
     const deepseek = await solveWithDeepSeek({
@@ -314,7 +327,7 @@ export async function POST(req: NextRequest) {
       imageDataUrl: body.imageDataUrl,
     });
 
-    if (deepseek) return NextResponse.json(deepseek);
+    if (deepseek) return NextResponse.json(deepseek, { headers: quotaHeaders(quota) });
 
     const gemini = await solveWithGemini({
       system,
@@ -323,7 +336,7 @@ export async function POST(req: NextRequest) {
       base64: parsedImage.base64,
     });
 
-    if (gemini) return NextResponse.json(gemini);
+    if (gemini) return NextResponse.json(gemini, { headers: quotaHeaders(quota) });
 
     return NextResponse.json(
       { error: "Photo Solve ke liye Groq, Gemini ya DeepSeek API key configure karo." },
