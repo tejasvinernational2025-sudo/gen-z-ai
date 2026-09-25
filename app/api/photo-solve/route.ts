@@ -130,6 +130,56 @@ async function solveWithGemini(args: {
   );
 }
 
+async function solveWithGroqVision(args: {
+  system: string;
+  prompt: string;
+  imageDataUrl: string;
+}) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return null;
+
+  const model = process.env.GROQ_VISION_MODEL || "qwen/qwen3.8-27b";
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    signal: AbortSignal.timeout(12_000),
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: args.system },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: args.prompt },
+            {
+              type: "image_url",
+              image_url: { url: args.imageDataUrl },
+            },
+          ],
+        },
+      ],
+      reasoning_effort: "none",
+      temperature: 0.3,
+      max_completion_tokens: 1400,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Groq vision error (${response.status}): ${detail.slice(0, 300)}`);
+  }
+
+  const data = await response.json();
+  const reply = data?.choices?.[0]?.message?.content;
+  if (!reply) throw new Error("Groq vision returned an empty response");
+
+  return { reply, provider: "groq", model };
+}
+
 async function solveWithDeepSeek(args: {
   system: string;
   prompt: string;
@@ -237,6 +287,15 @@ export async function POST(req: NextRequest) {
 
     const system = buildSystemPrompt(language, mode, studentContext);
 
+    if (process.env.GROQ_API_KEY) {
+      const groq = await solveWithGroqVision({
+        system,
+        prompt,
+        imageDataUrl: body.imageDataUrl,
+      });
+      if (groq) return NextResponse.json(groq);
+    }
+
     const configured = process.env.GENZ_AI_PROVIDER?.toLowerCase();
 
     if (configured === "gemini" || (!configured && process.env.GEMINI_API_KEY)) {
@@ -267,7 +326,7 @@ export async function POST(req: NextRequest) {
     if (gemini) return NextResponse.json(gemini);
 
     return NextResponse.json(
-      { error: "Photo Solve ke liye Gemini ya DeepSeek API key configure karo." },
+      { error: "Photo Solve ke liye Groq, Gemini ya DeepSeek API key configure karo." },
       { status: 500 }
     );
   } catch (error) {
