@@ -3,6 +3,11 @@ import { callAI, ChatMessage } from "@/lib/ai-provider";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, StudyMode } from "@/lib/prompt";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import {
+  consumePersistentQuota,
+  quotaExceededMessage,
+  quotaHeaders,
+} from "@/lib/server-quota";
 
 export const runtime = "nodejs";
 
@@ -84,6 +89,14 @@ export async function POST(req: NextRequest) {
 
     const system = buildSystemPrompt(language, mode, studentContext);
 
+    const quota = await consumePersistentQuota(req, "chat");
+    if (quota && !quota.allowed) {
+      return NextResponse.json(
+        { error: quotaExceededMessage(quota) },
+        { status: 429, headers: quotaHeaders(quota) }
+      );
+    }
+
     // Stream Groq text replies so the student sees the answer immediately.
     if (process.env.GROQ_API_KEY) {
       const model = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
@@ -163,17 +176,21 @@ export async function POST(req: NextRequest) {
           "X-AI-Provider": "groq",
           "X-AI-Model": model,
           "X-GenZ-Stream": "1",
+          ...quotaHeaders(quota),
         },
       });
     }
 
     const result = await callAI(system, messages);
 
-    return NextResponse.json({
-      reply: result.text,
-      provider: result.provider,
-      model: result.model,
-    });
+    return NextResponse.json(
+      {
+        reply: result.text,
+        provider: result.provider,
+        model: result.model,
+      },
+      { headers: quotaHeaders(quota) }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
