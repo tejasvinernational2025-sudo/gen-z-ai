@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
-import { STUDY_CONTEXTS, type StudyContext } from "@/lib/study-contexts";
+import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -98,6 +98,9 @@ async function readApiJson(response: Response) {
 export default function Home() {
   const [language, setLanguage] = useState("Hinglish");
   const [studentContext, setStudentContext] = useState<StudyContext>("General");
+  const [schoolBoard, setSchoolBoard] = useState("");
+  const [schoolClass, setSchoolClass] = useState("Class 10");
+  const [studyMedium, setStudyMedium] = useState("Hindi Medium");
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -618,6 +621,50 @@ export default function Home() {
             <option key={item} value={item}>{item}</option>
           ))}
         </select>
+      </section>
+
+      <section className="boardPicker" aria-label="School board and medium">
+        <div className="boardPickerTitle">
+          <strong>School Board & Medium</strong>
+          <span>State board students ke liye board, class aur medium select karo</span>
+        </div>
+        <div className="boardPickerGrid">
+          <select
+            value={schoolBoard}
+            onChange={(e) => {
+              const board = e.target.value;
+              setSchoolBoard(board);
+              if (board) setStudentContext(buildBoardStudyContext(board, schoolClass, studyMedium));
+            }}
+            aria-label="Select school board"
+          >
+            <option value="">Select Board</option>
+            {SCHOOL_BOARDS.map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+          <select
+            value={schoolClass}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSchoolClass(value);
+              if (schoolBoard) setStudentContext(buildBoardStudyContext(schoolBoard, value, studyMedium));
+            }}
+            aria-label="Select class"
+          >
+            {SCHOOL_CLASSES.map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+          <select
+            value={studyMedium}
+            onChange={(e) => {
+              const value = e.target.value;
+              setStudyMedium(value);
+              if (schoolBoard) setStudentContext(buildBoardStudyContext(schoolBoard, schoolClass, value));
+            }}
+            aria-label="Select study medium"
+          >
+            {STUDY_MEDIUMS.map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </div>
+        {schoolBoard && <div className="boardActive">✓ {studentContext}</div>}
       </section>
 
       <section className="modes" aria-label="Study modes">
