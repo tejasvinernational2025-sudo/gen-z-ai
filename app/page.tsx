@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
-import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, type StudyContext } from "@/lib/study-contexts";
+import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, normalizeStudyContext, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -369,11 +369,7 @@ export default function Home() {
       setMessages(savedMessages);
       setConversationId(item.id);
       setLanguage(item.language || "Hinglish");
-      if (STUDY_CONTEXTS.includes(item.student_context as StudyContext)) {
-        setStudentContext(item.student_context as StudyContext);
-      } else {
-        setStudentContext("General");
-      }
+      setStudentContext(normalizeStudyContext(item.student_context));
       setPhotoDataUrl(null);
       setPhotoName("");
       setPdfDataUrl(null);
