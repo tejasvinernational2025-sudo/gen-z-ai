@@ -50,6 +50,14 @@ h1 { margin: 0; font-size: 20px; }
 .contextBar span { font-size:11px; color:#7c7e91; }
 .contextSelect { min-width:170px; border:1px solid #ded9ef; background:#f8f6ff; color:#4c3bb6; border-radius:11px; padding:9px 10px; font-weight:800; }
 
+.boardPicker { margin:0 0 12px; padding:13px 14px; border:1px solid #e6e3f2; background:white; border-radius:16px; }
+.boardPickerTitle { display:flex; flex-direction:column; gap:3px; margin-bottom:10px; }
+.boardPickerTitle strong { font-size:13px; color:#35364a; }
+.boardPickerTitle span { font-size:11px; color:#7c7e91; }
+.boardPickerGrid { display:grid; grid-template-columns:2fr 1fr 1.3fr; gap:8px; }
+.boardPickerGrid select { width:100%; min-width:0; border:1px solid #ded9ef; background:#f8f6ff; color:#4c3bb6; border-radius:11px; padding:10px; font-weight:700; }
+.boardActive { margin-top:8px; padding:7px 9px; border-radius:9px; background:#f2efff; color:#5d43cf; font-size:11px; font-weight:700; }
+
 .modes { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 12px; }
 .mode { border:1px solid #e6e3f2; background:white; border-radius:14px; padding:12px 8px; color:#55576d; font-weight:700; cursor:pointer; }
 .mode span { margin-right:5px; }
@@ -108,6 +116,7 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .hero h2 { letter-spacing:-1.4px; }
   .contextBar { align-items:flex-start; flex-direction:column; gap:8px; }
   .contextSelect { width:100%; min-width:0; }
+  .boardPickerGrid { grid-template-columns:1fr; }
   .modes { grid-template-columns: repeat(3,1fr); }
   .mode { font-size:12px; }
   .quickGrid { grid-template-columns:1fr; }
