@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "chat";
 
     const system = buildSystemPrompt(language, mode, studentContext);
+    const aiMessages = studentContext.includes(" | ") ? messages.slice(-1) : messages;
 
     const quota = await consumePersistentQuota(req, "chat");
     if (quota && !quota.allowed) {
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           model,
-          messages: [{ role: "system", content: system }, ...messages],
+          messages: [{ role: "system", content: system }, ...aiMessages],
           max_completion_tokens: 900,
           temperature: 0.4,
           stream: true,
@@ -181,7 +182,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const result = await callAI(system, messages);
+    const result = await callAI(system, aiMessages);
 
     return NextResponse.json(
       {
