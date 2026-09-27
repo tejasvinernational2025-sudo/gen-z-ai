@@ -120,6 +120,9 @@ export default function Home() {
   const [schoolBoard, setSchoolBoard] = useState("");
   const [schoolClass, setSchoolClass] = useState("Class 10");
   const [studyMedium, setStudyMedium] = useState("Hindi Medium");
+  const effectiveStudentContext = schoolBoard
+    ? buildBoardStudyContext(schoolBoard, schoolClass, studyMedium)
+    : studentContext;
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -443,10 +446,10 @@ export default function Home() {
           : "/api/chat";
 
       const requestBody = pdfDataUrl
-        ? { pdfDataUrl, prompt: userText, language, mode, studentContext }
+        ? { pdfDataUrl, prompt: userText, language, mode, studentContext: effectiveStudentContext }
         : photoDataUrl
-          ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode, studentContext }
-          : { messages: nextMessages, language, mode, studentContext };
+          ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode, studentContext: effectiveStudentContext }
+          : { messages: nextMessages, language, mode, studentContext: effectiveStudentContext };
 
       const accessToken = user ? await getAccessToken() : null;
 
@@ -515,7 +518,7 @@ export default function Home() {
             conversationId,
             mode,
             language,
-            studentContext,
+            studentContext: effectiveStudentContext,
             userText: visibleText,
             assistantText: finalReply,
           });
