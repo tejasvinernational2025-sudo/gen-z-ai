@@ -87,7 +87,11 @@ export async function POST(req: NextRequest) {
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "chat";
 
-    const system = buildSystemPrompt(language, mode, studentContext);
+    const selectedMedium = studentContext.split(" | ")[2] || "";
+    const nativeLanguageInstruction = selectedMedium
+      ? `CRITICAL OUTPUT LANGUAGE REQUIREMENT: The selected medium is ${selectedMedium}. Answer only in the native language and native script of ${selectedMedium.replace(/ Medium$/i, "")}. Do not answer in Hindi or English unless ${selectedMedium} itself is Hindi Medium or English Medium. Translate even headings, definitions, examples, and exam questions into the selected medium. This requirement overrides conversation history and the language of the user's question.`
+      : "";
+    const system = `${buildSystemPrompt(language, mode, studentContext)}\n\n${nativeLanguageInstruction}`;
     const aiMessages = studentContext.includes(" | ") ? messages.slice(-1) : messages;
 
     const quota = await consumePersistentQuota(req, "chat");
