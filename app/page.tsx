@@ -95,6 +95,25 @@ async function readApiJson(response: Response) {
   }
 }
 
+function renderInlineMarkdown(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, index) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={index}>{part.slice(2, -2)}</strong>
+      : <span key={index}>{part}</span>
+  );
+}
+
+function FormattedAnswer({ text }: { text: string }) {
+  return <div className="formattedAnswer">{text.split("\n").map((line, index) => {
+    const clean = line.trim();
+    if (!clean) return <div className="answerGap" key={index} />;
+    if (/^#{1,3}\s/.test(clean)) return <h3 key={index}>{renderInlineMarkdown(clean.replace(/^#{1,3}\s*/, ""))}</h3>;
+    if (/^(?:[-•]|\*)\s+/.test(clean)) return <div className="answerBullet" key={index}><span>•</span><p>{renderInlineMarkdown(clean.replace(/^(?:[-•]|\*)\s+/, ""))}</p></div>;
+    return <p key={index}>{renderInlineMarkdown(line)}</p>;
+  })}</div>;
+}
+
 export default function Home() {
   const [language, setLanguage] = useState("Hinglish");
   const [studentContext, setStudentContext] = useState<StudyContext>("General");
@@ -694,7 +713,7 @@ export default function Home() {
             messages.map((message, index) => (
               <div key={index} className={message.role === "user" ? "message user" : "message assistant"}>
                 <strong>{message.role === "user" ? "You" : "Gen-z AI"}</strong>
-                <p>{message.content}</p>
+                {message.role === "assistant" ? <FormattedAnswer text={message.content} /> : <p>{message.content}</p>}
               </div>
             ))
           )}
