@@ -123,3 +123,12 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .messages { min-height:360px; padding:14px; }
   .message { max-width:92%; }
 }
+
+.formattedAnswer { display:flex; flex-direction:column; gap:6px; line-height:1.6; }
+.formattedAnswer p { margin:0; }
+.formattedAnswer h3 { margin:5px 0 1px; font-size:14px; color:#34304a; }
+.formattedAnswer strong { font-weight:800; color:#34304a; }
+.answerGap { height:4px; }
+.answerBullet { display:flex; gap:7px; align-items:flex-start; }
+.answerBullet > span { color:#6547d8; font-weight:900; }
+.answerBullet p { flex:1; }
