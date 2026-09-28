@@ -44,6 +44,39 @@ h1 { margin: 0; font-size: 20px; }
 .hero h2 span { background: linear-gradient(90deg,#6346f5,#b449ea); -webkit-background-clip:text; color:transparent; }
 .hero p { color:#66687a; font-size: 16px; margin: 0 auto; max-width: 630px; line-height: 1.6; }
 
+
+.usageCard { margin:0 0 12px; padding:15px; border:1px solid #e3def8; background:linear-gradient(135deg,#fff,#f7f4ff); border-radius:18px; box-shadow:0 10px 28px rgba(80,55,170,.06); }
+.usageTop { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:12px; }
+.usageTop > div { display:flex; flex-direction:column; gap:3px; }
+.usageEyebrow { color:#6a4ce8; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.06em; }
+.usageTop strong { font-size:15px; color:#303146; }
+.usageTop small { color:#7c7e91; font-size:11px; }
+.plansButton, .usageSignIn { border:0; border-radius:11px; padding:10px 12px; background:#6b4df3; color:white; font-weight:800; cursor:pointer; }
+.usageGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.usageStat { border:1px solid #ebe7f8; background:white; border-radius:13px; padding:11px; display:flex; flex-direction:column; gap:3px; }
+.usageStat span { color:#66687c; font-size:12px; font-weight:700; }
+.usageStat strong { color:#4f39c7; font-size:22px; line-height:1; }
+.usageStat small { color:#999aad; font-size:10px; }
+.usageSignIn { margin-top:10px; width:100%; background:#f0ecff; color:#5c43d4; border:1px solid #dfd7ff; }
+
+.plansPanel { margin:0 0 12px; padding:15px; border:1px solid #e4e0f1; background:white; border-radius:18px; box-shadow:0 14px 34px rgba(38,31,79,.06); }
+.plansHeader { display:flex; justify-content:space-between; align-items:flex-end; gap:14px; margin-bottom:12px; }
+.plansHeader > div { display:flex; flex-direction:column; gap:3px; }
+.plansHeader span { color:#6a4ce8; font-size:10px; font-weight:900; letter-spacing:.1em; }
+.plansHeader h3 { margin:0; font-size:18px; }
+.plansHeader small { color:#8a8c9e; font-size:10px; text-align:right; }
+.planGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
+.planCard { border:1px solid #ebe8f3; border-radius:15px; padding:13px; background:#fcfcff; display:flex; flex-direction:column; gap:12px; }
+.planCard.currentPlan { border-color:#8066f6; background:#f7f4ff; box-shadow:inset 0 0 0 1px rgba(128,102,246,.12); }
+.planNameRow { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+.planNameRow > div { display:flex; flex-direction:column; gap:2px; }
+.planNameRow strong { color:#34354a; font-size:15px; }
+.planNameRow span { color:#858799; font-size:10px; }
+.planNameRow em { font-style:normal; color:#5b43d3; background:#ece7ff; border-radius:999px; padding:4px 7px; font-size:9px; font-weight:900; }
+.planLimits { display:flex; flex-direction:column; gap:6px; color:#5f6174; font-size:11px; }
+.planCard button { margin-top:auto; border:0; border-radius:10px; padding:9px; font-weight:800; }
+.planCard button:disabled { background:#efeff4; color:#8d8e9d; cursor:not-allowed; }
+
 .contextBar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin:0 0 12px; padding:12px 14px; border:1px solid #e6e3f2; background:white; border-radius:16px; }
 .contextBar > div { display:flex; flex-direction:column; gap:3px; }
 .contextBar strong { font-size:13px; color:#35364a; }
@@ -135,6 +168,12 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .historyPanel { margin-top:9px; }
   .hero { padding:36px 6px 22px; }
   .hero h2 { letter-spacing:-1.4px; }
+  .usageTop { align-items:flex-start; flex-direction:column; }
+  .plansButton { width:100%; }
+  .usageGrid { grid-template-columns:1fr 1fr 1fr; }
+  .plansHeader { align-items:flex-start; flex-direction:column; }
+  .plansHeader small { text-align:left; }
+  .planGrid { grid-template-columns:1fr; }
   .contextBar { align-items:flex-start; flex-direction:column; gap:8px; }
   .contextSelect { width:100%; min-width:0; }
   .boardPickerGrid { grid-template-columns:1fr; }

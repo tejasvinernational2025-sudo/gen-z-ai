@@ -12,6 +12,14 @@ export type QuotaResult = {
   resets_at: string;
 };
 
+export type DailyQuotaStatus = {
+  plan: string;
+  resets_at: string;
+  chat: { used: number; limit: number; remaining: number };
+  photo: { used: number; limit: number; remaining: number };
+  pdf: { used: number; limit: number; remaining: number };
+};
+
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
   "https://xnvrscevqdemnxyuvcpf.supabase.co";
@@ -85,4 +93,48 @@ export function quotaExceededMessage(quota: QuotaResult) {
         : "PDF Study";
 
   return `Aaj ki ${quota.plan} plan ${label} limit complete ho gai hai. Daily limit ${quota.limit} hai; next reset ke baad dobara use kar sakte ho.`;
+}
+
+
+export async function getPersistentQuotaStatus(
+  req: NextRequest
+): Promise<DailyQuotaStatus | null> {
+  const authorization = req.headers.get("authorization");
+
+  if (!authorization?.startsWith("Bearer ")) return null;
+
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/rpc/get_daily_quota_status`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: authorization,
+      },
+      body: "{}",
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(
+      `Usage status check failed (${response.status}): ${detail.slice(0, 180)}`
+    );
+  }
+
+  const data = (await response.json()) as DailyQuotaStatus;
+
+  if (
+    !data ||
+    typeof data.plan !== "string" ||
+    typeof data.chat?.limit !== "number" ||
+    typeof data.photo?.limit !== "number" ||
+    typeof data.pdf?.limit !== "number"
+  ) {
+    throw new Error("Usage status response invalid hai.");
+  }
+
+  return data;
 }

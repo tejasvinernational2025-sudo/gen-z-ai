@@ -240,3 +240,74 @@ revoke all on function public.consume_daily_quota(text) from public;
 revoke all on function public.consume_daily_quota(text) from anon;
 grant execute on function public.consume_daily_quota(text) to authenticated;
 grant execute on function public.consume_daily_quota(text) to service_role;
+
+
+-- Read-only snapshot for the signed-in student's current plan and daily remaining uses.
+create or replace function public.get_daily_quota_status()
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public, private, pg_temp
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_plan text;
+  v_chat_limit integer;
+  v_photo_limit integer;
+  v_pdf_limit integer;
+  v_chat_used integer := 0;
+  v_photo_used integer := 0;
+  v_pdf_used integer := 0;
+  v_today date := (now() at time zone 'Asia/Kolkata')::date;
+  v_reset timestamptz := (((now() at time zone 'Asia/Kolkata')::date + 1)::timestamp at time zone 'Asia/Kolkata');
+begin
+  if v_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  insert into private.user_plans (user_id, plan)
+  values (v_user_id, 'free')
+  on conflict (user_id) do nothing;
+
+  select up.plan
+    into v_plan
+  from private.user_plans up
+  where up.user_id = v_user_id;
+
+  select pl.chat_daily, pl.photo_daily, pl.pdf_daily
+    into v_chat_limit, v_photo_limit, v_pdf_limit
+  from private.plan_limits pl
+  where pl.plan = v_plan;
+
+  select du.chat_used, du.photo_used, du.pdf_used
+    into v_chat_used, v_photo_used, v_pdf_used
+  from private.daily_usage du
+  where du.user_id = v_user_id
+    and du.usage_date = v_today;
+
+  return jsonb_build_object(
+    'plan', v_plan,
+    'resets_at', v_reset,
+    'chat', jsonb_build_object(
+      'used', coalesce(v_chat_used, 0),
+      'limit', v_chat_limit,
+      'remaining', greatest(v_chat_limit - coalesce(v_chat_used, 0), 0)
+    ),
+    'photo', jsonb_build_object(
+      'used', coalesce(v_photo_used, 0),
+      'limit', v_photo_limit,
+      'remaining', greatest(v_photo_limit - coalesce(v_photo_used, 0), 0)
+    ),
+    'pdf', jsonb_build_object(
+      'used', coalesce(v_pdf_used, 0),
+      'limit', v_pdf_limit,
+      'remaining', greatest(v_pdf_limit - coalesce(v_pdf_used, 0), 0)
+    )
+  );
+end;
+$$;
+
+revoke all on function public.get_daily_quota_status() from public;
+revoke all on function public.get_daily_quota_status() from anon;
+grant execute on function public.get_daily_quota_status() to authenticated;
+grant execute on function public.get_daily_quota_status() to service_role;
