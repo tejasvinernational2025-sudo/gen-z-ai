@@ -785,7 +785,12 @@ export default function Home() {
       </section>
 
       <footer>
-        <strong>Gen-z AI</strong> · Student-first · Multilingual · Affordable
+        <div><strong>Gen-z AI</strong> · Student-first · Multilingual · Affordable</div>
+        <nav className="footerLinks" aria-label="Legal">
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/refund">Refund & Cancellation</a>
+        </nav>
       </footer>
     </main>
   );

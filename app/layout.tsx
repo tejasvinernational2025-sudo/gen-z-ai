@@ -3,6 +3,7 @@ import "./globals.css";
 import PwaRegister from "./pwa-register";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://genzstudy.in"),
   title: "Gen-z AI | India-first Affordable AI Tutor",
   description: "Affordable multilingual AI tutor for Indian students with regional-language learning, Photo Solve, PDF study, notes, quizzes and exam prep.",
   manifest: "/manifest.json",

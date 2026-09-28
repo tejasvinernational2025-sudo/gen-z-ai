@@ -10,8 +10,8 @@ Gen-z AI is not a generic chat clone. The product is designed around Indian stud
 - 22 scheduled Indian languages + English + Hinglish
 - Study modes: Ask AI, Explain, Notes, Quiz, Exam Prep
 - Student contexts for CBSE, ICSE, State Boards, JEE, NEET, CUET, SSC, college and general study
-- Gemini 3.8 Flash as the primary provider
-- Smart provider layer for Gemini / DeepSeek / OpenAI / Claude
+- Groq streaming chat when configured, with a multi-provider AI layer
+- Provider support for Groq / Gemini / DeepSeek / OpenAI / Claude
 - Photo Solve with Gemini multimodal support
 - Ask PDF with server-side text extraction
 - Guest mode
@@ -26,12 +26,18 @@ Gen-z AI is not a generic chat clone. The product is designed around Indian stud
 ## AI provider environment
 Never expose provider secret keys in browser-side code.
 
-Primary development/testing variables:
+Example development/testing variables:
 
 ```bash
-GENZ_AI_PROVIDER=gemini
+GENZ_AI_PROVIDER=groq
+GROQ_API_KEY=
+GROQ_MODEL=openai/gpt-oss-20b
+
+# Optional fallback/provider keys
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-3.8-flash
+DEEPSEEK_API_KEY=
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
 ```
 
 Optional provider variables are documented in `.env.example`.
@@ -42,15 +48,15 @@ Optional provider variables are documented in `.env.example`.
 3. `npm ci`
 4. `npm run dev`
 
-## Production next steps
-1. Deploy to a Next.js-compatible host.
-2. Add `GEMINI_API_KEY` as a host-side secret and keep it out of GitHub/browser code.
-3. Verify `/api/health`, text chat, Photo Solve and Ask PDF on the deployed URL.
-4. Set the deployed URL as the Supabase Auth Site URL / allowed redirect URL.
-5. Test magic-link sign-in, save/load history and RLS end to end.
-6. Replace the best-effort instance limiter with persistent per-user/day quotas before broad public rollout.
-7. Add student plans/payments only after usage metering is verified.
-8. Add curriculum-aware retrieval, better long-PDF chunking and voice/regional-language upgrades.
+## Production launch checklist
+1. Keep AI/provider keys server-side only and verify `/api/health`.
+2. Verify text chat, Photo Solve and Ask PDF on the production domain.
+3. Verify Google/email sign-in, save/load history and RLS end to end.
+4. Persistent per-user/day quotas are already wired for signed-in users.
+5. Complete Razorpay onboarding, then wire paid plan checkout + verified payment activation.
+6. Finalize public support contact details and the paid-plan refund window before enabling checkout.
+7. Run a final mobile smoke test across auth, chat, uploads, quotas and payment activation.
+8. Curriculum retrieval, longer-PDF handling and voice upgrades can continue after the initial launch.
 
 ## Current security baseline
 - Provider API keys are server-only.
