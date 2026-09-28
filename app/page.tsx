@@ -21,6 +21,27 @@ import {
 
 type Message = { role: "user" | "assistant"; content: string };
 
+type QuotaBucket = { used: number; limit: number; remaining: number };
+type QuotaStatus = {
+  plan: string;
+  resets_at: string;
+  chat: QuotaBucket;
+  photo: QuotaBucket;
+  pdf: QuotaBucket;
+};
+
+const PLAN_CARDS = [
+  { id: "free", name: "Free", chat: 20, photo: 3, pdf: 2, note: "Daily free learning" },
+  { id: "student", name: "Student", chat: 100, photo: 15, pdf: 10, note: "For regular study" },
+  { id: "student_plus", name: "Student Plus", chat: 300, photo: 40, pdf: 30, note: "For heavy study & exam prep" },
+] as const;
+
+function displayPlanName(plan: string) {
+  if (plan === "student_plus") return "Student Plus";
+  if (plan === "student") return "Student";
+  return "Free";
+}
+
 const MODES: { id: StudyMode; label: string; emoji: string }[] = [
   { id: "chat", label: "Ask AI", emoji: "✨" },
   { id: "explain", label: "Explain", emoji: "🧠" },
@@ -143,6 +164,9 @@ export default function Home() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<SavedConversation[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [quota, setQuota] = useState<QuotaStatus | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(false);
+  const [plansOpen, setPlansOpen] = useState(false);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -205,6 +229,42 @@ export default function Home() {
       .catch(() => setNotice("History load nahi ho pai."));
   }, [user]);
 
+  async function refreshQuota() {
+    if (!user) {
+      setQuota(null);
+      return;
+    }
+
+    setQuotaLoading(true);
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        setQuota(null);
+        return;
+      }
+
+      const response = await fetch("/api/quota", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      });
+      const data = await readApiJson(response);
+      if (!response.ok) throw new Error(data?.error || "Usage status load nahi hua.");
+      setQuota(data as QuotaStatus);
+    } catch {
+      setQuota(null);
+    } finally {
+      setQuotaLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!user) {
+      setQuota(null);
+      return;
+    }
+    void refreshQuota();
+  }, [user]);
+
   const placeholder = useMemo(() => {
     if (pdfDataUrl) return "PDF se kya karna hai? Notes, summary, MCQ ya koi question...";
     if (photoDataUrl) return "Photo ke baare me kya solve/samjhana hai? (optional)";
@@ -257,6 +317,7 @@ export default function Home() {
       setConversationId(null);
       setHistory([]);
       setHistoryOpen(false);
+      setQuota(null);
     } catch (err) {
       setNotice(err instanceof Error ? err.message : "Sign out nahi ho saka.");
     }
@@ -531,6 +592,9 @@ export default function Home() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
+      if (user) {
+        await refreshQuota();
+      }
       setLoading(false);
     }
   }
@@ -623,6 +687,88 @@ export default function Home() {
         <h2>Study smarter, <span>in your language.</span></h2>
         <p>Ask doubts, understand concepts, solve questions from photos, study PDFs, make notes and prepare for exams.</p>
       </section>
+
+      <section className="usageCard" aria-label="Daily free usage">
+        <div className="usageTop">
+          <div>
+            <span className="usageEyebrow">{user ? `${displayPlanName(quota?.plan || "free")} plan` : "Free plan"}</span>
+            <strong>{user ? "Aaj ke remaining uses" : "Daily free study allowance"}</strong>
+            <small>
+              {user
+                ? quotaLoading
+                  ? "Usage refresh ho rahi hai…"
+                  : "Daily limits India time par reset hoti hain."
+                : "Sign in karke daily limits track karo aur chat history save karo."}
+            </small>
+          </div>
+          <button type="button" className="plansButton" onClick={() => setPlansOpen((value) => !value)}>
+            {plansOpen ? "Hide plans" : "View plans"}
+          </button>
+        </div>
+
+        <div className="usageGrid">
+          <div className="usageStat">
+            <span>✨ Chat</span>
+            <strong>{user && quota ? quota.chat.remaining : 20}</strong>
+            <small>{user && quota ? `of ${quota.chat.limit} left` : "per day"}</small>
+          </div>
+          <div className="usageStat">
+            <span>📷 Photo Solve</span>
+            <strong>{user && quota ? quota.photo.remaining : 3}</strong>
+            <small>{user && quota ? `of ${quota.photo.limit} left` : "per day"}</small>
+          </div>
+          <div className="usageStat">
+            <span>📄 PDF Study</span>
+            <strong>{user && quota ? quota.pdf.remaining : 2}</strong>
+            <small>{user && quota ? `of ${quota.pdf.limit} left` : "per day"}</small>
+          </div>
+        </div>
+
+        {!user && supabaseReady && (
+          <button type="button" className="usageSignIn" onClick={() => setAuthOpen(true)}>
+            Sign in for tracked free uses
+          </button>
+        )}
+      </section>
+
+      {plansOpen && (
+        <section className="plansPanel" aria-label="Gen-z AI plans">
+          <div className="plansHeader">
+            <div>
+              <span>GEN-Z AI PLANS</span>
+              <h3>Choose how much you study</h3>
+            </div>
+            <small>Paid checkout will open after Razorpay approval.</small>
+          </div>
+
+          <div className="planGrid">
+            {PLAN_CARDS.map((plan) => {
+              const current = (quota?.plan || "free") === plan.id;
+              return (
+                <article key={plan.id} className={current ? "planCard currentPlan" : "planCard"}>
+                  <div className="planNameRow">
+                    <div>
+                      <strong>{plan.name}</strong>
+                      <span>{plan.note}</span>
+                    </div>
+                    {current && user && <em>Current</em>}
+                  </div>
+                  <div className="planLimits">
+                    <span>✨ {plan.chat} chats/day</span>
+                    <span>📷 {plan.photo} Photo Solve/day</span>
+                    <span>📄 {plan.pdf} PDF Study/day</span>
+                  </div>
+                  {plan.id === "free" ? (
+                    <button type="button" disabled>Free</button>
+                  ) : (
+                    <button type="button" disabled>Razorpay approval pending</button>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="contextBar" aria-label="Student context">
         <div>
