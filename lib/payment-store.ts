@@ -95,3 +95,10 @@ export async function getPaymentOrder(orderId: string) {
     p_order_id: orderId,
   });
 }
+
+
+export async function getLatestOpenPaymentOrder(userId: string) {
+  return serviceRpc("get_latest_open_payment_order_for_user", {
+    p_user_id: userId,
+  });
+}

@@ -18,12 +18,18 @@ type RazorpayOrder = {
   status?: string;
 };
 
-type RazorpayPayment = {
+export type RazorpayPayment = {
   id: string;
   order_id?: string | null;
   amount: number;
   currency: string;
   status: string;
+};
+
+type RazorpayPaymentCollection = {
+  entity: "collection";
+  count: number;
+  items: RazorpayPayment[];
 };
 
 const RAZORPAY_API = "https://api.razorpay.com/v1";
@@ -136,6 +142,24 @@ export async function createRazorpayOrder(input: {
   }
 
   return JSON.parse(raw) as RazorpayOrder;
+}
+
+export async function fetchRazorpayOrderPayments(orderId: string) {
+  const response = await fetch(
+    `${RAZORPAY_API}/orders/${encodeURIComponent(orderId)}/payments`,
+    {
+      headers: { Authorization: razorpayAuthHeader() },
+      cache: "no-store",
+    }
+  );
+
+  const raw = await response.text();
+  if (!response.ok) {
+    throw new Error(`Razorpay order payments fetch failed (${response.status}): ${raw.slice(0, 240)}`);
+  }
+
+  const data = JSON.parse(raw) as RazorpayPaymentCollection;
+  return Array.isArray(data.items) ? data.items : [];
 }
 
 export async function fetchRazorpayPayment(paymentId: string) {
