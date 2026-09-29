@@ -88,7 +88,7 @@ export async function completeAuthFromUrl(): Promise<User | null> {
   return null;
 }
 
-const PRODUCTION_SITE_URL = "https://gen-z-ai-eta.vercel.app";
+const PRODUCTION_SITE_URL = "https://genzstudy.in";
 
 export async function sendMagicLink(email: string) {
   const supabase = getSupabaseClient();
@@ -107,6 +107,40 @@ export async function sendMagicLink(email: string) {
   });
 
   if (error) throw error;
+}
+
+export async function signInWithPassword(email: string, password: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Supabase is not configured yet.");
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) throw error;
+  return data.user ?? null;
+}
+
+export async function signUpWithPassword(email: string, password: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Supabase is not configured yet.");
+
+  const redirectTo =
+    typeof window !== "undefined" && window.location.origin.startsWith("https://")
+      ? window.location.origin
+      : PRODUCTION_SITE_URL;
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: redirectTo,
+    },
+  });
+
+  if (error) throw error;
+  return data.user ?? null;
 }
 
 export async function signInWithGoogle() {
