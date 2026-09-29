@@ -157,6 +157,9 @@ create table if not exists private.payment_orders (
 create index if not exists payment_orders_user_created_idx
   on private.payment_orders(user_id, created_at desc);
 
+create index if not exists payment_orders_plan_idx
+  on private.payment_orders(plan);
+
 revoke all on all tables in schema private from public, anon, authenticated;
 grant usage on schema private to authenticated;
 grant select on private.plan_limits to authenticated;
