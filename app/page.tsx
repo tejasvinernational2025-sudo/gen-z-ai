@@ -15,6 +15,8 @@ import {
   saveTurn,
   sendMagicLink,
   signInWithGoogle,
+  signInWithPassword,
+  signUpWithPassword,
   signOutUser,
   type SavedConversation,
 } from "@/lib/chat-history";
@@ -180,6 +182,8 @@ export default function Home() {
   const [supabaseReady, setSupabaseReady] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
   const [authCooldown, setAuthCooldown] = useState(0);
   const [notice, setNotice] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -373,6 +377,55 @@ export default function Home() {
       } else {
         setNotice(message);
       }
+    }
+  }
+
+  async function handlePasswordSignIn() {
+    const email = authEmail.trim();
+    if (!email || !authPassword) {
+      setNotice("Email aur password dono bharo.");
+      return;
+    }
+
+    setAuthBusy(true);
+    setNotice("");
+    try {
+      const signedInUser = await signInWithPassword(email, authPassword);
+      setUser(signedInUser);
+      setAuthOpen(false);
+      setNotice("Email + password sign in successful.");
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Password sign in nahi hua.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function handlePasswordSignUp() {
+    const email = authEmail.trim();
+    if (!email || !authPassword) {
+      setNotice("Email aur password dono bharo.");
+      return;
+    }
+
+    if (authPassword.length < 8) {
+      setNotice("Password kam se kam 8 characters ka rakho.");
+      return;
+    }
+
+    setAuthBusy(true);
+    setNotice("");
+    try {
+      const createdUser = await signUpWithPassword(email, authPassword);
+      if (createdUser?.email_confirmed_at) {
+        setNotice("Password account create ho gaya. Ab sign in kar sakte ho.");
+      } else {
+        setNotice("Password account create ho gaya. Email confirmation link open karke account verify karo.");
+      }
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Password account create nahi hua.");
+    } finally {
+      setAuthBusy(false);
     }
   }
 
@@ -823,13 +876,16 @@ export default function Home() {
       </header>
 
       {authOpen && (
-        <form className="authPanel" onSubmit={submitLogin}>
-          <div>
+        <form className="authPanel authPanelExpanded" onSubmit={submitLogin}>
+          <div className="authIntro">
             <strong>Save your chats</strong>
-            <span>Google se fast sign in karo, ya email link use karo.</span>
+            <span>Google, email link, ya email + password se sign in karo.</span>
           </div>
+
           <button type="button" onClick={handleGoogleSignIn}>Continue with Google</button>
-          <span className="authDivider">or</span>
+
+          <div className="authDividerRow"><span>or</span></div>
+
           <input
             type="email"
             value={authEmail}
@@ -837,7 +893,29 @@ export default function Home() {
             placeholder="student@example.com"
             required
           />
-          <button type="submit" disabled={authCooldown > 0}>{authCooldown > 0 ? `Wait ${authCooldown}s` : "Send email link"}</button>
+
+          <input
+            type="password"
+            value={authPassword}
+            onChange={(e) => setAuthPassword(e.target.value)}
+            placeholder="Password"
+            minLength={8}
+          />
+
+          <div className="authPasswordActions">
+            <button type="button" onClick={handlePasswordSignIn} disabled={authBusy}>
+              {authBusy ? "Please wait…" : "Sign in with password"}
+            </button>
+            <button type="button" className="secondaryAuthButton" onClick={handlePasswordSignUp} disabled={authBusy}>
+              Create password account
+            </button>
+          </div>
+
+          <div className="authDividerRow"><span>or use magic link</span></div>
+
+          <button type="submit" disabled={authCooldown > 0 || authBusy}>
+            {authCooldown > 0 ? `Wait ${authCooldown}s` : "Send email link"}
+          </button>
         </form>
       )}
 
