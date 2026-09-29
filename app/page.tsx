@@ -21,6 +21,27 @@ import {
 
 type Message = { role: "user" | "assistant"; content: string };
 
+type PaymentPlanConfig = {
+  id: "student" | "student_plus";
+  name: string;
+  amount: number | null;
+  currency: "INR";
+  validityDays: number | null;
+  configured: boolean;
+};
+
+type RazorpaySuccess = {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
 type QuotaBucket = { used: number; limit: number; remaining: number };
 type QuotaStatus = {
   plan: string;
@@ -167,6 +188,9 @@ export default function Home() {
   const [quota, setQuota] = useState<QuotaStatus | null>(null);
   const [quotaLoading, setQuotaLoading] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
+  const [paymentPlans, setPaymentPlans] = useState<PaymentPlanConfig[]>([]);
+  const [paymentReady, setPaymentReady] = useState(false);
+  const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -264,6 +288,20 @@ export default function Home() {
     }
     void refreshQuota();
   }, [user]);
+
+  useEffect(() => {
+    fetch("/api/payments/config", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await readApiJson(response);
+        if (!response.ok) throw new Error(data?.error || "Payment config load nahi hua.");
+        setPaymentReady(Boolean(data?.ready));
+        setPaymentPlans(Array.isArray(data?.plans) ? data.plans : []);
+      })
+      .catch(() => {
+        setPaymentReady(false);
+        setPaymentPlans([]);
+      });
+  }, []);
 
   const placeholder = useMemo(() => {
     if (pdfDataUrl) return "PDF se kya karna hai? Notes, summary, MCQ ya koi question...";
@@ -472,6 +510,102 @@ export default function Home() {
       setHistory(await listConversations(user.id));
     } catch {
       setNotice("History refresh nahi ho pai.");
+    }
+  }
+
+  async function loadRazorpayCheckout() {
+    if (window.Razorpay) return;
+
+    await new Promise<void>((resolve, reject) => {
+      const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Razorpay checkout load nahi hua.")), { once: true });
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Razorpay checkout load nahi hua."));
+      document.body.appendChild(script);
+    });
+  }
+
+  async function startLiveCheckout(planId: "student" | "student_plus") {
+    if (!user) {
+      setAuthOpen(true);
+      setNotice("Paid plan ke liye pehle sign in karo.");
+      return;
+    }
+
+    if (!paymentReady || paymentLoadingPlan) return;
+
+    setPaymentLoadingPlan(planId);
+    setError("");
+    setNotice("");
+
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) throw new Error("Session expire ho gayi. Dobara sign in karo.");
+
+      const response = await fetch("/api/payments/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ plan: planId }),
+      });
+      const order = await readApiJson(response);
+      if (!response.ok) throw new Error(order?.error || "Live payment order create nahi hua.");
+
+      await loadRazorpayCheckout();
+      if (!window.Razorpay) throw new Error("Razorpay checkout available nahi hai.");
+
+      const checkout = new window.Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Gen-z AI",
+        description: `${order.planName} plan`,
+        order_id: order.orderId,
+        prefill: { email: order.email || user.email || "" },
+        notes: { plan: order.plan },
+        theme: { color: "#6b4df3" },
+        handler: async (payment: RazorpaySuccess) => {
+          try {
+            setNotice("Payment verify ho rahi hai…");
+            const verifyResponse = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify(payment),
+            });
+            const result = await readApiJson(verifyResponse);
+            if (!verifyResponse.ok) throw new Error(result?.error || "Payment verify nahi hui.");
+
+            if (result?.pending) {
+              setNotice("Payment receive hui hai. Capture hote hi plan automatically activate ho jayega.");
+              return;
+            }
+
+            setNotice(`${displayPlanName(result?.plan || planId)} plan activate ho gaya ✅`);
+            await refreshQuota();
+          } catch (verifyError) {
+            setError(verifyError instanceof Error ? verifyError.message : "Payment verify nahi hui.");
+          }
+        },
+      });
+
+      checkout.open();
+    } catch (checkoutError) {
+      setError(checkoutError instanceof Error ? checkoutError.message : "Live checkout start nahi hua.");
+    } finally {
+      setPaymentLoadingPlan(null);
     }
   }
 
@@ -738,7 +872,7 @@ export default function Home() {
               <span>GEN-Z AI PLANS</span>
               <h3>Choose how much you study</h3>
             </div>
-            <small>Paid checkout will open after Razorpay approval.</small>
+            <small>{paymentReady ? "Live Razorpay checkout ready." : "Live pricing/keys setup pending."}</small>
           </div>
 
           <div className="planGrid">
@@ -760,9 +894,33 @@ export default function Home() {
                   </div>
                   {plan.id === "free" ? (
                     <button type="button" disabled>Free</button>
-                  ) : (
-                    <button type="button" disabled>Razorpay approval pending</button>
-                  )}
+                  ) : (() => {
+                    const livePlan = paymentPlans.find((item) => item.id === plan.id);
+                    const isConfigured = Boolean(paymentReady && livePlan?.configured && livePlan.amount);
+                    const isCurrent = current && user;
+                    return (
+                      <>
+                        <div className="planPrice">
+                          {livePlan?.configured && livePlan.amount
+                            ? `₹${(livePlan.amount / 100).toFixed(0)} / ${livePlan.validityDays} days`
+                            : "Live price setup pending"}
+                        </div>
+                        <button
+                          type="button"
+                          disabled={!isConfigured || Boolean(paymentLoadingPlan) || Boolean(isCurrent)}
+                          onClick={() => startLiveCheckout(plan.id)}
+                        >
+                          {isCurrent
+                            ? "Current plan"
+                            : paymentLoadingPlan === plan.id
+                              ? "Opening…"
+                              : isConfigured
+                                ? "Upgrade with Razorpay"
+                                : "Setup pending"}
+                        </button>
+                      </>
+                    );
+                  })()}
                 </article>
               );
             })}

@@ -120,9 +120,13 @@ set chat_daily = excluded.chat_daily,
 create table if not exists private.user_plans (
   user_id uuid primary key references auth.users(id) on delete cascade,
   plan text not null default 'free' references private.plan_limits(plan),
+  expires_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table private.user_plans
+  add column if not exists expires_at timestamptz;
 
 create table if not exists private.daily_usage (
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -136,6 +140,25 @@ create table if not exists private.daily_usage (
 
 create index if not exists user_plans_plan_idx
   on private.user_plans(plan);
+
+create table if not exists private.payment_orders (
+  order_id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  plan text not null references private.plan_limits(plan),
+  amount integer not null check (amount > 0),
+  currency text not null default 'INR',
+  validity_days integer not null check (validity_days > 0),
+  status text not null default 'created' check (status in ('created', 'paid')),
+  payment_id text unique,
+  created_at timestamptz not null default now(),
+  paid_at timestamptz
+);
+
+create index if not exists payment_orders_user_created_idx
+  on private.payment_orders(user_id, created_at desc);
+
+create index if not exists payment_orders_plan_idx
+  on private.payment_orders(plan);
 
 revoke all on all tables in schema private from public, anon, authenticated;
 grant usage on schema private to authenticated;
@@ -152,6 +175,7 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_plan text;
+  v_expires_at timestamptz;
   v_limit integer;
   v_used integer;
   v_today date := (now() at time zone 'Asia/Kolkata')::date;
@@ -170,9 +194,13 @@ begin
   values (v_user_id, 'free')
   on conflict (user_id) do nothing;
 
-  select up.plan into v_plan
+  select up.plan, up.expires_at into v_plan, v_expires_at
   from private.user_plans up
   where up.user_id = v_user_id;
+
+  if v_plan <> 'free' and v_expires_at is not null and v_expires_at <= now() then
+    v_plan := 'free';
+  end if;
 
   select case p_feature
            when 'chat' then pl.chat_daily
@@ -252,6 +280,7 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_plan text;
+  v_expires_at timestamptz;
   v_chat_limit integer;
   v_photo_limit integer;
   v_pdf_limit integer;
@@ -269,10 +298,14 @@ begin
   values (v_user_id, 'free')
   on conflict (user_id) do nothing;
 
-  select up.plan
-    into v_plan
+  select up.plan, up.expires_at
+    into v_plan, v_expires_at
   from private.user_plans up
   where up.user_id = v_user_id;
+
+  if v_plan <> 'free' and v_expires_at is not null and v_expires_at <= now() then
+    v_plan := 'free';
+  end if;
 
   select pl.chat_daily, pl.photo_daily, pl.pdf_daily
     into v_chat_limit, v_photo_limit, v_pdf_limit
@@ -311,3 +344,140 @@ revoke all on function public.get_daily_quota_status() from public;
 revoke all on function public.get_daily_quota_status() from anon;
 grant execute on function public.get_daily_quota_status() to authenticated;
 grant execute on function public.get_daily_quota_status() to service_role;
+
+
+-- Live payment helpers. Only the server-side service role may call these RPCs.
+create or replace function public.record_payment_order(
+  p_order_id text,
+  p_user_id uuid,
+  p_plan text,
+  p_amount integer,
+  p_currency text,
+  p_validity_days integer
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, private, pg_temp
+as $$
+begin
+  if p_plan not in ('student', 'student_plus') then
+    raise exception 'Invalid paid plan';
+  end if;
+
+  if p_amount <= 0 or p_validity_days <= 0 then
+    raise exception 'Invalid payment configuration';
+  end if;
+
+  insert into private.payment_orders (
+    order_id, user_id, plan, amount, currency, validity_days
+  )
+  values (
+    p_order_id, p_user_id, p_plan, p_amount, upper(p_currency), p_validity_days
+  )
+  on conflict (order_id) do nothing;
+
+  return jsonb_build_object('ok', true, 'order_id', p_order_id);
+end;
+$$;
+
+create or replace function public.get_payment_order_for_verification(p_order_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, private, pg_temp
+as $$
+declare
+  v_order private.payment_orders%rowtype;
+begin
+  select * into v_order
+  from private.payment_orders
+  where order_id = p_order_id;
+
+  if not found then
+    return null;
+  end if;
+
+  return jsonb_build_object(
+    'order_id', v_order.order_id,
+    'user_id', v_order.user_id,
+    'plan', v_order.plan,
+    'amount', v_order.amount,
+    'currency', v_order.currency,
+    'validity_days', v_order.validity_days,
+    'status', v_order.status,
+    'payment_id', v_order.payment_id
+  );
+end;
+$$;
+
+create or replace function public.activate_paid_plan_from_payment(
+  p_order_id text,
+  p_payment_id text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, private, pg_temp
+as $$
+declare
+  v_order private.payment_orders%rowtype;
+  v_expires_at timestamptz;
+begin
+  select * into v_order
+  from private.payment_orders
+  where order_id = p_order_id
+  for update;
+
+  if not found then
+    raise exception 'Unknown payment order';
+  end if;
+
+  if v_order.status = 'paid' then
+    if v_order.payment_id is distinct from p_payment_id then
+      raise exception 'Payment id mismatch';
+    end if;
+
+    select expires_at into v_expires_at
+    from private.user_plans
+    where user_id = v_order.user_id;
+
+    return jsonb_build_object(
+      'ok', true,
+      'plan', v_order.plan,
+      'expires_at', v_expires_at,
+      'already_activated', true
+    );
+  end if;
+
+  update private.payment_orders
+     set status = 'paid',
+         payment_id = p_payment_id,
+         paid_at = now()
+   where order_id = p_order_id;
+
+  v_expires_at := now() + make_interval(days => v_order.validity_days);
+
+  insert into private.user_plans (user_id, plan, expires_at)
+  values (v_order.user_id, v_order.plan, v_expires_at)
+  on conflict (user_id) do update
+    set plan = excluded.plan,
+        expires_at = excluded.expires_at,
+        updated_at = now();
+
+  return jsonb_build_object(
+    'ok', true,
+    'plan', v_order.plan,
+    'expires_at', v_expires_at,
+    'already_activated', false
+  );
+end;
+$$;
+
+revoke all on function public.record_payment_order(text, uuid, text, integer, text, integer) from public, anon, authenticated;
+revoke all on function public.get_payment_order_for_verification(text) from public, anon, authenticated;
+revoke all on function public.activate_paid_plan_from_payment(text, text) from public, anon, authenticated;
+
+grant execute on function public.record_payment_order(text, uuid, text, integer, text, integer) to service_role;
+grant execute on function public.get_payment_order_for_verification(text) to service_role;
+grant execute on function public.activate_paid_plan_from_payment(text, text) to service_role;
