@@ -38,7 +38,7 @@ type RazorpaySuccess = {
 
 declare global {
   interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void; close?: () => void };
   }
 }
 
@@ -287,6 +287,34 @@ export default function Home() {
       return;
     }
     void refreshQuota();
+  }, [user]);
+
+  async function reconcilePayment(orderId?: string) {
+    const accessToken = await getAccessToken();
+    if (!accessToken) return null;
+
+    const response = await fetch("/api/payments/reconcile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(orderId ? { orderId } : {}),
+    });
+    const result = await readApiJson(response);
+    if (!response.ok) throw new Error(result?.error || "Payment status check nahi hua.");
+
+    if (result?.activated) {
+      setNotice(`${displayPlanName(result?.plan || "student")} plan activate ho gaya ✅`);
+      await refreshQuota();
+    }
+
+    return result;
+  }
+
+  useEffect(() => {
+    if (!user) return;
+    void reconcilePayment().catch(() => {});
   }, [user]);
 
   useEffect(() => {
@@ -564,6 +592,7 @@ export default function Home() {
       await loadRazorpayCheckout();
       if (!window.Razorpay) throw new Error("Razorpay checkout available nahi hai.");
 
+      let paymentCompleted = false;
       const checkout = new window.Razorpay({
         key: order.keyId,
         amount: order.amount,
@@ -593,6 +622,7 @@ export default function Home() {
               return;
             }
 
+            paymentCompleted = true;
             setNotice(`${displayPlanName(result?.plan || planId)} plan activate ho gaya ✅`);
             await refreshQuota();
           } catch (verifyError) {
@@ -602,6 +632,27 @@ export default function Home() {
       });
 
       checkout.open();
+
+      const startedAt = Date.now();
+      const timer = window.setInterval(async () => {
+        if (paymentCompleted || Date.now() - startedAt > 120_000) {
+          window.clearInterval(timer);
+          return;
+        }
+
+        try {
+          const recovered = await reconcilePayment(order.orderId);
+          if (recovered?.activated) {
+            paymentCompleted = true;
+            window.clearInterval(timer);
+            checkout.close?.();
+          } else if (recovered?.pending) {
+            setNotice("Payment process ho rahi hai. Dobara payment mat karo.");
+          }
+        } catch {
+          // Keep the checkout open; the webhook or next poll may still complete activation.
+        }
+      }, 4000);
     } catch (checkoutError) {
       setError(checkoutError instanceof Error ? checkoutError.message : "Live checkout start nahi hua.");
     } finally {
