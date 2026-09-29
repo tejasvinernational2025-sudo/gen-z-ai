@@ -74,6 +74,7 @@ h1 { margin: 0; font-size: 20px; }
 .planNameRow span { color:#858799; font-size:10px; }
 .planNameRow em { font-style:normal; color:#5b43d3; background:#ece7ff; border-radius:999px; padding:4px 7px; font-size:9px; font-weight:900; }
 .planLimits { display:flex; flex-direction:column; gap:6px; color:#5f6174; font-size:11px; }
+.planPrice { color:#4f39c7; font-size:16px; font-weight:900; }
 .planCard button { margin-top:auto; border:0; border-radius:10px; padding:9px; font-weight:800; }
 .planCard button:disabled { background:#efeff4; color:#8d8e9d; cursor:not-allowed; }
 
