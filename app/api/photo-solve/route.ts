@@ -291,7 +291,8 @@ export async function POST(req: NextRequest) {
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "explain";
 
-    const learningContext = await getLearningPromptContext(req);\n    const system = buildSystemPrompt(language, mode, studentContext, learningContext);
+    const learningContext = await getLearningPromptContext(req);
+    const system = buildSystemPrompt(language, mode, studentContext, learningContext);
 
     const quota = await consumePersistentQuota(req, "photo");
     if (quota && !quota.allowed) {
