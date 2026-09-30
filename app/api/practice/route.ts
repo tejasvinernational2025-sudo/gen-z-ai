@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { getGroundingContext } from "@/lib/source-grounding";
 import {
   getAdaptiveDifficulty,
   getPracticePerformance,
@@ -77,6 +78,11 @@ async function generatePractice(req: NextRequest, body: any) {
   }
 
   const adaptiveDifficulty = safeDifficulty(body?.difficulty || await getAdaptiveDifficulty(req));
+  const groundingContext = await getGroundingContext(
+    req,
+    body?.sourceId,
+    requestedTopic || sourceQuestion || sourceAnswer
+  );
 
   const data = await groqJson(
     [
@@ -87,7 +93,8 @@ async function generatePractice(req: NextRequest, body: any) {
       "Questions must be solvable from the concept just taught. Do not reveal the expected answer inside the question or hint.",
       "Keep wording short and mobile-friendly. Match board/class context and requested language.",
       "Difficulty should center on the supplied adaptive level; small variation is allowed.",
-    ].join("\n"),
+      groundingContext,
+    ].filter(Boolean).join("\n\n"),
     [
       `Student context: ${studentContext}`,
       `Language: ${language}`,
@@ -203,6 +210,7 @@ async function generateQuiz(req: NextRequest, body: any) {
   }
 
   const adaptiveDifficulty = safeDifficulty(body?.difficulty || await getAdaptiveDifficulty(req));
+  const groundingContext = await getGroundingContext(req, body?.sourceId, topic);
 
   const data = await groqJson(
     [
@@ -215,7 +223,8 @@ async function generateQuiz(req: NextRequest, body: any) {
       "Match the selected board/class context and requested language.",
       "Difficulty should center around the supplied adaptive level.",
       "Use exam-style wording where appropriate but do not claim official current exam weightage.",
-    ].join("\n"),
+      groundingContext,
+    ].filter(Boolean).join("\n\n"),
     [
       `Student context: ${studentContext}`,
       `Language: ${language}`,
