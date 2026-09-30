@@ -46,6 +46,29 @@ declare global {
   }
 }
 
+type LearningProfile = {
+  board: string | null;
+  school_class: string | null;
+  medium: string | null;
+  goal: string;
+  daily_minutes: number;
+  preferred_subjects: string[];
+};
+type TopicProgress = {
+  subject: string;
+  topic: string;
+  mastery_score: number;
+  attempts: number;
+  last_signal: string;
+};
+type DailyPlanItem = { key: string; subject: string; topic: string; minutes: number; task: string };
+type DailyStudyPlan = { plan_date: string; items: DailyPlanItem[]; completed_keys: string[] };
+type LearningSnapshot = {
+  profile: LearningProfile | null;
+  weakTopics: TopicProgress[];
+  plan: DailyStudyPlan | null;
+};
+
 type QuotaBucket = { used: number; limit: number; remaining: number };
 type QuotaStatus = {
   plan: string;
@@ -197,6 +220,12 @@ export default function Home() {
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlanConfig[]>([]);
   const [paymentReady, setPaymentReady] = useState(false);
   const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
+  const [learning, setLearning] = useState<LearningSnapshot | null>(null);
+  const [learningBusy, setLearningBusy] = useState(false);
+  const [learningGoal, setLearningGoal] = useState("Overall improvement");
+  const [dailyMinutes, setDailyMinutes] = useState(30);
+  const [preferredSubjects, setPreferredSubjects] = useState("Mathematics, Science, English");
+
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -259,6 +288,122 @@ export default function Home() {
       .catch(() => setNotice("History load nahi ho pai."));
   }, [user]);
 
+  async function refreshLearning() {
+    if (!user) {
+      setLearning(null);
+      return;
+    }
+
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) return;
+      const response = await fetch("/api/learning", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      });
+      const data = await readApiJson(response);
+      if (!response.ok) throw new Error(data?.error || "AI Home Tutor load nahi hua.");
+      setLearning(data as LearningSnapshot);
+      if (data?.profile) {
+        setLearningGoal(data.profile.goal || "Overall improvement");
+        setDailyMinutes(data.profile.daily_minutes || 30);
+        setPreferredSubjects((data.profile.preferred_subjects || []).join(", ") || "Mathematics, Science, English");
+      }
+    } catch {
+      setLearning(null);
+    }
+  }
+
+  async function learningAction(payload: Record<string, unknown>) {
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      setAuthOpen(true);
+      setNotice("AI Home Tutor ke liye sign in karo.");
+      return null;
+    }
+
+    const response = await fetch("/api/learning", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await readApiJson(response);
+    if (!response.ok) throw new Error(data?.error || "AI Home Tutor update nahi hua.");
+    return data;
+  }
+
+  async function saveTutorProfile() {
+    if (!user) {
+      setAuthOpen(true);
+      setNotice("Personal AI Home Tutor profile ke liye sign in karo.");
+      return;
+    }
+
+    setLearningBusy(true);
+    setNotice("");
+    try {
+      await learningAction({
+        action: "save_profile",
+        board: schoolBoard || null,
+        schoolClass,
+        medium: studyMedium,
+        goal: learningGoal,
+        dailyMinutes,
+        preferredSubjects: preferredSubjects.split(",").map((item) => item.trim()).filter(Boolean),
+      });
+      await refreshLearning();
+      setNotice("AI Home Tutor profile save ho gaya ✅");
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Tutor profile save nahi hua.");
+    } finally {
+      setLearningBusy(false);
+    }
+  }
+
+  async function generateStudyPlan() {
+    setLearningBusy(true);
+    setNotice("");
+    try {
+      const result = await learningAction({ action: "generate_plan" });
+      if (result?.plan) {
+        await refreshLearning();
+        setNotice("Aaj ka personalized study plan ready hai ✅");
+      }
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Study plan generate nahi hua.");
+    } finally {
+      setLearningBusy(false);
+    }
+  }
+
+  async function togglePlanItem(key: string) {
+    try {
+      await learningAction({ action: "complete_item", key });
+      await refreshLearning();
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : "Plan progress update nahi hua.");
+    }
+  }
+
+  async function trackLearningTurn(userText: string, assistantText: string) {
+    if (!user || !userText || !assistantText) return;
+    try {
+      await learningAction({
+        action: "track_turn",
+        userText,
+        assistantText,
+        mode,
+        studentContext: effectiveStudentContext,
+      });
+      await refreshLearning();
+    } catch {
+      // Learning analytics must never block the student's answer.
+    }
+  }
+
   async function refreshQuota() {
     if (!user) {
       setQuota(null);
@@ -293,6 +438,14 @@ export default function Home() {
       return;
     }
     void refreshQuota();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setLearning(null);
+      return;
+    }
+    void refreshLearning();
   }, [user]);
 
   async function reconcilePayment(orderId?: string) {
@@ -825,6 +978,7 @@ export default function Home() {
           });
           if (id) setConversationId(id);
           await refreshHistory();
+          void trackLearningTurn(userText, finalReply);
 
           void trackLearningTurn({
             userText: visibleText,
@@ -1136,6 +1290,97 @@ export default function Home() {
         medium={studyMedium}
         onSignIn={() => setAuthOpen(true)}
       />
+
+      <section className="homeTutorCard" aria-label="AI Home Tutor">
+        <div className="homeTutorHead">
+          <div>
+            <strong>🧠 My AI Home Tutor</strong>
+            <span>Weak topics yaad rakhega aur daily personalized study plan banayega</span>
+          </div>
+          {user && learning?.profile && <span>Profile on ✓</span>}
+        </div>
+
+        {!user ? (
+          <p className="homeTutorHint">Sign in karke personal learning profile, weak-topic tracking aur daily plan unlock karo.</p>
+        ) : (
+          <>
+            <div className="homeTutorGrid">
+              <label>
+                Study goal
+                <input value={learningGoal} onChange={(e) => setLearningGoal(e.target.value)} maxLength={120} placeholder="Board exam improvement" />
+              </label>
+              <label>
+                Daily study time
+                <select value={dailyMinutes} onChange={(e) => setDailyMinutes(Number(e.target.value))}>
+                  <option value={20}>20 minutes</option>
+                  <option value={30}>30 minutes</option>
+                  <option value={45}>45 minutes</option>
+                  <option value={60}>60 minutes</option>
+                  <option value={90}>90 minutes</option>
+                </select>
+              </label>
+              <label>
+                Focus subjects
+                <input value={preferredSubjects} onChange={(e) => setPreferredSubjects(e.target.value)} maxLength={220} placeholder="Mathematics, Science, English" />
+              </label>
+              <label>
+                Tutor context
+                <input value={schoolBoard ? `${schoolBoard} · ${schoolClass} · ${studyMedium}` : effectiveStudentContext} readOnly />
+              </label>
+            </div>
+
+            <div className="homeTutorActions">
+              <button type="button" onClick={saveTutorProfile} disabled={learningBusy}>
+                {learningBusy ? "Saving…" : "Save tutor profile"}
+              </button>
+              <button type="button" onClick={generateStudyPlan} disabled={learningBusy || !learning?.profile}>
+                Make today&apos;s plan
+              </button>
+            </div>
+
+            {learning?.weakTopics?.length ? (
+              <div className="tutorSection">
+                <h4>Needs practice</h4>
+                <div className="weakList">
+                  {learning.weakTopics.slice(0, 4).map((topic) => (
+                    <div className="weakTopic" key={`${topic.subject}-${topic.topic}`}>
+                      <div>
+                        <strong>{topic.topic}</strong>
+                        <small>{topic.subject} · {topic.attempts} learning signals</small>
+                      </div>
+                      <span className="masteryPill">{topic.mastery_score}/100</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : learning?.profile ? (
+              <p className="homeTutorHint">Abhi learning history kam hai. Questions/quiz use karte hi weak topics yahan appear honge.</p>
+            ) : null}
+
+            {learning?.plan?.items?.length ? (
+              <div className="tutorSection">
+                <h4>Today&apos;s study plan</h4>
+                <div className="planList">
+                  {learning.plan.items.map((item) => {
+                    const done = learning.plan?.completed_keys?.includes(item.key);
+                    return (
+                      <div className={done ? "planItem done" : "planItem"} key={item.key}>
+                        <div>
+                          <strong>{item.minutes} min · {item.subject}</strong>
+                          <small>{item.task}</small>
+                        </div>
+                        <button type="button" onClick={() => togglePlanItem(item.key)}>
+                          {done ? "Done ✓" : "Mark done"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
+      </section>
 
       <section className="modes" aria-label="Study modes">
         {MODES.map((item) => (
