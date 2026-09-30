@@ -666,3 +666,179 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .mistakeStats { grid-template-columns:1fr; }
   .weakPerformanceRow { grid-template-columns:1fr; }
 }
+
+
+/* Chapter / Book Grounding */
+.studySourcesCard {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(37,99,235,.18);
+  background: linear-gradient(145deg, rgba(59,130,246,.06), rgba(99,102,241,.05));
+}
+.studySourcesHeader {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.studySourcesHeader > div { min-width:0; }
+.studySourcesHeader span {
+  display:block;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:#2563eb;
+}
+.studySourcesHeader h3 { margin:4px 0 4px; font-size:1.02rem; }
+.studySourcesHeader p { margin:0; color:#64748b; font-size:.84rem; line-height:1.45; }
+.studySourcesHeader > button {
+  flex:0 0 auto;
+  border:0;
+  border-radius:11px;
+  padding:9px 11px;
+  background:rgba(37,99,235,.1);
+  color:#1d4ed8;
+  font-weight:800;
+  cursor:pointer;
+}
+.sourceList {
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:12px 1px 2px;
+  scrollbar-width:thin;
+}
+.sourceChip {
+  position:relative;
+  min-width:150px;
+  max-width:210px;
+  border:1px solid rgba(148,163,184,.28);
+  border-radius:13px;
+  background:rgba(255,255,255,.84);
+}
+.sourceChip > button:first-child {
+  width:100%;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  display:grid;
+  gap:3px;
+  padding:10px 28px 10px 10px;
+  cursor:pointer;
+}
+.sourceChip strong {
+  font-size:.82rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.sourceChip small {
+  color:#64748b;
+  font-size:.7rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.sourceChip.selected {
+  border-color:#2563eb;
+  box-shadow:0 0 0 2px rgba(37,99,235,.08);
+  background:rgba(239,246,255,.95);
+}
+.sourceDelete {
+  position:absolute;
+  right:5px;
+  top:5px;
+  width:22px;
+  height:22px;
+  border:0;
+  border-radius:999px;
+  background:rgba(15,23,42,.06);
+  color:#64748b;
+  cursor:pointer;
+}
+.sourceForm {
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid rgba(148,163,184,.2);
+}
+.sourceTypeTabs { display:flex; gap:7px; }
+.sourceTypeTabs button {
+  border:1px solid rgba(148,163,184,.3);
+  border-radius:999px;
+  padding:7px 10px;
+  background:#fff;
+  color:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.sourceTypeTabs button.active {
+  border-color:#2563eb;
+  background:#eff6ff;
+  color:#1d4ed8;
+}
+.sourceForm input,
+.sourceForm textarea {
+  width:100%;
+  border:1px solid rgba(148,163,184,.35);
+  border-radius:12px;
+  padding:10px 11px;
+  background:#fff;
+  color:inherit;
+  font:inherit;
+}
+.sourceForm textarea { resize:vertical; }
+.sourceMetaGrid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.sourceFileLabel {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:48px;
+  border:1px dashed rgba(37,99,235,.35);
+  border-radius:12px;
+  background:rgba(239,246,255,.55);
+  padding:9px;
+  text-align:center;
+  cursor:pointer;
+  font-size:.82rem;
+  font-weight:700;
+}
+.sourceFileLabel input { display:none; }
+.sourceSave {
+  width:fit-content;
+  border:0;
+  border-radius:11px;
+  padding:10px 13px;
+  background:#2563eb;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+.sourceSave:disabled { opacity:.55; cursor:default; }
+.groundingBanner,
+.sourceMessage {
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:11px;
+  font-size:.8rem;
+}
+.groundingBanner {
+  background:rgba(34,197,94,.09);
+  color:#166534;
+}
+.sourceMessage {
+  background:rgba(15,23,42,.045);
+  color:#475569;
+}
+@media (max-width:640px) {
+  .studySourcesCard { padding:13px; border-radius:17px; }
+  .studySourcesHeader { flex-direction:column; }
+  .sourceMetaGrid { grid-template-columns:1fr; }
+}
