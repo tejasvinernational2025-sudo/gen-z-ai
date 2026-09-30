@@ -65,7 +65,7 @@ export default function AdaptivePracticeCard({
   const [nextDifficulty, setNextDifficulty] = useState<Difficulty | null>(null);
   const lastSeed = useRef("");
 
-  async function authHeaders() {
+  async function authHeaders(): Promise<Record<string, string>> {
     const token = signedIn ? await getAccessToken() : null;
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
