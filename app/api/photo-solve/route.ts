@@ -3,6 +3,7 @@ import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getLearningPromptContext } from "@/lib/learning-server";
+import { getGroundingContext } from "@/lib/source-grounding";
 import {
   consumePersistentQuota,
   quotaExceededMessage,
@@ -17,6 +18,7 @@ type PhotoSolveBody = {
   language?: string;
   mode?: StudyMode;
   studentContext?: string;
+  sourceId?: string;
 };
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
@@ -292,7 +294,11 @@ export async function POST(req: NextRequest) {
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "explain";
 
     const learningContext = await getLearningPromptContext(req);
-    const system = buildSystemPrompt(language, mode, studentContext, learningContext);
+    const groundingContext = await getGroundingContext(req, body.sourceId, prompt);
+    const system = [
+      buildSystemPrompt(language, mode, studentContext, learningContext),
+      groundingContext,
+    ].filter(Boolean).join("\n\n");
 
     const quota = await consumePersistentQuota(req, "photo");
     if (quota && !quota.allowed) {
