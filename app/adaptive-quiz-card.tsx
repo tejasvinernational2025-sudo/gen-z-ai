@@ -46,6 +46,7 @@ type Props = {
   signedIn: boolean;
   language: string;
   studentContext: string;
+  sourceId: string;
 };
 
 async function parseJson(response: Response) {
@@ -60,7 +61,7 @@ async function parseJson(response: Response) {
   return data;
 }
 
-export default function AdaptiveQuizCard({ signedIn, language, studentContext }: Props) {
+export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId }: Props) {
   const [topic, setTopic] = useState("");
   const [subject, setSubject] = useState("General");
   const [pack, setPack] = useState<QuizPack | null>(null);
@@ -125,6 +126,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext }:
           subject: subject.trim() || "General",
           studentContext,
           language,
+          sourceId: sourceId || undefined,
           difficulty: nextDifficulty,
         }),
       });
