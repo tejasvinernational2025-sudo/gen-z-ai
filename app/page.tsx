@@ -6,6 +6,7 @@ import { LANGUAGES } from "@/lib/languages";
 import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, normalizeStudyContext, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import HomeTutorCard from "@/app/home-tutor-card";
+import AdaptivePracticeCard from "@/app/adaptive-practice-card";
 import { trackLearningTurn } from "@/lib/learning-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -179,6 +180,7 @@ export default function Home() {
   const [photoName, setPhotoName] = useState("");
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
   const [pdfName, setPdfName] = useState("");
+  const [practiceSeed, setPracticeSeed] = useState<{ question: string; answer: string } | null>(null);
 
   const [user, setUser] = useState<User | null>(null);
   const [supabaseReady, setSupabaseReady] = useState(false);
@@ -453,6 +455,7 @@ export default function Home() {
     setPhotoName("");
     setPdfDataUrl(null);
     setPdfName("");
+    setPracticeSeed(null);
     setHistoryOpen(false);
   }
 
@@ -807,6 +810,10 @@ export default function Home() {
         finalReply = data.reply;
         const assistantMessage: Message = { role: "assistant", content: finalReply };
         setMessages((current) => [...current, assistantMessage]);
+      }
+
+      if (endpoint === "/api/photo-solve" && finalReply.trim()) {
+        setPracticeSeed({ question: userText, answer: finalReply });
       }
 
       setPhotoDataUrl(null);
@@ -1176,6 +1183,16 @@ export default function Home() {
         </div>
 
         {error && <div className="error">{error}</div>}
+
+        {practiceSeed && (
+          <AdaptivePracticeCard
+            sourceQuestion={practiceSeed.question}
+            sourceAnswer={practiceSeed.answer}
+            language={language}
+            studentContext={effectiveStudentContext}
+            signedIn={Boolean(user)}
+          />
+        )}
 
         <form className="composer" onSubmit={sendMessage}>
           {photoDataUrl && (
