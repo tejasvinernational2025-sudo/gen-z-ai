@@ -8,6 +8,7 @@ import type { StudyMode } from "@/lib/prompt";
 import HomeTutorCard from "@/app/home-tutor-card";
 import AdaptivePracticeCard from "@/app/adaptive-practice-card";
 import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
+import StudySourcesCard from "@/app/study-sources-card";
 import { trackLearningTurn } from "@/lib/learning-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -200,6 +201,7 @@ export default function Home() {
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlanConfig[]>([]);
   const [paymentReady, setPaymentReady] = useState(false);
   const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
+  const [activeSourceId, setActiveSourceId] = useState("");
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -753,8 +755,8 @@ export default function Home() {
       const requestBody = pdfDataUrl
         ? { pdfDataUrl, prompt: userText, language, mode, studentContext: effectiveStudentContext }
         : photoDataUrl
-          ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode, studentContext: effectiveStudentContext }
-          : { messages: nextMessages, language, mode, studentContext: effectiveStudentContext };
+          ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode, studentContext: effectiveStudentContext, sourceId: activeSourceId || undefined }
+          : { messages: nextMessages, language, mode, studentContext: effectiveStudentContext, sourceId: activeSourceId || undefined };
 
       const accessToken = user ? await getAccessToken() : null;
 
@@ -1145,6 +1147,13 @@ export default function Home() {
         onSignIn={() => setAuthOpen(true)}
       />
 
+      <StudySourcesCard
+        signedIn={Boolean(user)}
+        activeSourceId={activeSourceId}
+        onActiveChange={setActiveSourceId}
+        onSignIn={() => setAuthOpen(true)}
+      />
+
       <section className="modes" aria-label="Study modes">
         {MODES.map((item) => (
           <button
@@ -1163,6 +1172,7 @@ export default function Home() {
           signedIn={Boolean(user)}
           language={language}
           studentContext={effectiveStudentContext}
+          sourceId={activeSourceId}
         />
       )}
 
@@ -1200,6 +1210,7 @@ export default function Home() {
             language={language}
             studentContext={effectiveStudentContext}
             signedIn={Boolean(user)}
+            sourceId={activeSourceId}
           />
         )}
 
