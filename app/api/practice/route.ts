@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import {
   getAdaptiveDifficulty,
+  getPracticePerformance,
   savePracticeAttempt,
   type PracticeDifficulty,
 } from "@/lib/practice-server";
@@ -190,6 +191,148 @@ async function gradePractice(req: NextRequest, body: any) {
   });
 }
 
+
+async function generateQuiz(req: NextRequest, body: any) {
+  const topic = cleanText(body?.topic, 140);
+  const subject = cleanText(body?.subject, 80) || "General";
+  const studentContext = cleanText(body?.studentContext, 180) || "General";
+  const language = cleanText(body?.language, 80) || "Hinglish";
+
+  if (!topic) {
+    return NextResponse.json({ error: "Quiz ke liye topic required hai." }, { status: 400 });
+  }
+
+  const adaptiveDifficulty = safeDifficulty(body?.difficulty || await getAdaptiveDifficulty(req));
+
+  const data = await groqJson(
+    [
+      "You are Gen-z AI adaptive quiz engine for Indian students.",
+      "Return ONLY JSON with this exact shape:",
+      '{"subject":"...","topic":"...","questions":[{"id":"q1","question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"...","difficulty":"easy|medium|hard"}]}',
+      "Create exactly 5 fresh multiple-choice questions.",
+      "Each question must have exactly 4 concise options and exactly one correct answer.",
+      "Do not reveal the answer inside the question.",
+      "Match the selected board/class context and requested language.",
+      "Difficulty should center around the supplied adaptive level.",
+      "Use exam-style wording where appropriate but do not claim official current exam weightage.",
+    ].join("\n"),
+    [
+      `Student context: ${studentContext}`,
+      `Language: ${language}`,
+      `Adaptive level: ${adaptiveDifficulty}`,
+      `Subject: ${subject}`,
+      `Topic: ${topic}`,
+    ].join("\n"),
+    1400
+  );
+
+  const rawQuestions = Array.isArray(data?.questions) ? data.questions.slice(0, 5) : [];
+  const questions = rawQuestions.map((item: any, index: number) => {
+    const options = Array.isArray(item?.options)
+      ? item.options.slice(0, 4).map((option: unknown) => cleanText(option, 500))
+      : [];
+    const correctIndex = Number(item?.correctIndex);
+
+    return {
+      id: cleanText(item?.id, 24) || `q${index + 1}`,
+      question: cleanText(item?.question, 1200),
+      options,
+      correctIndex:
+        Number.isInteger(correctIndex) && correctIndex >= 0 && correctIndex <= 3
+          ? correctIndex
+          : 0,
+      explanation: cleanText(item?.explanation, 1200),
+      difficulty: safeDifficulty(item?.difficulty || adaptiveDifficulty),
+    };
+  }).filter((item: any) =>
+    item.question &&
+    item.options.length === 4 &&
+    item.options.every((option: string) => Boolean(option))
+  );
+
+  if (questions.length !== 5) {
+    throw new Error("5 quiz questions complete generate nahi hue. Dobara try karo.");
+  }
+
+  return NextResponse.json({
+    ok: true,
+    subject: cleanText(data?.subject, 80) || subject,
+    topic: cleanText(data?.topic, 140) || topic,
+    adaptiveDifficulty,
+    questions,
+  });
+}
+
+async function gradeQuiz(req: NextRequest, body: any) {
+  const question = cleanText(body?.question, 1600);
+  const subject = cleanText(body?.subject, 80) || "General";
+  const topic = cleanText(body?.topic, 140) || "Quiz";
+  const difficulty = safeDifficulty(body?.difficulty);
+  const options = Array.isArray(body?.options)
+    ? body.options.slice(0, 4).map((option: unknown) => cleanText(option, 500))
+    : [];
+  const selectedIndex = Number(body?.selectedIndex);
+  const correctIndex = Number(body?.correctIndex);
+  const explanation = cleanText(body?.explanation, 1400);
+
+  if (
+    !question ||
+    options.length !== 4 ||
+    !Number.isInteger(selectedIndex) ||
+    selectedIndex < 0 ||
+    selectedIndex > 3 ||
+    !Number.isInteger(correctIndex) ||
+    correctIndex < 0 ||
+    correctIndex > 3
+  ) {
+    return NextResponse.json({ error: "Quiz answer invalid hai." }, { status: 400 });
+  }
+
+  const correct = selectedIndex === correctIndex;
+  const score = correct ? 100 : 0;
+  const feedback = correct
+    ? "Sahi jawab ✅"
+    : `Correct answer: ${options[correctIndex]}`;
+
+  await savePracticeAttempt(req, {
+    subject,
+    topic,
+    sourceType: "quiz",
+    question,
+    studentAnswer: options[selectedIndex],
+    expectedAnswer: options[correctIndex],
+    correct,
+    score,
+    difficulty,
+    feedback: explanation ? `${feedback}. ${explanation}` : feedback,
+  }).catch(() => null);
+
+  return NextResponse.json({
+    ok: true,
+    correct,
+    score,
+    feedback,
+    explanation,
+    correctIndex,
+    nextDifficulty: correct
+      ? difficulty === "easy" ? "medium" : difficulty === "medium" ? "hard" : "hard"
+      : difficulty === "hard" ? "medium" : difficulty === "medium" ? "easy" : "easy",
+  });
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const performance = await getPracticePerformance(req);
+    if (!performance) {
+      return NextResponse.json({ signedIn: false, performance: null });
+    }
+    return NextResponse.json({ signedIn: true, performance });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Performance load nahi hua.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   const rate = enforceRateLimit(req, "adaptive-practice", 18, 30 * 60 * 1000);
   if (!rate.allowed) {
@@ -205,6 +348,8 @@ export async function POST(req: NextRequest) {
 
     if (action === "generate") return generatePractice(req, body);
     if (action === "grade") return gradePractice(req, body);
+    if (action === "generate_quiz") return generateQuiz(req, body);
+    if (action === "grade_quiz") return gradeQuiz(req, body);
 
     return NextResponse.json({ error: "Invalid practice action." }, { status: 400 });
   } catch (error) {
