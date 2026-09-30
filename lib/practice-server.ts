@@ -134,3 +134,85 @@ export async function savePracticeAttempt(
 
   return Array.isArray(rows) ? rows[0] ?? null : null;
 }
+
+
+export type PracticePerformance = {
+  totalAttempts: number;
+  correctAttempts: number;
+  accuracy: number;
+  averageScore: number;
+  recentMistakes: Array<{
+    subject: string;
+    topic: string;
+    question: string;
+    feedback: string;
+    score: number;
+    created_at: string;
+  }>;
+  weakTopics: Array<{
+    subject: string;
+    topic: string;
+    attempts: number;
+    mistakes: number;
+    accuracy: number;
+  }>;
+};
+
+export async function getPracticePerformance(req: NextRequest): Promise<PracticePerformance | null> {
+  const user = await getBearerUser(req);
+  if (!user) return null;
+
+  const rows = await serviceJson(
+    `practice_attempts?user_id=eq.${encodeURIComponent(user.id)}&select=subject,topic,question,feedback,correct,score,created_at&order=created_at.desc&limit=40`
+  );
+
+  if (!Array.isArray(rows)) return null;
+
+  const totalAttempts = rows.length;
+  const correctAttempts = rows.filter((item) => Boolean(item?.correct)).length;
+  const averageScore = totalAttempts
+    ? Math.round(rows.reduce((sum, item) => sum + Number(item?.score || 0), 0) / totalAttempts)
+    : 0;
+  const accuracy = totalAttempts ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
+
+  const topicMap = new Map<string, { subject: string; topic: string; attempts: number; mistakes: number }>();
+  for (const item of rows) {
+    const subject = cleanText(item?.subject, 80) || "General";
+    const topic = cleanText(item?.topic, 140) || "Practice";
+    const key = `${subject}::${topic}`;
+    const current = topicMap.get(key) || { subject, topic, attempts: 0, mistakes: 0 };
+    current.attempts += 1;
+    if (!item?.correct) current.mistakes += 1;
+    topicMap.set(key, current);
+  }
+
+  const weakTopics = Array.from(topicMap.values())
+    .map((item) => ({
+      ...item,
+      accuracy: Math.round(((item.attempts - item.mistakes) / item.attempts) * 100),
+    }))
+    .filter((item) => item.mistakes > 0)
+    .sort((a, b) => b.mistakes - a.mistakes || a.accuracy - b.accuracy)
+    .slice(0, 5);
+
+  const recentMistakes = rows
+    .filter((item) => !item?.correct)
+    .slice(0, 6)
+    .map((item) => ({
+      subject: cleanText(item?.subject, 80) || "General",
+      topic: cleanText(item?.topic, 140) || "Practice",
+      question: cleanText(item?.question, 600),
+      feedback: cleanText(item?.feedback, 600),
+      score: Number(item?.score || 0),
+      created_at: String(item?.created_at || ""),
+    }));
+
+  return {
+    totalAttempts,
+    correctAttempts,
+    accuracy,
+    averageScore,
+    recentMistakes,
+    weakTopics,
+  };
+}
