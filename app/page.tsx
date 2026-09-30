@@ -7,6 +7,7 @@ import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoar
 import type { StudyMode } from "@/lib/prompt";
 import HomeTutorCard from "@/app/home-tutor-card";
 import AdaptivePracticeCard from "@/app/adaptive-practice-card";
+import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
 import { trackLearningTurn } from "@/lib/learning-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -1156,6 +1157,14 @@ export default function Home() {
           </button>
         ))}
       </section>
+
+      {mode === "quiz" && (
+        <AdaptiveQuizCard
+          signedIn={Boolean(user)}
+          language={language}
+          studentContext={effectiveStudentContext}
+        />
+      )}
 
       <section className="chatCard">
         <div className="messages">
