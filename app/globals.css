@@ -475,3 +475,108 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
 .planItem.done strong { text-decoration:line-through; }
 .planItem button { padding:7px 10px; background:rgba(79,70,229,.1); color:inherit; }
 @media (max-width:640px) { .homeTutorGrid{grid-template-columns:1fr}.homeTutorCard{padding:14px;border-radius:18px} }
+
+
+/* Photo -> Adaptive Practice */
+.adaptivePractice {
+  margin: 14px 16px 18px;
+  padding: 16px;
+  border: 1px solid rgba(99, 102, 241, .24);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(79,70,229,.08), rgba(14,165,233,.05));
+}
+.adaptivePracticeHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.adaptivePracticeHead span {
+  display: block;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #4f46e5;
+}
+.adaptivePracticeHead h4 { margin: 3px 0 4px; font-size: 1rem; }
+.adaptivePracticeHead p { margin: 0; color: #64748b; font-size: .86rem; }
+.adaptivePracticeHead em {
+  white-space: nowrap;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(79,70,229,.1);
+  font-size: .74rem;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+.practiceQuestion {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 15px;
+  background: rgba(255,255,255,.76);
+  border: 1px solid rgba(148,163,184,.22);
+}
+.practiceQuestionMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: .8rem;
+}
+.practiceQuestionMeta span { color: #64748b; text-transform: capitalize; }
+.practicePrompt { margin: 0; font-weight: 700; line-height: 1.5; }
+.practiceQuestion textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid rgba(148,163,184,.38);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  color: inherit;
+  background: rgba(255,255,255,.9);
+}
+.practiceHint {
+  width: fit-content;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+.practiceHintText { margin: -2px 0 0; color: #475569; font-size: .86rem; }
+.practiceCheck, .practiceResult button, .practiceError button {
+  width: fit-content;
+  border: 0;
+  border-radius: 11px;
+  padding: 9px 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.practiceCheck { background: #4f46e5; color: white; }
+.practiceCheck:disabled { opacity: .5; cursor: default; }
+.practiceResult {
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border-radius: 12px;
+}
+.practiceResult.correct { background: rgba(34,197,94,.10); }
+.practiceResult.incorrect { background: rgba(245,158,11,.12); }
+.practiceResult p, .practiceResult small { margin: 0; }
+.practiceResult button { margin-top: 5px; background: rgba(79,70,229,.12); color: inherit; }
+.practiceLoading, .practiceSaveNote { color: #64748b; font-size: .84rem; }
+.practiceError {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  color: #b91c1c;
+  font-size: .84rem;
+}
+.practiceError button { background: rgba(185,28,28,.1); color: inherit; }
+@media (max-width: 640px) {
+  .adaptivePractice { margin: 12px 10px 16px; padding: 13px; }
+  .adaptivePracticeHead { flex-direction: column; }
+}
