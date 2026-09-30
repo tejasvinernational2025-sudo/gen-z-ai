@@ -204,3 +204,274 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
 .answerBullet { display:flex; gap:7px; align-items:flex-start; }
 .answerBullet > span { color:#6547d8; font-weight:900; }
 .answerBullet p { flex:1; }
+
+
+/* AI Home Tutor */
+.homeTutorCard {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(126, 87, 194, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(126, 87, 194, 0.12), transparent 34%),
+    linear-gradient(180deg, #ffffff, #fbf9ff);
+  box-shadow: 0 14px 36px rgba(45, 34, 76, 0.08);
+}
+
+.homeTutorHeader,
+.homeTutorSectionTitle {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.homeTutorHeader h3 {
+  margin: 5px 0 4px;
+  font-size: 1.1rem;
+}
+
+.homeTutorHeader p,
+.homeTutorSectionTitle span {
+  margin: 0;
+  color: #6f6a7d;
+  font-size: 0.86rem;
+}
+
+.homeTutorEyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #6c4ccf;
+}
+
+.homeTutorPrimary,
+.homeTutorSecondary {
+  border: 0;
+  border-radius: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.homeTutorPrimary {
+  padding: 11px 14px;
+  background: #6c4ccf;
+  color: #fff;
+}
+
+.homeTutorSecondary {
+  padding: 9px 12px;
+  background: #f0ebff;
+  color: #5f42b7;
+  white-space: nowrap;
+}
+
+.homeTutorSettings {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ece8f5;
+}
+
+.homeTutorSettings label {
+  display: grid;
+  gap: 6px;
+}
+
+.homeTutorSettings label > span,
+.subjectPicker > span {
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: #423c4d;
+}
+
+.homeTutorSettings select {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid #ddd7e9;
+  background: #fff;
+  padding: 0 11px;
+  color: #292532;
+}
+
+.subjectPicker > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.subjectPicker button {
+  border: 1px solid #ddd7e9;
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+}
+
+.subjectPicker button.selected {
+  border-color: #7a5ad8;
+  background: #f0ebff;
+  color: #5f42b7;
+}
+
+.learningSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin: 16px 0;
+}
+
+.learningSummaryGrid > div {
+  padding: 11px;
+  border-radius: 14px;
+  background: #f7f4fc;
+  display: grid;
+  gap: 4px;
+}
+
+.learningSummaryGrid span {
+  font-size: 0.72rem;
+  color: #777181;
+}
+
+.learningSummaryGrid strong {
+  font-size: 1rem;
+  color: #2f2939;
+}
+
+.weakTopics,
+.dailyPlan {
+  margin-top: 16px;
+}
+
+.weakTopicList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.weakTopicChip {
+  border-radius: 13px;
+  border: 1px solid #ece6f6;
+  padding: 10px;
+  background: #fff;
+  display: grid;
+  gap: 3px;
+}
+
+.weakTopicChip span {
+  font-size: 0.7rem;
+  color: #7b7390;
+}
+
+.weakTopicChip strong {
+  font-size: 0.84rem;
+  color: #332c40;
+}
+
+.weakTopicChip em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: #8b5b1a;
+}
+
+.planItems {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.planItem {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #e8e2f1;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.planItem.done {
+  background: #f0fbf4;
+  border-color: #ccebd8;
+}
+
+.planCheck {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.planCopy {
+  display: grid;
+  gap: 4px;
+}
+
+.planCopy strong {
+  color: #332c40;
+  font-size: 0.86rem;
+}
+
+.planCopy small {
+  color: #6e6877;
+  line-height: 1.4;
+}
+
+.homeTutorEmpty,
+.homeTutorMessage {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f7f4fc;
+  color: #5c5568;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .homeTutorCard {
+    padding: 15px;
+    border-radius: 18px;
+  }
+
+  .homeTutorHeader,
+  .homeTutorSectionTitle {
+    align-items: stretch;
+  }
+
+  .learningSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .weakTopicList {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* AI Home Tutor */
+.homeTutorCard { margin:18px 0; padding:18px; border:1px solid rgba(99,102,241,.24); border-radius:22px; background:linear-gradient(145deg,rgba(99,102,241,.09),rgba(14,165,233,.05)); }
+.homeTutorHead,.homeTutorActions,.planItem,.weakTopic { display:flex; gap:12px; align-items:center; justify-content:space-between; }
+.homeTutorHead span,.homeTutorHint { color:var(--muted,#64748b); font-size:.88rem; }
+.homeTutorGrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+.homeTutorGrid label { display:grid; gap:6px; font-size:.82rem; font-weight:700; }
+.homeTutorGrid input,.homeTutorGrid select { width:100%; border:1px solid rgba(148,163,184,.35); border-radius:12px; padding:10px 12px; background:var(--card,#fff); color:inherit; }
+.homeTutorActions { justify-content:flex-start; flex-wrap:wrap; }
+.homeTutorActions button,.planItem button { border:0; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:700; }
+.homeTutorActions button:first-child { background:#4f46e5; color:white; }
+.tutorSection { margin-top:16px; }
+.tutorSection h4 { margin:0 0 9px; }
+.weakList,.planList { display:grid; gap:8px; }
+.weakTopic,.planItem { padding:11px 12px; border-radius:14px; background:rgba(255,255,255,.7); border:1px solid rgba(148,163,184,.2); align-items:flex-start; }
+.weakTopic div,.planItem div { display:grid; gap:3px; }
+.weakTopic small,.planItem small { color:var(--muted,#64748b); }
+.masteryPill { white-space:nowrap; font-size:.78rem; font-weight:800; padding:5px 8px; border-radius:999px; background:rgba(245,158,11,.12); }
+.planItem.done { opacity:.62; }
+.planItem.done strong { text-decoration:line-through; }
+.planItem button { padding:7px 10px; background:rgba(79,70,229,.1); color:inherit; }
+@media (max-width:640px) { .homeTutorGrid{grid-template-columns:1fr}.homeTutorCard{padding:14px;border-radius:18px} }

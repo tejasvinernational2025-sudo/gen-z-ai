@@ -5,6 +5,8 @@ import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
 import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, normalizeStudyContext, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
+import HomeTutorCard from "@/app/home-tutor-card";
+import { trackLearningTurn } from "@/lib/learning-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   completeAuthFromUrl,
@@ -823,6 +825,15 @@ export default function Home() {
           });
           if (id) setConversationId(id);
           await refreshHistory();
+
+          void trackLearningTurn({
+            userText: visibleText,
+            assistantText: finalReply,
+            mode,
+            studentContext: effectiveStudentContext,
+          })
+            .then(() => window.dispatchEvent(new Event("genz-learning-updated")))
+            .catch(() => {});
         } catch {
           setNotice("Answer mil gaya, lekin chat history save nahi ho pai.");
         }
@@ -1117,6 +1128,14 @@ export default function Home() {
         </div>
         {schoolBoard && <div className="boardActive">✓ {studentContext}</div>}
       </section>
+
+      <HomeTutorCard
+        signedIn={Boolean(user)}
+        board={schoolBoard}
+        schoolClass={schoolClass}
+        medium={studyMedium}
+        onSignIn={() => setAuthOpen(true)}
+      />
 
       <section className="modes" aria-label="Study modes">
         {MODES.map((item) => (

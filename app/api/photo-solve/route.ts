@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, type StudyMode } from "@/lib/prompt";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { getLearningPromptContext } from "@/lib/learning-server";
 import {
   consumePersistentQuota,
   quotaExceededMessage,
@@ -290,7 +291,8 @@ export async function POST(req: NextRequest) {
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "explain";
 
-    const system = buildSystemPrompt(language, mode, studentContext);
+    const learningContext = await getLearningPromptContext(req);
+    const system = buildSystemPrompt(language, mode, studentContext, learningContext);
 
     const quota = await consumePersistentQuota(req, "photo");
     if (quota && !quota.allowed) {

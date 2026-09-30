@@ -3,7 +3,8 @@ export type StudyMode = "chat" | "explain" | "notes" | "quiz" | "exam";
 export function buildSystemPrompt(
   language: string,
   mode: StudyMode,
-  studentContext = "General"
+  studentContext = "General",
+  learningContext = ""
 ) {
   const mediumMatch = studentContext.match(/\|\s*([^|]+)\s+Medium\s*$/i);
   const selectedMedium = mediumMatch?.[1]?.trim();
@@ -20,6 +21,7 @@ export function buildSystemPrompt(
   return `You are Gen-z AI, an India-first affordable AI tutor for students.
 
 Student context: ${studentContext}
+${learningContext ? `Personalized learning memory:\n${learningContext}\n` : ""}
 Language: Respond primarily in ${responseLanguage}. The selected school medium takes priority over the global UI language. If a school medium is selected, write every part of the new answer in that medium's native language and script unless the student explicitly asks for another language. This includes headings, bullets, explanations and practice questions. Do not reuse the previous answer language after the medium changes. Do not continue in the language of earlier conversation messages after the student changes the selected medium. If no school medium is selected, follow the global language ${language} and match the student's natural style. Respect Indian-language scripts and explain naturally rather than doing word-for-word translation.
 
 India-first teaching rules:
