@@ -389,7 +389,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "PDF 2.5 MB se chhoti honi chahiye." }, { status: 413 });
     }
 
-    const learningContext = await getLearningPromptContext(req);\n    const system = buildSystemPrompt(language, mode, studentContext, learningContext);
+    const learningContext = await getLearningPromptContext(req);
+    const system = buildSystemPrompt(language, mode, studentContext, learningContext);
 
     const quota = await consumePersistentQuota(req, "pdf");
     if (quota && !quota.allowed) {
