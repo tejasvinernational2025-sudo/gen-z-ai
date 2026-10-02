@@ -842,3 +842,154 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .studySourcesHeader { flex-direction:column; }
   .sourceMetaGrid { grid-template-columns:1fr; }
 }
+
+
+/* Exam Performance + Parent Progress */
+.progressDashboardCard {
+  margin:18px 0;
+  padding:16px;
+  border:1px solid rgba(14,116,144,.2);
+  border-radius:20px;
+  background:linear-gradient(145deg,rgba(6,182,212,.07),rgba(59,130,246,.05));
+}
+.progressHeader {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.progressHeader span {
+  display:block;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:#0e7490;
+}
+.progressHeader h3 { margin:4px 0 4px; font-size:1.02rem; }
+.progressHeader p { margin:0; color:#64748b; font-size:.84rem; line-height:1.45; }
+.progressHeader > button,
+.progressTabs button,
+.parentSummaryPanel button {
+  border:0;
+  border-radius:11px;
+  padding:9px 11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.progressHeader > button { background:rgba(14,116,144,.1); color:#0e7490; white-space:nowrap; }
+.progressQuickGrid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+  margin-top:14px;
+}
+.progressQuickGrid > div,
+.examMetrics > div,
+.difficultyGrid > div {
+  display:grid;
+  gap:3px;
+  padding:11px;
+  border:1px solid rgba(148,163,184,.2);
+  border-radius:13px;
+  background:rgba(255,255,255,.78);
+}
+.progressQuickGrid span,
+.examMetrics span,
+.difficultyGrid span {
+  font-size:.72rem;
+  color:#64748b;
+}
+.progressQuickGrid strong,
+.examMetrics strong,
+.difficultyGrid strong { font-size:1rem; color:#1f2937; }
+.progressQuickGrid small,
+.difficultyGrid small { font-size:.72rem; color:#64748b; }
+.progressBody {
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid rgba(148,163,184,.2);
+  display:grid;
+  gap:16px;
+}
+.progressTabs { display:flex; gap:7px; }
+.progressTabs button { background:rgba(15,23,42,.05); color:#475569; }
+.progressTabs button.active { background:#0e7490; color:#fff; }
+.examMetrics { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.trendText { font-size:.86rem !important; line-height:1.25; }
+.progressSplit { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.progressSection,
+.difficultyBreakdown,
+.recentMistakesPanel,
+.parentSummaryPanel {
+  padding:12px;
+  border:1px solid rgba(148,163,184,.2);
+  border-radius:14px;
+  background:rgba(255,255,255,.7);
+}
+.progressSectionTitle {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+  margin-bottom:9px;
+}
+.progressSectionTitle > div { min-width:0; }
+.progressSectionTitle span { display:block; color:#64748b; font-size:.72rem; margin-top:2px; }
+.progressTopicList { display:grid; gap:7px; }
+.progressTopicRow {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  padding:9px 10px;
+  border-radius:11px;
+  background:rgba(245,158,11,.07);
+}
+.progressTopicRow.strong { background:rgba(34,197,94,.07); }
+.progressTopicRow > div { display:grid; gap:2px; min-width:0; }
+.progressTopicRow strong { font-size:.82rem; }
+.progressTopicRow small { color:#64748b; font-size:.7rem; }
+.progressTopicRow em { font-style:normal; font-weight:800; font-size:.78rem; white-space:nowrap; }
+.progressEmpty { margin:0; color:#64748b; font-size:.8rem; }
+.difficultyGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.difficultyGrid span { text-transform:capitalize; }
+.recentMistakeRow {
+  display:grid;
+  gap:4px;
+  padding:9px 0;
+  border-top:1px solid rgba(148,163,184,.14);
+}
+.recentMistakeRow:first-of-type { border-top:0; }
+.recentMistakeRow strong { font-size:.78rem; color:#334155; }
+.recentMistakeRow p { margin:0; font-size:.8rem; line-height:1.4; }
+.recentMistakeRow small { color:#64748b; line-height:1.4; }
+.parentSummaryPanel pre {
+  white-space:pre-wrap;
+  font:inherit;
+  font-size:.8rem;
+  line-height:1.55;
+  margin:8px 0 10px;
+  padding:11px;
+  border-radius:11px;
+  background:rgba(15,23,42,.045);
+  color:#334155;
+}
+.parentSummaryPanel button { background:rgba(14,116,144,.1); color:#0e7490; }
+.copyParentSummary { width:fit-content; }
+.progressMessage {
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:11px;
+  background:rgba(15,23,42,.045);
+  color:#475569;
+  font-size:.8rem;
+}
+@media (max-width:640px) {
+  .progressDashboardCard { padding:13px; border-radius:17px; }
+  .progressHeader { flex-direction:column; }
+  .progressQuickGrid,
+  .examMetrics,
+  .progressSplit,
+  .difficultyGrid { grid-template-columns:1fr; }
+  .progressSectionTitle { align-items:stretch; }
+}

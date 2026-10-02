@@ -114,6 +114,7 @@ export default function HomeTutorCard({
       });
       await generateDailyStudyPlan();
       await refresh();
+      window.dispatchEvent(new Event("genz-learning-updated"));
       setSettingsOpen(false);
       setMessage("AI Home Tutor profile aur aaj ka study plan ready hai ✅");
     } catch (error) {
@@ -129,6 +130,7 @@ export default function HomeTutorCard({
     try {
       await generateDailyStudyPlan();
       await refresh();
+      window.dispatchEvent(new Event("genz-learning-updated"));
       setMessage("Aaj ka plan weak topics ke hisaab se refresh ho gaya.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Study plan refresh nahi hua.");
@@ -142,6 +144,7 @@ export default function HomeTutorCard({
     try {
       await toggleDailyPlanItem(key);
       await refresh();
+      window.dispatchEvent(new Event("genz-learning-updated"));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Task update nahi hua.");
     } finally {
