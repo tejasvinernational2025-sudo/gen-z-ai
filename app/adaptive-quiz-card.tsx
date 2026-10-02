@@ -210,7 +210,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   const progressText = useMemo(() => {
     if (!pack) return "";
     return `${ui.question} ${index + 1}/${pack.questions.length}`;
-  }, [pack, index]);
+  }, [pack, index, ui.question]);
 
   return (
     <section className="adaptiveQuiz" aria-label="Adaptive quiz and mistake analysis">
@@ -220,7 +220,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
           <h4>🎯 {ui.title}</h4>
           <p>{ui.description}</p>
         </div>
-        {pack && <em>{ui.level[pack.adaptiveDifficulty]}</em>
+        {pack && <em>{ui.level[pack.adaptiveDifficulty]}</em>}
       </div>
 
       {!pack && (
