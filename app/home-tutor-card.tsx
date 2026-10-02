@@ -16,6 +16,7 @@ type Props = {
   schoolClass: string;
   medium: string;
   language: string;
+  studentContext: string;
   onSignIn: () => void;
 };
 
@@ -36,6 +37,7 @@ export default function HomeTutorCard({
   schoolClass,
   medium,
   language,
+  studentContext,
   onSignIn,
 }: Props) {
   const [snapshot, setSnapshot] = useState<LearningSnapshot | null>(null);
@@ -46,7 +48,7 @@ export default function HomeTutorCard({
   const [dailyMinutes, setDailyMinutes] = useState(30);
   const [subjects, setSubjects] = useState<string[]>(["Mathematics", "Science", "English"]);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const ui = getLearningHubUiText(medium, language);
+  const ui = getLearningHubUiText(studentContext, language);
 
   async function refresh() {
     if (!signedIn) {
