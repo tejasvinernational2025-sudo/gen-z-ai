@@ -1083,34 +1083,6 @@ export default function Home() {
         {schoolBoard && <div className="boardActive">✓ {studentContext}</div>}
       </section>
 
-      <HomeTutorCard
-        signedIn={Boolean(user)}
-        board={schoolBoard}
-        schoolClass={schoolClass}
-        medium={studyMedium}
-        onSignIn={() => setAuthOpen(true)}
-      />
-
-      <StudySourcesCard
-        signedIn={Boolean(user)}
-        activeSourceId={activeSourceId}
-        onActiveChange={setActiveSourceId}
-        onSignIn={() => setAuthOpen(true)}
-      />
-
-      <ProgressDashboardCard
-        signedIn={Boolean(user)}
-        onSignIn={() => setAuthOpen(true)}
-      />
-
-      <SmartRevisionCard
-        signedIn={Boolean(user)}
-        language={language}
-        studentContext={effectiveStudentContext}
-        sourceId={activeSourceId}
-        onSignIn={() => setAuthOpen(true)}
-      />
-
       <section className="modes" aria-label="Study modes">
         {MODES.map((item) => (
           <button
@@ -1230,9 +1202,54 @@ export default function Home() {
         </form>
       </section>
 
+      <section className="learningHubIntro" aria-label="Personal learning tools">
+        <span>YOUR LEARNING HUB</span>
+        <h3>Plan → Practice → Track → Revise</h3>
+        <p>
+          Chat ke baad apna daily plan, saved books, progress aur smart revision yahan manage karo.
+        </p>
+      </section>
+
+      <div id="home-tutor">
+        <HomeTutorCard
+          signedIn={Boolean(user)}
+          board={schoolBoard}
+          schoolClass={schoolClass}
+          medium={studyMedium}
+          onSignIn={() => setAuthOpen(true)}
+        />
+      </div>
+
+      <div id="smart-revision">
+        <SmartRevisionCard
+          signedIn={Boolean(user)}
+          language={language}
+          studentContext={effectiveStudentContext}
+          sourceId={activeSourceId}
+          onSignIn={() => setAuthOpen(true)}
+        />
+      </div>
+
+      <div id="progress">
+        <ProgressDashboardCard
+          signedIn={Boolean(user)}
+          onSignIn={() => setAuthOpen(true)}
+        />
+      </div>
+
+      <div id="study-sources">
+        <StudySourcesCard
+          signedIn={Boolean(user)}
+          activeSourceId={activeSourceId}
+          onActiveChange={setActiveSourceId}
+          onSignIn={() => setAuthOpen(true)}
+        />
+      </div>
+
       <footer>
         <div><strong>Gen-z AI</strong> · Student-first · Multilingual · Affordable</div>
-        <nav className="footerLinks" aria-label="Legal">
+        <nav className="footerLinks" aria-label="Legal and support">
+          <a href="/support">Support</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
           <a href="/refund">Refund & Cancellation</a>
