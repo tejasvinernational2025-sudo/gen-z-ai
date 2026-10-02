@@ -177,7 +177,7 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
     );
   }
 
-  const delta = data?.trend.accuracyDelta;
+  const delta = data ? data.trend.accuracyDelta : null;
 
   return (
     <section className="progressDashboardCard" aria-label="Exam performance and parent progress">
