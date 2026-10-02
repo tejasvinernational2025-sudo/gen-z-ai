@@ -1236,3 +1236,166 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .revisionActions { justify-content:flex-start; }
   .upcomingRevisionList > div { grid-template-columns:1fr; }
 }
+
+
+/* Simplified public auth */
+.authPanelSimple {
+  max-width: 520px;
+  margin: 14px auto 18px;
+  display: grid;
+  gap: 12px;
+}
+.authPanelSimple .googleSignInButton,
+.authPanelSimple .magicLinkButton {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.authPanelSimple .googleSignInButton {
+  background: #fff;
+  color: #1f2937;
+  border: 1px solid rgba(148,163,184,.35);
+}
+.authPanelSimple .magicLinkButton {
+  background: #4f46e5;
+  color: #fff;
+}
+.authPanelSimple .magicLinkButton:disabled {
+  opacity: .55;
+  cursor: default;
+}
+.authEmailLabel {
+  display: grid;
+  gap: 6px;
+}
+.authEmailLabel > span {
+  font-size: .78rem;
+  font-weight: 750;
+  color: #475569;
+}
+.authEmailLabel input {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px solid rgba(148,163,184,.35);
+  padding: 0 12px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+.authPrivacyNote {
+  margin: 0;
+  color: #64748b;
+  font-size: .76rem;
+  line-height: 1.45;
+  text-align: center;
+}
+.authCloseButton {
+  width: fit-content;
+  margin: 0 auto;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Dedicated reviewer login */
+.reviewerLoginShell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at top, rgba(99,102,241,.12), transparent 34%),
+    #f8fafc;
+}
+.reviewerLoginCard {
+  width: min(100%, 440px);
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid rgba(148,163,184,.22);
+  box-shadow: 0 18px 48px rgba(15,23,42,.08);
+}
+.reviewerBackLink {
+  width: fit-content;
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: .82rem;
+}
+.reviewerLoginIntro span {
+  display: block;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .09em;
+  color: #6d28d9;
+}
+.reviewerLoginIntro h1 {
+  margin: 4px 0 5px;
+  font-size: 1.35rem;
+}
+.reviewerLoginIntro p {
+  margin: 0;
+  color: #64748b;
+  font-size: .84rem;
+  line-height: 1.5;
+}
+.reviewerLoginCard form {
+  display: grid;
+  gap: 12px;
+}
+.reviewerLoginCard label {
+  display: grid;
+  gap: 6px;
+}
+.reviewerLoginCard label > span {
+  font-size: .78rem;
+  font-weight: 750;
+  color: #475569;
+}
+.reviewerLoginCard input {
+  min-height: 46px;
+  border: 1px solid rgba(148,163,184,.35);
+  border-radius: 12px;
+  padding: 0 12px;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+}
+.reviewerLoginCard form > button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 12px;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+.reviewerLoginCard form > button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+.reviewerLoginMessage {
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(15,23,42,.05);
+  color: #475569;
+  font-size: .78rem;
+}
+.reviewerLoginCard > small {
+  color: #64748b;
+  line-height: 1.45;
+}
+@media (max-width: 520px) {
+  .reviewerLoginCard {
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
