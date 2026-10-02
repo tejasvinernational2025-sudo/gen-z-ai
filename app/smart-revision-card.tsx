@@ -301,7 +301,7 @@ export default function SmartRevisionCard({
     <section className="smartRevisionCard" aria-label="Smart revision engine">
       <div className="revisionHeader">
         <div>
-          <span>SMART REVISION</span>
+          <span>{ui.revisionEyebrow}</span>
           <h3>🔁 {ui.reviseToday}</h3>
           <p>
             {dashboard
@@ -399,7 +399,7 @@ export default function SmartRevisionCard({
         <div className="revisionSession">
           <div className="revisionSessionHead">
             <div>
-              <span>REVISION SESSION</span>
+              <span>{ui.revisionEyebrow}</span>
               <strong>{activeRevision.subject} · {activeRevision.topic}</strong>
             </div>
             <button
@@ -411,7 +411,7 @@ export default function SmartRevisionCard({
                 setScores([]);
               }}
             >
-              Exit
+              {ui.close}
             </button>
           </div>
 
