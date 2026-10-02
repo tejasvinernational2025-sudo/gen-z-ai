@@ -157,7 +157,7 @@ export default function StudySourcesCard({
         <div className="studySourcesHeader">
           <div>
             <span>{ui.sourcesEyebrow}</span>
-            <h3>📚 Apni book se answer lo</h3>
+            <h3>📚 {ui.sourcesSignedOutTitle}</h3>
             <p>{ui.sourcesSignedOutDesc}</p>
           </div>
           <button type="button" onClick={onSignIn}>{ui.signIn}</button>
@@ -170,7 +170,7 @@ export default function StudySourcesCard({
     <section className="studySourcesCard" aria-label="Chapter and book grounding">
       <div className="studySourcesHeader">
         <div>
-          <span>CHAPTER / BOOK GROUNDING</span>
+          <span>{ui.sourcesEyebrow}</span>
           <h3>📚 {active ? ui.groundingOn : ui.makeBookSource}</h3>
           <p>
             {active
