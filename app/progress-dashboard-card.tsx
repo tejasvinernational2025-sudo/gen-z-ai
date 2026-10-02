@@ -162,7 +162,7 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
     <section className="progressDashboardCard" aria-label="Exam performance and parent progress">
       <div className="progressHeader">
         <div>
-          <span>EXAM PERFORMANCE</span>
+          <span>{ui.progressEyebrow}</span>
           <h3>📈 {ui.progressTitle}</h3>
           <p>
             {data?.profile?.goal
