@@ -10,6 +10,7 @@ import AdaptivePracticeCard from "@/app/adaptive-practice-card";
 import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
 import StudySourcesCard from "@/app/study-sources-card";
 import ProgressDashboardCard from "@/app/progress-dashboard-card";
+import SmartRevisionCard from "@/app/smart-revision-card";
 import { trackLearningTurn } from "@/lib/learning-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -1157,6 +1158,14 @@ export default function Home() {
 
       <ProgressDashboardCard
         signedIn={Boolean(user)}
+        onSignIn={() => setAuthOpen(true)}
+      />
+
+      <SmartRevisionCard
+        signedIn={Boolean(user)}
+        language={language}
+        studentContext={effectiveStudentContext}
+        sourceId={activeSourceId}
         onSignIn={() => setAuthOpen(true)}
       />
 
