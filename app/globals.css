@@ -842,3 +842,203 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .studySourcesHeader { flex-direction:column; }
   .sourceMetaGrid { grid-template-columns:1fr; }
 }
+
+
+/* Exam Performance + Parent Progress */
+.progressDashboardCard {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(14,116,144,.18);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(14,165,233,.06), rgba(16,185,129,.04));
+}
+.progressHead {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.progressHead > div { min-width:0; }
+.progressHead span {
+  display:block;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:#0e7490;
+}
+.progressHead h3 { margin:4px 0 4px; font-size:1.02rem; }
+.progressHead p { margin:0; color:#64748b; font-size:.84rem; line-height:1.45; }
+.progressHead > button {
+  flex:0 0 auto;
+  border:0;
+  border-radius:11px;
+  padding:9px 11px;
+  background:rgba(14,116,144,.1);
+  color:#0f766e;
+  font-weight:800;
+  cursor:pointer;
+}
+.progressQuickGrid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:13px;
+}
+.progressQuickGrid > div {
+  display:grid;
+  gap:3px;
+  padding:10px;
+  border-radius:13px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(148,163,184,.2);
+}
+.progressQuickGrid span { font-size:.72rem; color:#64748b; }
+.progressQuickGrid strong { font-size:1rem; }
+.progressQuickGrid small { font-size:.7rem; color:#64748b; line-height:1.3; }
+.progressDetails { display:grid; gap:14px; margin-top:15px; }
+.progressSection {
+  display:grid;
+  gap:9px;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(148,163,184,.18);
+}
+.progressSectionTitle {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.progressSectionTitle > div { display:grid; gap:2px; }
+.progressSectionTitle span { font-size:.72rem; color:#64748b; }
+.subjectPerformanceList { display:grid; gap:9px; }
+.subjectPerformanceRow {
+  display:grid;
+  grid-template-columns:minmax(120px,1fr) minmax(90px,1.2fr) auto;
+  gap:10px;
+  align-items:center;
+}
+.subjectPerformanceRow > div:first-child { display:grid; gap:2px; min-width:0; }
+.subjectPerformanceRow strong { font-size:.82rem; }
+.subjectPerformanceRow small { font-size:.7rem; color:#64748b; }
+.subjectPerformanceRow em {
+  font-style:normal;
+  font-size:.78rem;
+  font-weight:800;
+  min-width:42px;
+  text-align:right;
+}
+.performanceMeter {
+  height:8px;
+  border-radius:999px;
+  background:rgba(148,163,184,.18);
+  overflow:hidden;
+}
+.performanceMeter span {
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:#0ea5e9;
+}
+.progressTopicGrid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.progressTopicList { display:grid; gap:7px; }
+.progressTopic {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  padding:9px 10px;
+  border-radius:11px;
+}
+.progressTopic > div { display:grid; gap:2px; min-width:0; }
+.progressTopic strong { font-size:.8rem; }
+.progressTopic small { font-size:.7rem; color:#64748b; }
+.progressTopic em { font-style:normal; font-size:.74rem; font-weight:800; white-space:nowrap; }
+.progressTopic.weak { background:rgba(245,158,11,.09); }
+.progressTopic.strong { background:rgba(34,197,94,.08); }
+.progressMistakeList { display:grid; gap:7px; }
+.progressMistake {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 10px;
+  border-radius:11px;
+  background:rgba(248,113,113,.06);
+}
+.progressMistake > div { display:grid; gap:3px; min-width:0; }
+.progressMistake strong { font-size:.78rem; }
+.progressMistake small {
+  font-size:.72rem;
+  color:#64748b;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.progressMistake em { font-style:normal; font-size:.74rem; font-weight:800; white-space:nowrap; }
+.parentSummaryCard {
+  display:grid;
+  gap:10px;
+  padding:14px;
+  border-radius:15px;
+  border:1px solid rgba(124,58,237,.18);
+  background:linear-gradient(145deg,rgba(124,58,237,.06),rgba(59,130,246,.04));
+}
+.parentSummaryHead {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+.parentSummaryHead > div:first-child { display:grid; gap:4px; }
+.parentSummaryHead span { font-size:.7rem; font-weight:800; letter-spacing:.08em; color:#7c3aed; }
+.parentSummaryHead strong { font-size:.9rem; line-height:1.4; }
+.parentSummaryHead > div:last-child { display:flex; gap:6px; }
+.parentSummaryHead button,
+.progressRefresh {
+  border:0;
+  border-radius:10px;
+  padding:8px 10px;
+  background:rgba(124,58,237,.1);
+  color:inherit;
+  font-weight:800;
+  cursor:pointer;
+}
+.parentSummaryCard ul { margin:0; padding-left:18px; display:grid; gap:5px; }
+.parentSummaryCard li { font-size:.8rem; line-height:1.45; }
+.parentFocus {
+  display:grid;
+  gap:3px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:rgba(255,255,255,.7);
+}
+.parentFocus strong { font-size:.76rem; }
+.parentFocus span { font-size:.76rem; color:#64748b; line-height:1.4; }
+.parentSummaryCard > small { font-size:.68rem; color:#64748b; }
+.progressRefresh { width:fit-content; background:rgba(14,116,144,.1); }
+.progressRefresh:disabled { opacity:.55; cursor:default; }
+.progressMessage,
+.progressEmpty {
+  margin:10px 0 0;
+  padding:9px 10px;
+  border-radius:10px;
+  background:rgba(15,23,42,.04);
+  color:#64748b;
+  font-size:.78rem;
+}
+@media (max-width:760px) {
+  .progressQuickGrid { grid-template-columns:repeat(2,1fr); }
+  .progressTopicGrid { grid-template-columns:1fr; }
+}
+@media (max-width:520px) {
+  .progressDashboardCard { padding:13px; border-radius:17px; }
+  .progressHead, .parentSummaryHead { flex-direction:column; }
+  .progressQuickGrid { grid-template-columns:1fr 1fr; }
+  .subjectPerformanceRow { grid-template-columns:1fr auto; }
+  .subjectPerformanceRow .performanceMeter { grid-column:1 / -1; }
+}
