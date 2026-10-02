@@ -59,39 +59,65 @@ async function groqJson(system: string, user: string, maxTokens = 900) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY is not configured.");
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    signal: AbortSignal.timeout(12_000),
-    body: JSON.stringify({
-      model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      temperature: 0.2,
-      max_completion_tokens: maxTokens,
-      response_format: { type: "json_object" },
-    }),
-  });
+  let lastError = "Adaptive practice temporarily unavailable.";
 
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Adaptive practice AI error (${response.status}): ${detail.slice(0, 260)}`);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        signal: AbortSignal.timeout(12_000),
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ],
+          temperature: 0.2,
+          max_completion_tokens: maxTokens,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (!response.ok) {
+        const detail = await response.text();
+        lastError = `Adaptive practice AI error (${response.status}): ${detail.slice(0, 260)}`;
+        const retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+        if (retryable && attempt === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 350));
+          continue;
+        }
+        throw new Error(lastError);
+      }
+
+      const data = await response.json();
+      const raw = data?.choices?.[0]?.message?.content;
+      if (typeof raw !== "string" || !raw.trim()) {
+        lastError = "Adaptive practice response empty hai.";
+        if (attempt === 0) continue;
+        throw new Error(lastError);
+      }
+
+      try {
+        return JSON.parse(raw);
+      } catch {
+        lastError = "Adaptive practice response parse nahi hua.";
+        if (attempt === 0) continue;
+        throw new Error(lastError);
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : lastError;
+      if (attempt === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        continue;
+      }
+    }
   }
 
-  const data = await response.json();
-  const raw = data?.choices?.[0]?.message?.content;
-  if (typeof raw !== "string" || !raw.trim()) throw new Error("Adaptive practice response empty hai.");
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    throw new Error("Adaptive practice response parse nahi hua.");
-  }
+  throw new Error(lastError);
 }
 
 async function generatePractice(req: NextRequest, body: any) {

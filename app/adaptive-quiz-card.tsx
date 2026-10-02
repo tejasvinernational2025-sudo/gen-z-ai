@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getAccessToken } from "@/lib/chat-history";
+import { getQuizUiText } from "@/lib/quiz-ui-i18n";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -72,6 +73,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   const [error, setError] = useState("");
   const [performance, setPerformance] = useState<Performance | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const ui = getQuizUiText(studentContext, language);
 
   async function authHeaders(): Promise<Record<string, string>> {
     const token = signedIn ? await getAccessToken() : null;
@@ -117,19 +119,31 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
     try {
       const headers = await authHeaders();
-      const response = await fetch("/api/practice", {
+      const payload = JSON.stringify({
+        action: "generate_quiz",
+        topic: topic.trim(),
+        subject: subject.trim() || "General",
+        studentContext,
+        language,
+        sourceId: sourceId || undefined,
+        difficulty: nextDifficulty,
+      });
+
+      let response = await fetch("/api/practice", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...headers },
-        body: JSON.stringify({
-          action: "generate_quiz",
-          topic: topic.trim(),
-          subject: subject.trim() || "General",
-          studentContext,
-          language,
-          sourceId: sourceId || undefined,
-          difficulty: nextDifficulty,
-        }),
+        body: payload,
       });
+
+      if (response.status === 429 || response.status >= 500) {
+        await new Promise((resolve) => setTimeout(resolve, 450));
+        response = await fetch("/api/practice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...headers },
+          body: payload,
+        });
+      }
+
       const data = await parseJson(response);
       setPack(data as QuizPack);
     } catch (err) {
@@ -195,18 +209,18 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
   const progressText = useMemo(() => {
     if (!pack) return "";
-    return `Question ${index + 1}/${pack.questions.length}`;
-  }, [pack, index]);
+    return `${ui.question} ${index + 1}/${pack.questions.length}`;
+  }, [pack, index, ui.question]);
 
   return (
     <section className="adaptiveQuiz" aria-label="Adaptive quiz and mistake analysis">
       <div className="adaptiveQuizHead">
         <div>
-          <span>ADAPTIVE QUIZ</span>
-          <h4>🎯 Topic-wise quiz + mistake analysis</h4>
-          <p>Har answer ke baad difficulty adjust hoti hai aur signed-in students ki mistakes track hoti hain.</p>
+          <span>{ui.eyebrow}</span>
+          <h4>🎯 {ui.title}</h4>
+          <p>{ui.description}</p>
         </div>
-        {pack && <em>{pack.adaptiveDifficulty} level</em>}
+        {pack && <em>{ui.level[pack.adaptiveDifficulty]}</em>}
       </div>
 
       {!pack && (
@@ -214,17 +228,17 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="Subject (e.g. Mathematics)"
+            placeholder={ui.subjectPlaceholder}
             maxLength={80}
           />
           <input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Topic (e.g. Trigonometry)"
+            placeholder={ui.topicPlaceholder}
             maxLength={140}
           />
           <button type="button" onClick={() => void generateQuiz()} disabled={busy === "generate"}>
-            {busy === "generate" ? "Quiz bana raha hoon…" : "Start adaptive quiz"}
+            {busy === "generate" ? ui.generating : ui.start}
           </button>
         </div>
       )}
@@ -233,7 +247,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
         <div className="quizQuestionCard">
           <div className="quizMeta">
             <strong>{progressText}</strong>
-            <span>{question.difficulty}</span>
+            <span>{ui.level[question.difficulty]}</span>
           </div>
           <p>{question.question}</p>
           <div className="quizOptions">
@@ -271,15 +285,15 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
               onClick={checkAnswer}
               disabled={selected === null || busy === "grade"}
             >
-              {busy === "grade" ? "Checking…" : "Check answer"}
+              {busy === "grade" ? ui.checking : ui.check}
             </button>
           ) : (
             <div className={result.correct ? "quizResult correct" : "quizResult incorrect"}>
-              <strong>{result.correct ? "✅ Correct" : "🔁 Needs practice"}</strong>
+              <strong>{result.correct ? `✅ ${ui.correct}` : `🔁 ${ui.needsPractice}`}</strong>
               <p>{result.feedback}</p>
               {result.explanation && <small>{result.explanation}</small>}
               <button type="button" onClick={nextQuestion}>
-                {index < pack.questions.length - 1 ? "Next question →" : "Next adaptive set →"}
+                {index < pack.questions.length - 1 ? ui.nextQuestion : ui.nextSet}
               </button>
             </div>
           )}
@@ -288,22 +302,22 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
       {pack && (
         <div className="quizScoreStrip">
-          <span>Current set</span>
-          <strong>{correctCount}/{pack.questions.length} correct</strong>
+          <span>{ui.currentSet}</span>
+          <strong>{correctCount}/{pack.questions.length} {ui.correctCount}</strong>
         </div>
       )}
 
       {signedIn && performance && (
         <div className="mistakeAnalysis">
           <div className="mistakeStats">
-            <div><span>Attempts</span><strong>{performance.totalAttempts}</strong></div>
-            <div><span>Accuracy</span><strong>{performance.accuracy}%</strong></div>
-            <div><span>Avg score</span><strong>{performance.averageScore}</strong></div>
+            <div><span>{ui.attempts}</span><strong>{performance.totalAttempts}</strong></div>
+            <div><span>{ui.accuracy}</span><strong>{performance.accuracy}%</strong></div>
+            <div><span>{ui.avgScore}</span><strong>{performance.averageScore}</strong></div>
           </div>
 
           {performance.weakTopics.length > 0 && (
             <div className="mistakeBlock">
-              <strong>Weak topics</strong>
+              <strong>{ui.weakTopics}</strong>
               {performance.weakTopics.slice(0, 4).map((item) => (
                 <div key={`${item.subject}-${item.topic}`} className="weakPerformanceRow">
                   <span>{item.subject} · {item.topic}</span>
@@ -315,7 +329,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
           {performance.recentMistakes.length > 0 && (
             <div className="mistakeBlock">
-              <strong>Recent mistakes</strong>
+              <strong>{ui.recentMistakes}</strong>
               {performance.recentMistakes.slice(0, 3).map((item, mistakeIndex) => (
                 <div key={mistakeIndex} className="mistakeRow">
                   <span>{item.topic}</span>
@@ -328,7 +342,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
       )}
 
       {!signedIn && (
-        <small className="quizSignInHint">Sign in karoge to mistake history, weak topics aur accuracy save hogi.</small>
+        <small className="quizSignInHint">{ui.signInHint}</small>
       )}
 
       {error && <div className="practiceError"><span>{error}</span></div>}
