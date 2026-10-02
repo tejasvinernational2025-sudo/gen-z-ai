@@ -216,6 +216,7 @@ export async function getProgressDashboard(req: NextRequest) {
   const currentStartIso = currentStart.toISOString();
   const previousStartIso = previousStart.toISOString();
   const currentStartDate = indiaDateString(currentStart);
+  const previousStartDate = indiaDateString(previousStart);
   const todayDate = indiaDateString(new Date());
 
   const userId = encodeURIComponent(user.id);
