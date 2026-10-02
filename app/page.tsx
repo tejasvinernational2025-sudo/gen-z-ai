@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
 import { getComposerUiText } from "@/lib/composer-ui-i18n";
+import { getLearningHubUiText } from "@/lib/learning-hub-ui-i18n";
 import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, normalizeStudyContext, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import HomeTutorCard from "@/app/home-tutor-card";
@@ -174,6 +175,7 @@ export default function Home() {
     ? buildBoardStudyContext(schoolBoard, schoolClass, studyMedium)
     : studentContext;
   const composerUi = getComposerUiText(effectiveStudentContext, language);
+  const learningUi = getLearningHubUiText(effectiveStudentContext, language);
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -1201,11 +1203,9 @@ export default function Home() {
       </section>
 
       <section className="learningHubIntro" aria-label="Personal learning tools">
-        <span>YOUR LEARNING HUB</span>
-        <h3>Plan → Practice → Track → Revise</h3>
-        <p>
-          Chat ke baad apna daily plan, saved books, progress aur smart revision yahan manage karo.
-        </p>
+        <span>{learningUi.hubEyebrow}</span>
+        <h3>{learningUi.hubFlow}</h3>
+        <p>{learningUi.hubDescription}</p>
       </section>
 
       <div id="home-tutor">
@@ -1214,6 +1214,7 @@ export default function Home() {
           board={schoolBoard}
           schoolClass={schoolClass}
           medium={studyMedium}
+          language={language}
           onSignIn={() => setAuthOpen(true)}
         />
       </div>
@@ -1231,6 +1232,8 @@ export default function Home() {
       <div id="progress">
         <ProgressDashboardCard
           signedIn={Boolean(user)}
+          language={language}
+          studentContext={effectiveStudentContext}
           onSignIn={() => setAuthOpen(true)}
         />
       </div>
@@ -1238,6 +1241,8 @@ export default function Home() {
       <div id="study-sources">
         <StudySourcesCard
           signedIn={Boolean(user)}
+          language={language}
+          studentContext={effectiveStudentContext}
           activeSourceId={activeSourceId}
           onActiveChange={setActiveSourceId}
           onSignIn={() => setAuthOpen(true)}
