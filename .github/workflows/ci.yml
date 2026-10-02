@@ -24,3 +24,19 @@ jobs:
 
       - name: Build
         run: npm run build
+
+
+  production-smoke:
+    if: github.event_name == 'pull_request' && github.head_ref == 'production-e2e-smoke'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run production smoke suite
+        run: bash scripts/production-smoke.sh
