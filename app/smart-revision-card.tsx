@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getAccessToken } from "@/lib/chat-history";
 import { getLearningHubUiText } from "@/lib/learning-hub-ui-i18n";
+import { getPracticeUiText } from "@/lib/practice-ui-i18n";
 
 type RevisionItem = {
   id: string;
@@ -91,6 +92,7 @@ export default function SmartRevisionCard({
   const [scores, setScores] = useState<number[]>([]);
   const [hintOpen, setHintOpen] = useState(false);
   const ui = getLearningHubUiText(studentContext, language);
+  const practiceUi = getPracticeUiText(studentContext, language);
 
   async function authHeaders(): Promise<Record<string, string>> {
     const token = signedIn ? await getAccessToken() : null;
@@ -400,7 +402,7 @@ export default function SmartRevisionCard({
           <div className="revisionSessionHead">
             <div>
               <span>{ui.revisionEyebrow}</span>
-              <strong>{activeRevision.subject} · {activeRevision.topic}</strong>
+              <strong>{pack ? `${pack.subject} · ${pack.topic}` : `${activeRevision.subject} · ${activeRevision.topic}`}</strong>
             </div>
             <button
               type="button"
@@ -415,13 +417,13 @@ export default function SmartRevisionCard({
             </button>
           </div>
 
-          {busy === "start" && !pack && <div className="revisionLoading">3 recall questions bana raha hoon…</div>}
+          {busy === "start" && !pack && <div className="revisionLoading">{practiceUi.loading}</div>}
 
           {currentQuestion && pack && (
             <div className="revisionQuestion">
               <div className="revisionQuestionMeta">
-                <strong>Question {index + 1}/{pack.questions.length}</strong>
-                <span>{currentQuestion.difficulty}</span>
+                <strong>{practiceUi.question} {index + 1}/{pack.questions.length}</strong>
+                <span>{practiceUi.level[currentQuestion.difficulty]}</span>
               </div>
               <p>{currentQuestion.question}</p>
 
@@ -430,7 +432,7 @@ export default function SmartRevisionCard({
                 className="revisionHint"
                 onClick={() => setHintOpen((value) => !value)}
               >
-                {hintOpen ? "Hint hide" : "💡 Hint"}
+                {hintOpen ? practiceUi.hideHint : `💡 ${practiceUi.hint}`}
               </button>
               {hintOpen && <small className="revisionHintText">{currentQuestion.hint}</small>}
 
@@ -438,7 +440,7 @@ export default function SmartRevisionCard({
                 rows={3}
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Answer bina dekhe recall karke likho…"
+                placeholder={practiceUi.answerPlaceholder}
                 disabled={Boolean(grade)}
               />
 
@@ -449,20 +451,20 @@ export default function SmartRevisionCard({
                   onClick={checkAnswer}
                   disabled={!answer.trim() || busy === "grade"}
                 >
-                  {busy === "grade" ? "Checking…" : "Check answer"}
+                  {busy === "grade" ? practiceUi.checking : practiceUi.checkAnswer}
                 </button>
               ) : (
                 <div className={grade.correct ? "revisionResult correct" : "revisionResult incorrect"}>
                   <strong>{grade.correct ? "✅" : "🔁"}</strong>
-                  <span>Score {Math.round(grade.score)}/100</span>
+                  <span>{practiceUi.score}: {Math.round(grade.score)}/100</span>
                   <p>{grade.feedback}</p>
                   {grade.explanation && <small>{grade.explanation}</small>}
                   <button type="button" onClick={nextQuestion} disabled={busy === "finish"}>
                     {index < pack.questions.length - 1
-                      ? "Next recall question →"
+                      ? practiceUi.nextQuestion
                       : busy === "finish"
-                        ? "Scheduling next review…"
-                        : `Finish revision · avg ${completedAverage}/100 →`}
+                        ? ui.saving
+                        : `${ui.revise} · ${practiceUi.score} ${completedAverage}/100 →`}
                   </button>
                 </div>
               )}
