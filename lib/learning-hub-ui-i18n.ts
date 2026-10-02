@@ -101,6 +101,61 @@ const EN: LearningHubUiText = {
   upcoming: "Upcoming", refresh: "Refresh",
 };
 
+const HINGLISH: LearningHubUiText = {
+  ...EN,
+  hubEyebrow: "YOUR LEARNING HUB",
+  hubFlow: "Plan → Practice → Track → Revise",
+  hubDescription: "Daily plan, saved books, progress aur smart revision yahan manage karo.",
+  homeEyebrow: "MY AI HOME TUTOR",
+  homeSignedOutTitle: "Personal study plan + weak topic tracking",
+  homeSignedOutDesc: "Sign in karo taaki Gen-z AI tumhari learning yaad rakh sake.",
+  homeTodayPlan: "Aaj ka personalized study plan",
+  homeSetupTitle: "Apna learning profile set karo",
+  homeProfileDesc: "Board, class, goal aur daily study time save hoga.",
+  editProfile: "Profile badlo",
+  setUp: "Set up",
+  dailyTarget: "Daily target",
+  mainGoal: "Main goal",
+  focusSubjects: "Focus subjects",
+  saveProfile: "Profile save karo aur aaj ka plan banao",
+  saving: "Save ho raha hai…",
+  weakTracked: "Weak topics",
+  todayProgress: "Aaj ki progress",
+  topicsAttention: "Dhyan dene wale topics",
+  todayPlan: "Aaj ka plan",
+  refreshPlan: "Plan refresh karo",
+  makePlan: "Plan banao",
+  progressTitle: "Progress + parent summary",
+  progressDesc: "Quiz/practice accuracy, weak topics aur study-plan progress ek jagah.",
+  viewProgress: "Progress dekho",
+  studyPlanCompletion: "Study-plan completion",
+  activeDays: "Active days",
+  needsRevision: "Revision chahiye",
+  strongTopics: "Strong topics",
+  recentMistakes: "Recent mistakes",
+  parentSummary: "Parent summary",
+  sourcesSignedOutTitle: "Apni book ko AI source banao",
+  sourcesSignedOutDesc: "PDF ya chapter text save karke answers selected source ke hisaab se lo.",
+  makeBookSource: "Apni book ko AI source banao",
+  addSource: "+ Source add karo",
+  noBookGrounding: "Book grounding off",
+  pasteText: "Text paste karo",
+  saveUse: "Save karke use karo",
+  revisionSignedOutTitle: "Weak topics bhoolne se pehle revise karo",
+  revisionSignedOutDesc: "Spaced revision aur Revise Today list ke liye sign in karo.",
+  reviseToday: "Revise Today",
+  hide: "Hide",
+  revise: "Revise",
+  dueToday: "Aaj due",
+  reviewed: "Reviewed",
+  avgRevisionScore: "Avg revision score",
+  todaysRevision: "Aaj ki revision",
+  practiceNow: "Practice now",
+  tomorrow: "Tomorrow",
+  upcoming: "Upcoming",
+  refresh: "Refresh",
+};
+
 const HI: LearningHubUiText = {
   ...EN,
   hubEyebrow: "आपका लर्निंग हब", hubFlow: "योजना → अभ्यास → प्रगति → दोहराव",
@@ -266,6 +321,6 @@ export function getLearningHubUiText(studentContext: string, language: string) {
   if (key === "Tamil") return TA;
   if (key === "Telugu") return TE;
   if (key === "Malayalam") return ML;
-  if (key === "Hinglish") return EN;
+  if (key === "Hinglish") return HINGLISH;
   return EN;
 }
