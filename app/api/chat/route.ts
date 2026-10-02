@@ -4,6 +4,7 @@ import { normalizeStudyContext } from "@/lib/study-contexts";
 import { buildSystemPrompt, StudyMode } from "@/lib/prompt";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getLearningPromptContext } from "@/lib/learning-server";
+import { getGroundingContext } from "@/lib/source-grounding";
 import {
   consumePersistentQuota,
   quotaExceededMessage,
@@ -17,6 +18,7 @@ type RequestBody = {
   language?: string;
   mode?: StudyMode;
   studentContext?: string;
+  sourceId?: string;
 };
 
 const ALLOWED_MODES = new Set<StudyMode>(["chat", "explain", "notes", "quiz", "exam"]);
@@ -93,7 +95,13 @@ export async function POST(req: NextRequest) {
       ? `CRITICAL OUTPUT LANGUAGE REQUIREMENT: The selected medium is ${selectedMedium}. Answer only in the native language and native script of ${selectedMedium.replace(/ Medium$/i, "")}. Do not answer in Hindi or English unless ${selectedMedium} itself is Hindi Medium or English Medium. Translate even headings, definitions, examples, and exam questions into the selected medium. This requirement overrides conversation history and the language of the user's question.`
       : "";
     const learningContext = await getLearningPromptContext(req);
-    const system = `${buildSystemPrompt(language, mode, studentContext, learningContext)}\n\n${nativeLanguageInstruction}`;
+    const latestQuestion = messages[messages.length - 1]?.content || "";
+    const groundingContext = await getGroundingContext(req, body.sourceId, latestQuestion);
+    const system = [
+      buildSystemPrompt(language, mode, studentContext, learningContext),
+      nativeLanguageInstruction,
+      groundingContext,
+    ].filter(Boolean).join("\n\n");
     const aiMessages = studentContext.includes(" | ") ? messages.slice(-1) : messages;
 
     const quota = await consumePersistentQuota(req, "chat");

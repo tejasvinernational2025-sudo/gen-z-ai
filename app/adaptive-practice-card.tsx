@@ -34,6 +34,7 @@ type Props = {
   language: string;
   studentContext: string;
   signedIn: boolean;
+  sourceId: string;
 };
 
 async function parseJson(response: Response) {
@@ -54,6 +55,7 @@ export default function AdaptivePracticeCard({
   language,
   studentContext,
   signedIn,
+  sourceId,
 }: Props) {
   const [pack, setPack] = useState<PracticePack | null>(null);
   const [index, setIndex] = useState(0);
@@ -95,6 +97,7 @@ export default function AdaptivePracticeCard({
           sourceAnswer,
           studentContext,
           language,
+          sourceId: sourceId || undefined,
           topic: options?.topic,
           subject: options?.subject,
           difficulty: options?.difficulty,
