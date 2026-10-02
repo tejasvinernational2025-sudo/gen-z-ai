@@ -23,7 +23,7 @@ export default function LegalShell({ title, subtitle, children }: LegalShellProp
         <p className="legalEyebrow">GEN-Z AI</p>
         <h1>{title}</h1>
         <p className="legalSubtitle">{subtitle}</p>
-        <p className="legalUpdated">Last updated: 28 September 2026</p>
+        <p className="legalUpdated">Last updated: 2 October 2026</p>
         <div className="legalContent">{children}</div>
       </article>
 
@@ -31,6 +31,7 @@ export default function LegalShell({ title, subtitle, children }: LegalShellProp
         <a href="/privacy">Privacy Policy</a>
         <a href="/terms">Terms of Use</a>
         <a href="/refund">Refund & Cancellation</a>
+        <a href="/support">Support</a>
       </nav>
     </main>
   );
