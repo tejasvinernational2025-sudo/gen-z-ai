@@ -191,7 +191,7 @@ export default function AdaptivePracticeCard({
           <p>
             {pack
               ? `${pack.subject} · ${pack.topic}`
-              : "Photo solution se similar questions ban rahe hain…"}
+              : ui.loading}
           </p>
         </div>
         {pack && <em>{ui.level[pack.adaptiveDifficulty]}</em>}
