@@ -9,6 +9,7 @@ import HomeTutorCard from "@/app/home-tutor-card";
 import AdaptivePracticeCard from "@/app/adaptive-practice-card";
 import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
 import StudySourcesCard from "@/app/study-sources-card";
+import ProgressDashboardCard from "@/app/progress-dashboard-card";
 import { trackLearningTurn } from "@/lib/learning-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -1144,6 +1145,11 @@ export default function Home() {
         board={schoolBoard}
         schoolClass={schoolClass}
         medium={studyMedium}
+        onSignIn={() => setAuthOpen(true)}
+      />
+
+      <ProgressDashboardCard
+        signedIn={Boolean(user)}
         onSignIn={() => setAuthOpen(true)}
       />
 
