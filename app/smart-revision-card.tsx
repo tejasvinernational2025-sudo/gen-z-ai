@@ -307,8 +307,8 @@ export default function SmartRevisionCard({
           <h3>🔁 {ui.reviseToday}</h3>
           <p>
             {dashboard
-              ? `${dashboard.stats.dueToday} due · ${dashboard.stats.scheduled} topics scheduled · spaced repetition auto-adjusts`
-              : "Weak topics ko automatically revision schedule me daala ja raha hai…"}
+              ? `${ui.dueToday}: ${dashboard.stats.dueToday} · ${ui.upcoming}: ${dashboard.stats.scheduled}`
+              : ui.needsRevision}
           </p>
         </div>
         <button
@@ -336,7 +336,7 @@ export default function SmartRevisionCard({
             <div className="revisionSectionTitle">
               <div>
                 <strong>{ui.todaysRevision}</strong>
-                <span>Weak / due topics first</span>
+                <span>{ui.needsRevision}</span>
               </div>
               <button type="button" onClick={() => void refresh()} disabled={busy === "refresh"}>
                 {busy === "refresh" ? ui.saving : ui.refresh}
@@ -352,8 +352,8 @@ export default function SmartRevisionCard({
                       <strong>{item.topic}</strong>
                       <small>
                         {item.repetitions
-                          ? `Review #${item.repetitions + 1} · last ${item.last_score ?? 0}/100`
-                          : "First smart revision"}
+                          ? `${ui.reviewed} #${item.repetitions + 1} · ${practiceUi.score} ${item.last_score ?? 0}/100`
+                          : ui.reviseToday}
                       </small>
                     </div>
                     <div className="revisionActions">
@@ -369,8 +369,8 @@ export default function SmartRevisionCard({
               </div>
             ) : (
               <div className="revisionClear">
-                <strong>✅ Aaj ki revision clear hai</strong>
-                <span>Naya weak-topic signal aate hi yahan automatically schedule ho jayega.</span>
+                <strong>✅ {ui.reviseToday}</strong>
+                <span>{ui.needsRevision}</span>
               </div>
             )}
           </div>
@@ -380,7 +380,7 @@ export default function SmartRevisionCard({
               <div className="revisionSectionTitle">
                 <div>
                   <strong>{ui.upcoming}</strong>
-                  <span>Spaced revision schedule</span>
+                  <span>{ui.upcoming}</span>
                 </div>
               </div>
               <div className="upcomingRevisionList">
@@ -388,7 +388,7 @@ export default function SmartRevisionCard({
                   <div key={item.id}>
                     <span>{item.due_date}</span>
                     <strong>{item.subject} · {item.topic}</strong>
-                    <small>{item.interval_days}-day interval</small>
+                    <small>{item.interval_days}d</small>
                   </div>
                 ))}
               </div>
