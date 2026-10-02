@@ -179,7 +179,7 @@ export default function HomeTutorCard({
     <section className="homeTutorCard" aria-label="AI home tutor">
       <div className="homeTutorHeader">
         <div>
-          <span className="homeTutorEyebrow">MY AI HOME TUTOR</span>
+          <span className="homeTutorEyebrow">{ui.homeEyebrow}</span>
           <h3>{profile ? ui.homeTodayPlan : ui.homeSetupTitle}</h3>
           <p>
             {profile
@@ -245,7 +245,7 @@ export default function HomeTutorCard({
         <>
           <div className="learningSummaryGrid">
             <div>
-              <span>Daily target</span>
+              <span>{ui.dailyTarget}</span>
               <strong>{profile.daily_minutes} min</strong>
             </div>
             <div>
