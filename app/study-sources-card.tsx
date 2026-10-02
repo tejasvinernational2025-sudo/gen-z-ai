@@ -8,9 +8,12 @@ import {
   listStudySourcesClient,
   type StudySourceSummary,
 } from "@/lib/source-client";
+import { getLearningHubUiText } from "@/lib/learning-hub-ui-i18n";
 
 type Props = {
   signedIn: boolean;
+  language: string;
+  studentContext: string;
   activeSourceId: string;
   onActiveChange: (sourceId: string) => void;
   onSignIn: () => void;
@@ -42,6 +45,8 @@ async function pdfToDataUrl(file: File) {
 
 export default function StudySourcesCard({
   signedIn,
+  language,
+  studentContext,
   activeSourceId,
   onActiveChange,
   onSignIn,
@@ -56,6 +61,7 @@ export default function StudySourcesCard({
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
+  const ui = getLearningHubUiText(studentContext, language);
 
   async function refresh() {
     if (!signedIn) {
@@ -150,11 +156,11 @@ export default function StudySourcesCard({
       <section className="studySourcesCard">
         <div className="studySourcesHeader">
           <div>
-            <span>CHAPTER / BOOK GROUNDING</span>
-            <h3>📚 Apni book se answer lo</h3>
-            <p>PDF ya chapter text save karke AI ko selected source ke andar answer karwao.</p>
+            <span>{ui.sourcesEyebrow}</span>
+            <h3>📚 {ui.sourcesSignedOutTitle}</h3>
+            <p>{ui.sourcesSignedOutDesc}</p>
           </div>
-          <button type="button" onClick={onSignIn}>Sign in</button>
+          <button type="button" onClick={onSignIn}>{ui.signIn}</button>
         </div>
       </section>
     );
@@ -164,8 +170,8 @@ export default function StudySourcesCard({
     <section className="studySourcesCard" aria-label="Chapter and book grounding">
       <div className="studySourcesHeader">
         <div>
-          <span>CHAPTER / BOOK GROUNDING</span>
-          <h3>📚 {active ? "Grounding ON" : "Apni book ko AI source banao"}</h3>
+          <span>{ui.sourcesEyebrow}</span>
+          <h3>📚 {active ? ui.groundingOn : ui.makeBookSource}</h3>
           <p>
             {active
               ? `${active.title}${active.chapter ? ` · ${active.chapter}` : ""}`
@@ -173,7 +179,7 @@ export default function StudySourcesCard({
           </p>
         </div>
         <button type="button" onClick={() => setOpen((value) => !value)}>
-          {open ? "Close" : "+ Add source"}
+          {open ? ui.close : ui.addSource}
         </button>
       </div>
 
@@ -184,8 +190,8 @@ export default function StudySourcesCard({
             className={!activeSourceId ? "sourceChip selected" : "sourceChip"}
             onClick={() => onActiveChange("")}
           >
-            <strong>General AI</strong>
-            <small>No book grounding</small>
+            <strong>{ui.generalAi}</strong>
+            <small>{ui.noBookGrounding}</small>
           </button>
           {sources.map((source) => (
             <div key={source.id} className={activeSourceId === source.id ? "sourceChip selected" : "sourceChip"}>
@@ -213,7 +219,7 @@ export default function StudySourcesCard({
         <div className="sourceForm">
           <div className="sourceTypeTabs">
             <button type="button" className={sourceType === "pdf" ? "active" : ""} onClick={() => setSourceType("pdf")}>PDF</button>
-            <button type="button" className={sourceType === "text" ? "active" : ""} onClick={() => setSourceType("text")}>Paste text</button>
+            <button type="button" className={sourceType === "text" ? "active" : ""} onClick={() => setSourceType("text")}>{ui.pasteText}</button>
           </div>
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Book / chapter title" maxLength={160} />
           <div className="sourceMetaGrid">
@@ -237,7 +243,7 @@ export default function StudySourcesCard({
           )}
 
           <button type="button" className="sourceSave" disabled={busy === "save"} onClick={saveSource}>
-            {busy === "save" ? "Saving source…" : "Save & use this source"}
+            {busy === "save" ? ui.saving : ui.saveUse}
           </button>
         </div>
       )}
