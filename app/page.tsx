@@ -22,8 +22,6 @@ import {
   saveTurn,
   sendMagicLink,
   signInWithGoogle,
-  signInWithPassword,
-  signUpWithPassword,
   signOutUser,
   type SavedConversation,
 } from "@/lib/chat-history";
@@ -190,8 +188,6 @@ export default function Home() {
   const [supabaseReady, setSupabaseReady] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
-  const [authPassword, setAuthPassword] = useState("");
-  const [authBusy, setAuthBusy] = useState(false);
   const [authCooldown, setAuthCooldown] = useState(0);
   const [notice, setNotice] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -386,55 +382,6 @@ export default function Home() {
       } else {
         setNotice(message);
       }
-    }
-  }
-
-  async function handlePasswordSignIn() {
-    const email = authEmail.trim();
-    if (!email || !authPassword) {
-      setNotice("Email aur password dono bharo.");
-      return;
-    }
-
-    setAuthBusy(true);
-    setNotice("");
-    try {
-      const signedInUser = await signInWithPassword(email, authPassword);
-      setUser(signedInUser);
-      setAuthOpen(false);
-      setNotice("Email + password sign in successful.");
-    } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Password sign in nahi hua.");
-    } finally {
-      setAuthBusy(false);
-    }
-  }
-
-  async function handlePasswordSignUp() {
-    const email = authEmail.trim();
-    if (!email || !authPassword) {
-      setNotice("Email aur password dono bharo.");
-      return;
-    }
-
-    if (authPassword.length < 8) {
-      setNotice("Password kam se kam 8 characters ka rakho.");
-      return;
-    }
-
-    setAuthBusy(true);
-    setNotice("");
-    try {
-      const createdUser = await signUpWithPassword(email, authPassword);
-      if (createdUser?.email_confirmed_at) {
-        setNotice("Password account create ho gaya. Ab sign in kar sakte ho.");
-      } else {
-        setNotice("Password account create ho gaya. Email confirmation link open karke account verify karo.");
-      }
-    } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Password account create nahi hua.");
-    } finally {
-      setAuthBusy(false);
     }
   }
 
@@ -899,45 +846,40 @@ export default function Home() {
       </header>
 
       {authOpen && (
-        <form className="authPanel authPanelExpanded" onSubmit={submitLogin}>
+        <form className="authPanel authPanelExpanded authPanelSimple" onSubmit={submitLogin}>
           <div className="authIntro">
-            <strong>Save your chats</strong>
-            <span>Google, email link, ya email + password se sign in karo.</span>
+            <strong>Sign in to Gen-z AI</strong>
+            <span>Chats, study plan, progress aur revision sync rahenge.</span>
           </div>
 
-          <button type="button" onClick={handleGoogleSignIn}>Continue with Google</button>
+          <button type="button" className="googleSignInButton" onClick={handleGoogleSignIn}>
+            Continue with Google
+          </button>
 
-          <div className="authDividerRow"><span>or</span></div>
+          <div className="authDividerRow"><span>or use email</span></div>
 
-          <input
-            type="email"
-            value={authEmail}
-            onChange={(e) => setAuthEmail(e.target.value)}
-            placeholder="student@example.com"
-            required
-          />
+          <label className="authEmailLabel">
+            <span>Email address</span>
+            <input
+              type="email"
+              value={authEmail}
+              onChange={(e) => setAuthEmail(e.target.value)}
+              placeholder="student@example.com"
+              autoComplete="email"
+              required
+            />
+          </label>
 
-          <input
-            type="password"
-            value={authPassword}
-            onChange={(e) => setAuthPassword(e.target.value)}
-            placeholder="Password"
-            minLength={8}
-          />
+          <button type="submit" className="magicLinkButton" disabled={authCooldown > 0}>
+            {authCooldown > 0 ? `Resend in ${authCooldown}s` : "Email me a sign-in link"}
+          </button>
 
-          <div className="authPasswordActions">
-            <button type="button" onClick={handlePasswordSignIn} disabled={authBusy}>
-              {authBusy ? "Please wait…" : "Sign in with password"}
-            </button>
-            <button type="button" className="secondaryAuthButton" onClick={handlePasswordSignUp} disabled={authBusy}>
-              Create password account
-            </button>
-          </div>
+          <p className="authPrivacyNote">
+            Password ya OTP yaad rakhne ki zarurat nahi. Secure sign-in link email par aayega.
+          </p>
 
-          <div className="authDividerRow"><span>or use magic link</span></div>
-
-          <button type="submit" disabled={authCooldown > 0 || authBusy}>
-            {authCooldown > 0 ? `Wait ${authCooldown}s` : "Send email link"}
+          <button type="button" className="authCloseButton" onClick={() => setAuthOpen(false)}>
+            Close
           </button>
         </form>
       )}
