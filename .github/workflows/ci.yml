@@ -24,3 +24,13 @@ jobs:
 
       - name: Build
         run: npm run build
+
+
+  debug-telugu-quiz:
+    if: github.event_name == 'pull_request' && github.head_ref == 'debug-telugu-adaptive-quiz'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Probe Telugu adaptive quiz
+        run: bash scripts/debug-telugu-quiz.sh
