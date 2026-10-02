@@ -26,6 +26,35 @@ function safeDifficulty(value: unknown): PracticeDifficulty {
   return value === "easy" || value === "hard" ? value : "medium";
 }
 
+function outputLanguageRule(studentContext: string, requestedLanguage: string) {
+  const mediumPart = studentContext
+    .split("|")
+    .map((part) => part.trim())
+    .find((part) => /\bMedium$/i.test(part));
+
+  const mediumLanguage = mediumPart
+    ? mediumPart.replace(/\s*Medium$/i, "").trim()
+    : "";
+
+  const effectiveLanguage = mediumLanguage || requestedLanguage || "Hinglish";
+
+  const instruction = mediumLanguage
+    ? [
+        `CRITICAL OUTPUT LANGUAGE REQUIREMENT: The selected study medium is ${mediumPart}.`,
+        `Write EVERY student-facing value in the native language and native script of ${mediumLanguage}.`,
+        "This includes subject/topic labels, questions, answer options, hints, expected answers, feedback and explanations.",
+        `This requirement overrides the requested UI language (${requestedLanguage || "Hinglish"}).`,
+        "Keep JSON property names/keys exactly as requested in English.",
+      ].join(" ")
+    : [
+        `Write EVERY student-facing value in ${effectiveLanguage}.`,
+        "This includes questions, hints, expected answers, feedback and explanations.",
+        "Keep JSON property names/keys exactly as requested in English.",
+      ].join(" ");
+
+  return { effectiveLanguage, instruction };
+}
+
 async function groqJson(system: string, user: string, maxTokens = 900) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY is not configured.");
@@ -72,6 +101,7 @@ async function generatePractice(req: NextRequest, body: any) {
   const language = cleanText(body?.language, 80) || "Hinglish";
   const requestedTopic = cleanText(body?.topic, 140);
   const requestedSubject = cleanText(body?.subject, 80);
+  const outputLanguage = outputLanguageRule(studentContext, language);
 
   if (!sourceQuestion && !sourceAnswer && !requestedTopic) {
     return NextResponse.json({ error: "Practice banane ke liye source topic/question required hai." }, { status: 400 });
@@ -91,13 +121,14 @@ async function generatePractice(req: NextRequest, body: any) {
       '{"subject":"...","topic":"...","questions":[{"id":"q1","question":"...","expectedAnswer":"...","hint":"...","difficulty":"easy|medium|hard"},{"id":"q2",...},{"id":"q3",...}]}',
       "Create exactly 3 fresh practice questions on the same concept, not copies of the source question.",
       "Questions must be solvable from the concept just taught. Do not reveal the expected answer inside the question or hint.",
-      "Keep wording short and mobile-friendly. Match board/class context and requested language.",
+      "Keep wording short and mobile-friendly. Match board/class context.",
+      outputLanguage.instruction,
       "Difficulty should center on the supplied adaptive level; small variation is allowed.",
       groundingContext,
     ].filter(Boolean).join("\n\n"),
     [
       `Student context: ${studentContext}`,
-      `Language: ${language}`,
+      `Output language: ${outputLanguage.effectiveLanguage}`,
       `Adaptive level: ${adaptiveDifficulty}`,
       requestedSubject ? `Subject: ${requestedSubject}` : "",
       requestedTopic ? `Topic: ${requestedTopic}` : "",
@@ -139,6 +170,9 @@ async function gradePractice(req: NextRequest, body: any) {
   const subject = cleanText(body?.subject, 80) || "General";
   const topic = cleanText(body?.topic, 140) || "Practice";
   const difficulty = safeDifficulty(body?.difficulty);
+  const studentContext = cleanText(body?.studentContext, 180) || "General";
+  const language = cleanText(body?.language, 80) || "Hinglish";
+  const outputLanguage = outputLanguageRule(studentContext, language);
   const sourceType =
     body?.sourceType === "photo" || body?.sourceType === "quiz"
       ? body.sourceType
@@ -156,6 +190,7 @@ async function gradePractice(req: NextRequest, body: any) {
       "Accept equivalent wording and valid alternative methods.",
       "Score 0-100. Feedback must be short and encouraging but factual.",
       "If wrong, explain the key mistake without insulting the student.",
+      outputLanguage.instruction,
       "Choose nextDifficulty: harder after a clearly correct answer, easier after a major misconception, otherwise same.",
     ].join("\n"),
     [
@@ -165,13 +200,14 @@ async function gradePractice(req: NextRequest, body: any) {
       `Question: ${question}`,
       `Expected answer/rubric: ${expectedAnswer}`,
       `Student answer: ${studentAnswer}`,
+      `Output language: ${outputLanguage.effectiveLanguage}`,
     ].join("\n"),
     500
   );
 
   const correct = Boolean(data?.correct);
   const score = Math.max(0, Math.min(100, Number(data?.score) || (correct ? 100 : 0)));
-  const feedback = cleanText(data?.feedback, 900) || (correct ? "Sahi jawab ✅" : "Is concept ko ek baar aur revise karo.");
+  const feedback = cleanText(data?.feedback, 900) || (correct ? "✅" : "🔁");
   const explanation = cleanText(data?.explanation, 1400);
   const nextDifficulty = safeDifficulty(data?.nextDifficulty || difficulty);
 
@@ -204,6 +240,7 @@ async function generateQuiz(req: NextRequest, body: any) {
   const subject = cleanText(body?.subject, 80) || "General";
   const studentContext = cleanText(body?.studentContext, 180) || "General";
   const language = cleanText(body?.language, 80) || "Hinglish";
+  const outputLanguage = outputLanguageRule(studentContext, language);
 
   if (!topic) {
     return NextResponse.json({ error: "Quiz ke liye topic required hai." }, { status: 400 });
@@ -220,14 +257,15 @@ async function generateQuiz(req: NextRequest, body: any) {
       "Create exactly 5 fresh multiple-choice questions.",
       "Each question must have exactly 4 concise options and exactly one correct answer.",
       "Do not reveal the answer inside the question.",
-      "Match the selected board/class context and requested language.",
+      "Match the selected board/class context.",
+      outputLanguage.instruction,
       "Difficulty should center around the supplied adaptive level.",
       "Use exam-style wording where appropriate but do not claim official current exam weightage.",
       groundingContext,
     ].filter(Boolean).join("\n\n"),
     [
       `Student context: ${studentContext}`,
-      `Language: ${language}`,
+      `Output language: ${outputLanguage.effectiveLanguage}`,
       `Adaptive level: ${adaptiveDifficulty}`,
       `Subject: ${subject}`,
       `Topic: ${topic}`,
@@ -300,8 +338,8 @@ async function gradeQuiz(req: NextRequest, body: any) {
   const correct = selectedIndex === correctIndex;
   const score = correct ? 100 : 0;
   const feedback = correct
-    ? "Sahi jawab ✅"
-    : `Correct answer: ${options[correctIndex]}`;
+    ? "✅"
+    : `✓ ${options[correctIndex]}`;
 
   await savePracticeAttempt(req, {
     subject,
