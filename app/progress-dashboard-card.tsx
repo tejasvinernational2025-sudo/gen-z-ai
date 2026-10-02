@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getAccessToken } from "@/lib/chat-history";
+import { getLearningHubUiText } from "@/lib/learning-hub-ui-i18n";
 
 type PeriodMetrics = {
   attempts: number;
@@ -66,6 +67,8 @@ type ProgressDashboard = {
 
 type Props = {
   signedIn: boolean;
+  language: string;
+  studentContext: string;
   onSignIn: () => void;
 };
 
@@ -81,13 +84,14 @@ async function parseJson(response: Response) {
   return data;
 }
 
-export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
+export default function ProgressDashboardCard({ signedIn, language, studentContext, onSignIn }: Props) {
   const [data, setData] = useState<ProgressDashboard | null>(null);
   const [range, setRange] = useState<"week" | "month">("week");
   const [open, setOpen] = useState(false);
   const [parentOpen, setParentOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const ui = getLearningHubUiText(studentContext, language);
 
   async function refresh() {
     if (!signedIn) {
@@ -144,11 +148,11 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
       <section className="progressDashboardCard">
         <div className="progressHeader">
           <div>
-            <span>EXAM PERFORMANCE</span>
-            <h3>📈 Progress dashboard + parent summary</h3>
-            <p>Quiz/practice accuracy, weak topics aur weekly study-plan progress ek jagah.</p>
+            <span>{ui.progressEyebrow}</span>
+            <h3>📈 {ui.progressTitle}</h3>
+            <p>{ui.progressDesc}</p>
           </div>
-          <button type="button" onClick={onSignIn}>Sign in</button>
+          <button type="button" onClick={onSignIn}>{ui.signIn}</button>
         </div>
       </section>
     );
@@ -159,7 +163,7 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
       <div className="progressHeader">
         <div>
           <span>EXAM PERFORMANCE</span>
-          <h3>📈 Performance & Progress</h3>
+          <h3>📈 {ui.progressTitle}</h3>
           <p>
             {data?.profile?.goal
               ? `${data.profile.goal} · ${data.profile.daily_minutes || 30} min/day target`
@@ -167,7 +171,7 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
           </p>
         </div>
         <button type="button" onClick={() => setOpen((value) => !value)}>
-          {open ? "Close" : "View progress"}
+          {open ? ui.close : ui.viewProgress}
         </button>
       </div>
 
@@ -182,12 +186,12 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
               <small>{data.week.attempts} graded attempts</small>
             </div>
             <div>
-              <span>Study-plan completion</span>
+              <span>{ui.studyPlanCompletion}</span>
               <strong>{data.plan.completionRate}%</strong>
               <small>{data.plan.completedTasks}/{data.plan.totalTasks} tasks</small>
             </div>
             <div>
-              <span>Active days</span>
+              <span>{ui.activeDays}</span>
               <strong>{data.activeDays7}/7</strong>
               <small>practice or plan activity</small>
             </div>
@@ -205,16 +209,16 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
               </div>
 
               <div className="examMetrics">
-                <div><span>Attempts</span><strong>{current?.attempts || 0}</strong></div>
-                <div><span>Accuracy</span><strong>{current?.accuracy || 0}%</strong></div>
-                <div><span>Avg score</span><strong>{current?.averageScore || 0}/100</strong></div>
-                <div><span>Trend</span><strong className="trendText">{trendLabel}</strong></div>
+                <div><span>{ui.attempts}</span><strong>{current?.attempts || 0}</strong></div>
+                <div><span>{ui.accuracy}</span><strong>{current?.accuracy || 0}%</strong></div>
+                <div><span>{ui.avgScore}</span><strong>{current?.averageScore || 0}/100</strong></div>
+                <div><span>{ui.trend}</span><strong className="trendText">{trendLabel}</strong></div>
               </div>
 
               <div className="progressSplit">
                 <div className="progressSection">
                   <div className="progressSectionTitle">
-                    <strong>Needs revision</strong>
+                    <strong>{ui.needsRevision}</strong>
                     <span>30-day graded performance</span>
                   </div>
                   {data.weakTopics.length ? (
@@ -236,7 +240,7 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
 
                 <div className="progressSection">
                   <div className="progressSectionTitle">
-                    <strong>Strong topics</strong>
+                    <strong>{ui.strongTopics}</strong>
                     <span>2+ attempts and 70%+ accuracy</span>
                   </div>
                   {data.strongTopics.length ? (
@@ -276,7 +280,7 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
               {data.recentMistakes.length > 0 && (
                 <div className="recentMistakesPanel">
                   <div className="progressSectionTitle">
-                    <strong>Recent mistakes</strong>
+                    <strong>{ui.recentMistakes}</strong>
                     <span>Revision priority</span>
                   </div>
                   {data.recentMistakes.slice(0, 4).map((item, index) => (
@@ -292,11 +296,11 @@ export default function ProgressDashboardCard({ signedIn, onSignIn }: Props) {
               <div className="parentSummaryPanel">
                 <div className="progressSectionTitle">
                   <div>
-                    <strong>👨‍👩‍👧 Weekly parent summary</strong>
+                    <strong>👨‍👩‍👧 {ui.parentSummary}</strong>
                     <span>Practice data + study-plan completion</span>
                   </div>
                   <button type="button" onClick={() => setParentOpen((value) => !value)}>
-                    {parentOpen ? "Hide" : "View"}
+                    {parentOpen ? ui.hide : ui.view}
                   </button>
                 </div>
 
