@@ -1215,6 +1215,7 @@ export default function Home() {
           schoolClass={schoolClass}
           medium={studyMedium}
           language={language}
+          studentContext={effectiveStudentContext}
           onSignIn={() => setAuthOpen(true)}
         />
       </div>
