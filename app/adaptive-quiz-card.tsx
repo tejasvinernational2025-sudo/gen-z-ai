@@ -162,6 +162,8 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
           correctIndex: question.correctIndex,
           explanation: question.explanation,
           difficulty: question.difficulty,
+          language,
+          studentContext,
         }),
       });
       const data = await parseJson(response);
