@@ -174,8 +174,11 @@ export default function Home() {
   const effectiveStudentContext = schoolBoard
     ? buildBoardStudyContext(schoolBoard, schoolClass, studyMedium)
     : studentContext;
+  const learningStudentContext = schoolBoard
+    ? effectiveStudentContext
+    : `${studentContext} | ${schoolClass} | ${studyMedium}`;
   const composerUi = getComposerUiText(effectiveStudentContext, language);
-  const learningUi = getLearningHubUiText(effectiveStudentContext, language);
+  const learningUi = getLearningHubUiText(learningStudentContext, language);
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -1215,7 +1218,7 @@ export default function Home() {
           schoolClass={schoolClass}
           medium={studyMedium}
           language={language}
-          studentContext={effectiveStudentContext}
+          studentContext={learningStudentContext}
           onSignIn={() => setAuthOpen(true)}
         />
       </div>
@@ -1224,7 +1227,7 @@ export default function Home() {
         <SmartRevisionCard
           signedIn={Boolean(user)}
           language={language}
-          studentContext={effectiveStudentContext}
+          studentContext={learningStudentContext}
           sourceId={activeSourceId}
           onSignIn={() => setAuthOpen(true)}
         />
@@ -1234,7 +1237,7 @@ export default function Home() {
         <ProgressDashboardCard
           signedIn={Boolean(user)}
           language={language}
-          studentContext={effectiveStudentContext}
+          studentContext={learningStudentContext}
           onSignIn={() => setAuthOpen(true)}
         />
       </div>
@@ -1243,7 +1246,7 @@ export default function Home() {
         <StudySourcesCard
           signedIn={Boolean(user)}
           language={language}
-          studentContext={effectiveStudentContext}
+          studentContext={learningStudentContext}
           activeSourceId={activeSourceId}
           onActiveChange={setActiveSourceId}
           onSignIn={() => setAuthOpen(true)}
