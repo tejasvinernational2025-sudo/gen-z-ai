@@ -8,12 +8,14 @@ import {
   toggleDailyPlanItem,
   type LearningSnapshot,
 } from "@/lib/learning-client";
+import { getLearningHubUiText } from "@/lib/learning-hub-ui-i18n";
 
 type Props = {
   signedIn: boolean;
   board: string;
   schoolClass: string;
   medium: string;
+  language: string;
   onSignIn: () => void;
 };
 
@@ -33,6 +35,7 @@ export default function HomeTutorCard({
   board,
   schoolClass,
   medium,
+  language,
   onSignIn,
 }: Props) {
   const [snapshot, setSnapshot] = useState<LearningSnapshot | null>(null);
@@ -43,6 +46,7 @@ export default function HomeTutorCard({
   const [dailyMinutes, setDailyMinutes] = useState(30);
   const [subjects, setSubjects] = useState<string[]>(["Mathematics", "Science", "English"]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const ui = getLearningHubUiText(medium, language);
 
   async function refresh() {
     if (!signedIn) {
@@ -157,11 +161,11 @@ export default function HomeTutorCard({
       <section className="homeTutorCard">
         <div className="homeTutorHeader">
           <div>
-            <span className="homeTutorEyebrow">MY AI HOME TUTOR</span>
-            <h3>Personal study plan + weak topic tracking</h3>
-            <p>Sign in karke Gen-z AI ko apni learning yaad rakhne do.</p>
+            <span className="homeTutorEyebrow">{ui.homeEyebrow}</span>
+            <h3>{ui.homeSignedOutTitle}</h3>
+            <p>{ui.homeSignedOutDesc}</p>
           </div>
-          <button type="button" onClick={onSignIn}>Sign in</button>
+          <button type="button" onClick={onSignIn}>{ui.signIn}</button>
         </div>
       </section>
     );
@@ -176,11 +180,11 @@ export default function HomeTutorCard({
       <div className="homeTutorHeader">
         <div>
           <span className="homeTutorEyebrow">MY AI HOME TUTOR</span>
-          <h3>{profile ? "Aaj ka personalized study plan" : "Apna learning profile set karo"}</h3>
+          <h3>{profile ? ui.homeTodayPlan : ui.homeSetupTitle}</h3>
           <p>
             {profile
               ? `${profile.school_class || schoolClass} · ${profile.goal} · ${profile.daily_minutes} min/day`
-              : "Board, class, goal aur daily study time save hoga."}
+              : ui.homeProfileDesc}
           </p>
         </div>
         <button
@@ -188,14 +192,14 @@ export default function HomeTutorCard({
           className="homeTutorSecondary"
           onClick={() => setSettingsOpen((value) => !value)}
         >
-          {settingsOpen ? "Close" : profile ? "Edit profile" : "Set up"}
+          {settingsOpen ? ui.close : profile ? ui.editProfile : ui.setUp}
         </button>
       </div>
 
       {(settingsOpen || !profile) && (
         <div className="homeTutorSettings">
           <label>
-            <span>Daily target</span>
+            <span>{ui.dailyTarget}</span>
             <select value={dailyMinutes} onChange={(e) => setDailyMinutes(Number(e.target.value))}>
               {[20, 30, 45, 60, 90].map((item) => (
                 <option key={item} value={item}>{item} minutes</option>
@@ -204,14 +208,14 @@ export default function HomeTutorCard({
           </label>
 
           <label>
-            <span>Main goal</span>
+            <span>{ui.mainGoal}</span>
             <select value={goal} onChange={(e) => setGoal(e.target.value as (typeof GOALS)[number])}>
               {GOALS.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
 
           <div className="subjectPicker">
-            <span>Focus subjects</span>
+            <span>{ui.focusSubjects}</span>
             <div>
               {SUBJECTS.map((subject) => (
                 <button
@@ -232,7 +236,7 @@ export default function HomeTutorCard({
             disabled={busy === "save" || subjects.length === 0}
             onClick={saveAndPlan}
           >
-            {busy === "save" ? "Saving…" : "Save profile & make today’s plan"}
+            {busy === "save" ? ui.saving : ui.saveProfile}
           </button>
         </div>
       )}
@@ -245,11 +249,11 @@ export default function HomeTutorCard({
               <strong>{profile.daily_minutes} min</strong>
             </div>
             <div>
-              <span>Weak topics tracked</span>
+              <span>{ui.weakTracked}</span>
               <strong>{weakTopics.filter((item) => item.mastery_score < 70).length}</strong>
             </div>
             <div>
-              <span>Today progress</span>
+              <span>{ui.todayProgress}</span>
               <strong>{plan ? `${completedCount}/${plan.items.length}` : "0/0"}</strong>
             </div>
           </div>
@@ -257,7 +261,7 @@ export default function HomeTutorCard({
           {weakTopics.length > 0 && (
             <div className="weakTopics">
               <div className="homeTutorSectionTitle">
-                <strong>Topics needing attention</strong>
+                <strong>{ui.topicsAttention}</strong>
                 <span>AI chats aur quizzes se automatically update hote hain</span>
               </div>
               <div className="weakTopicList">
@@ -275,7 +279,7 @@ export default function HomeTutorCard({
           <div className="dailyPlan">
             <div className="homeTutorSectionTitle">
               <div>
-                <strong>Today’s plan</strong>
+                <strong>{ui.todayPlan}</strong>
                 <span>{plan ? "Learn → Practice → Recall" : "Plan abhi generate nahi hua"}</span>
               </div>
               <button
@@ -284,7 +288,7 @@ export default function HomeTutorCard({
                 onClick={regeneratePlan}
                 disabled={busy === "plan"}
               >
-                {busy === "plan" ? "Making…" : plan ? "Refresh plan" : "Make plan"}
+                {busy === "plan" ? ui.saving : plan ? ui.refreshPlan : ui.makePlan}
               </button>
             </div>
 
