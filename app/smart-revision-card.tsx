@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getAccessToken } from "@/lib/chat-history";
+import { getLearningHubUiText } from "@/lib/learning-hub-ui-i18n";
 
 type RevisionItem = {
   id: string;
@@ -89,6 +90,7 @@ export default function SmartRevisionCard({
   const [grade, setGrade] = useState<GradeResult | null>(null);
   const [scores, setScores] = useState<number[]>([]);
   const [hintOpen, setHintOpen] = useState(false);
+  const ui = getLearningHubUiText(studentContext, language);
 
   async function authHeaders(): Promise<Record<string, string>> {
     const token = signedIn ? await getAccessToken() : null;
@@ -285,11 +287,11 @@ export default function SmartRevisionCard({
       <section className="smartRevisionCard">
         <div className="revisionHeader">
           <div>
-            <span>SMART REVISION</span>
-            <h3>🔁 Weak topics ko bhoolne se pehle revise karo</h3>
-            <p>Spaced revision schedule aur “Revise Today” list ke liye sign in karo.</p>
+            <span>{ui.revisionEyebrow}</span>
+            <h3>🔁 {ui.revisionSignedOutTitle}</h3>
+            <p>{ui.revisionSignedOutDesc}</p>
           </div>
-          <button type="button" onClick={onSignIn}>Sign in</button>
+          <button type="button" onClick={onSignIn}>{ui.signIn}</button>
         </div>
       </section>
     );
@@ -300,7 +302,7 @@ export default function SmartRevisionCard({
       <div className="revisionHeader">
         <div>
           <span>SMART REVISION</span>
-          <h3>🔁 Revise Today</h3>
+          <h3>🔁 {ui.reviseToday}</h3>
           <p>
             {dashboard
               ? `${dashboard.stats.dueToday} due · ${dashboard.stats.scheduled} topics scheduled · spaced repetition auto-adjusts`
@@ -314,15 +316,15 @@ export default function SmartRevisionCard({
             if (!dashboard) void refresh();
           }}
         >
-          {open ? "Hide" : dashboard?.stats.dueToday ? `Revise ${dashboard.stats.dueToday}` : "View"}
+          {open ? ui.hide : dashboard?.stats.dueToday ? `${ui.revise} ${dashboard.stats.dueToday}` : ui.view}
         </button>
       </div>
 
       {dashboard && (
         <div className="revisionStats">
-          <div><span>Due today</span><strong>{dashboard.stats.dueToday}</strong></div>
-          <div><span>Reviewed</span><strong>{dashboard.stats.reviewed}</strong></div>
-          <div><span>Avg revision score</span><strong>{dashboard.stats.averageScore}/100</strong></div>
+          <div><span>{ui.dueToday}</span><strong>{dashboard.stats.dueToday}</strong></div>
+          <div><span>{ui.reviewed}</span><strong>{dashboard.stats.reviewed}</strong></div>
+          <div><span>{ui.avgRevisionScore}</span><strong>{dashboard.stats.averageScore}/100</strong></div>
         </div>
       )}
 
@@ -331,11 +333,11 @@ export default function SmartRevisionCard({
           <div className="revisionSection">
             <div className="revisionSectionTitle">
               <div>
-                <strong>Today’s revision</strong>
+                <strong>{ui.todaysRevision}</strong>
                 <span>Weak / due topics first</span>
               </div>
               <button type="button" onClick={() => void refresh()} disabled={busy === "refresh"}>
-                {busy === "refresh" ? "Refreshing…" : "Refresh"}
+                {busy === "refresh" ? ui.saving : ui.refresh}
               </button>
             </div>
 
@@ -354,10 +356,10 @@ export default function SmartRevisionCard({
                     </div>
                     <div className="revisionActions">
                       <button type="button" onClick={() => void startRevision(item)} disabled={Boolean(busy)}>
-                        Practice now
+                        {ui.practiceNow}
                       </button>
                       <button type="button" className="revisionSnooze" onClick={() => void snooze(item)} disabled={Boolean(busy)}>
-                        Tomorrow
+                        {ui.tomorrow}
                       </button>
                     </div>
                   </div>
@@ -375,7 +377,7 @@ export default function SmartRevisionCard({
             <div className="revisionSection">
               <div className="revisionSectionTitle">
                 <div>
-                  <strong>Upcoming</strong>
+                  <strong>{ui.upcoming}</strong>
                   <span>Spaced revision schedule</span>
                 </div>
               </div>
