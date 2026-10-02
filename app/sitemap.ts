@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://genzstudy.in";
-  const routes = ["/", "/privacy", "/terms", "/refund"];
+  const routes = ["/", "/support", "/privacy", "/terms", "/refund"];
 
   return routes.map((path) => ({
     url: `${baseUrl}${path}`,
