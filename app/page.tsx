@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
+import { getComposerUiText } from "@/lib/composer-ui-i18n";
 import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, normalizeStudyContext, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import HomeTutorCard from "@/app/home-tutor-card";
@@ -172,6 +173,7 @@ export default function Home() {
   const effectiveStudentContext = schoolBoard
     ? buildBoardStudyContext(schoolBoard, schoolClass, studyMedium)
     : studentContext;
+  const composerUi = getComposerUiText(effectiveStudentContext, language);
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -341,14 +343,10 @@ export default function Home() {
   }, []);
 
   const placeholder = useMemo(() => {
-    if (pdfDataUrl) return "PDF se kya karna hai? Notes, summary, MCQ ya koi question...";
-    if (photoDataUrl) return "Photo ke baare me kya solve/samjhana hai? (optional)";
-    if (mode === "notes") return "Topic ya chapter bhejo — main exam-ready notes banaunga...";
-    if (mode === "quiz") return "Kis topic par quiz chahiye?";
-    if (mode === "explain") return "Koi concept simple language me samjhana hai?";
-    if (mode === "exam") return "Exam + subject + topic likho...";
-    return "Kuch bhi pucho — Hindi, Hinglish ya apni language me...";
-  }, [mode, photoDataUrl, pdfDataUrl]);
+    if (pdfDataUrl) return composerUi.placeholders.pdf;
+    if (photoDataUrl) return composerUi.placeholders.photo;
+    return composerUi.placeholders[mode];
+  }, [mode, photoDataUrl, pdfDataUrl, composerUi]);
 
   async function handleGoogleSignIn() {
     setNotice("");
@@ -1146,12 +1144,12 @@ export default function Home() {
         <form className="composer" onSubmit={sendMessage}>
           {photoDataUrl && (
             <div className="photoPreview">
-              <img src={photoDataUrl} alt="Selected study question" />
+              <img src={photoDataUrl} alt={composerUi.studyImage} />
               <div>
-                <strong>Photo ready</strong>
-                <span>{photoName || "Study image"}</span>
+                <strong>{composerUi.photoReady}</strong>
+                <span>{photoName || composerUi.studyImage}</span>
               </div>
-              <button type="button" onClick={removePhoto} aria-label="Remove photo">✕</button>
+              <button type="button" onClick={removePhoto} aria-label={composerUi.removePhoto}>✕</button>
             </div>
           )}
 
@@ -1159,15 +1157,15 @@ export default function Home() {
             <div className="pdfPreview">
               <div className="pdfIcon">PDF</div>
               <div>
-                <strong>PDF ready</strong>
-                <span>{pdfName || "Study PDF"}</span>
+                <strong>{composerUi.pdfReady}</strong>
+                <span>{pdfName || composerUi.studyPdf}</span>
               </div>
-              <button type="button" onClick={removePdf} aria-label="Remove PDF">✕</button>
+              <button type="button" onClick={removePdf} aria-label={composerUi.removePdf}>✕</button>
             </div>
           )}
 
           <div className="comingRow">
-            <label className="uploadLabel" htmlFor="photo-upload">📷 Photo Solve</label>
+            <label className="uploadLabel" htmlFor="photo-upload">📷 {composerUi.photoSolve}</label>
             <input
               id="photo-upload"
               className="fileInput"
@@ -1176,8 +1174,8 @@ export default function Home() {
               capture="environment"
               onChange={(e) => handlePhotoChange(e.target.files?.[0])}
             />
-            <label className="uploadLabel" htmlFor="pdf-upload">📄 Ask PDF</label>
-            <button type="button" className="uploadLabel" onClick={loadSamplePdf}>⬇ Sample PDF</button>
+            <label className="uploadLabel" htmlFor="pdf-upload">📄 {composerUi.askPdf}</label>
+            <button type="button" className="uploadLabel" onClick={loadSamplePdf}>⬇ {composerUi.samplePdf}</button>
             <input
               id="pdf-upload"
               className="fileInput"
@@ -1185,7 +1183,7 @@ export default function Home() {
               accept=".pdf,application/pdf,*/*"
               onChange={async (e) => { const file = e.target.files?.[0]; await handlePdfChange(file); e.currentTarget.value = ""; }}
             />
-            {user ? <span>☁️ History on</span> : <span>👤 Guest mode</span>}
+            {user ? <span>☁️ {composerUi.historyOn}</span> : <span>👤 {composerUi.guestMode}</span>}
           </div>
 
           <div className="inputRow">
