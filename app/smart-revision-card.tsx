@@ -191,6 +191,8 @@ export default function SmartRevisionCard({
           topic: pack.topic,
           difficulty: currentQuestion.difficulty,
           sourceType: "practice",
+          language,
+          studentContext,
         }),
       });
 
@@ -449,7 +451,7 @@ export default function SmartRevisionCard({
                 </button>
               ) : (
                 <div className={grade.correct ? "revisionResult correct" : "revisionResult incorrect"}>
-                  <strong>{grade.correct ? "✅ Correct" : "🔁 Revise this point"}</strong>
+                  <strong>{grade.correct ? "✅" : "🔁"}</strong>
                   <span>Score {Math.round(grade.score)}/100</span>
                   <p>{grade.feedback}</p>
                   {grade.explanation && <small>{grade.explanation}</small>}
