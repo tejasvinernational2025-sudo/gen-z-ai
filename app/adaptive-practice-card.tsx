@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getAccessToken } from "@/lib/chat-history";
+import { getPracticeUiText } from "@/lib/practice-ui-i18n";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -66,6 +67,7 @@ export default function AdaptivePracticeCard({
   const [hintOpen, setHintOpen] = useState(false);
   const [nextDifficulty, setNextDifficulty] = useState<Difficulty | null>(null);
   const lastSeed = useRef("");
+  const ui = getPracticeUiText(studentContext, language);
 
   async function authHeaders(): Promise<Record<string, string>> {
     const token = signedIn ? await getAccessToken() : null;
@@ -116,11 +118,11 @@ export default function AdaptivePracticeCard({
   }
 
   useEffect(() => {
-    const seed = `${sourceQuestion}\n${sourceAnswer}`.slice(0, 4000);
+    const seed = `${sourceQuestion}\n${sourceAnswer}\n${studentContext}\n${language}\n${sourceId}`.slice(0, 4300);
     if (!sourceAnswer || !seed.trim() || seed === lastSeed.current) return;
     lastSeed.current = seed;
     void generate();
-  }, [sourceQuestion, sourceAnswer]);
+  }, [sourceQuestion, sourceAnswer, studentContext, language, sourceId]);
 
   const question = pack?.questions?.[index] || null;
 
@@ -147,6 +149,8 @@ export default function AdaptivePracticeCard({
           topic: pack.topic,
           difficulty: question.difficulty,
           sourceType: "photo",
+          language,
+          studentContext,
         }),
       });
 
@@ -182,26 +186,26 @@ export default function AdaptivePracticeCard({
     <section className="adaptivePractice" aria-label="Adaptive practice">
       <div className="adaptivePracticeHead">
         <div>
-          <span>PHOTO → PRACTICE</span>
-          <h4>🎯 Ab isi concept par practice karo</h4>
+          <span>{ui.eyebrow}</span>
+          <h4>🎯 {ui.title}</h4>
           <p>
             {pack
               ? `${pack.subject} · ${pack.topic}`
               : "Photo solution se similar questions ban rahe hain…"}
           </p>
         </div>
-        {pack && <em>{pack.adaptiveDifficulty} level</em>}
+        {pack && <em>{ui.level[pack.adaptiveDifficulty]}</em>}
       </div>
 
       {busy === "generate" && !pack && (
-        <div className="practiceLoading">3 similar questions bana raha hoon…</div>
+        <div className="practiceLoading">{ui.loading}</div>
       )}
 
       {question && pack && (
         <div className="practiceQuestion">
           <div className="practiceQuestionMeta">
-            <strong>Question {index + 1}/{pack.questions.length}</strong>
-            <span>{question.difficulty}</span>
+            <strong>{ui.question} {index + 1}/{pack.questions.length}</strong>
+            <span>{ui.level[question.difficulty]}</span>
           </div>
 
           <p className="practicePrompt">{question.question}</p>
@@ -211,14 +215,14 @@ export default function AdaptivePracticeCard({
             className="practiceHint"
             onClick={() => setHintOpen((value) => !value)}
           >
-            {hintOpen ? "Hint hide karo" : "💡 Hint"}
+            {hintOpen ? ui.hideHint : `💡 ${ui.hint}`}
           </button>
           {hintOpen && <p className="practiceHintText">{question.hint}</p>}
 
           <textarea
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Apna answer yahan likho…"
+            placeholder={ui.answerPlaceholder}
             rows={3}
             disabled={Boolean(grade)}
           />
@@ -230,16 +234,16 @@ export default function AdaptivePracticeCard({
               disabled={!answer.trim() || busy === "grade"}
               onClick={checkAnswer}
             >
-              {busy === "grade" ? "Checking…" : "Check my answer"}
+              {busy === "grade" ? ui.checking : ui.checkAnswer}
             </button>
           ) : (
             <div className={grade.correct ? "practiceResult correct" : "practiceResult incorrect"}>
               <strong>{grade.correct ? "✅" : "🔁"}</strong>
-              <span>Score: {Math.round(grade.score)}/100</span>
+              <span>{ui.score}: {Math.round(grade.score)}/100</span>
               <p>{grade.feedback}</p>
               {grade.explanation && <small>{grade.explanation}</small>}
               <button type="button" onClick={nextQuestion}>
-                {index < pack.questions.length - 1 ? "Next question →" : "Next adaptive set →"}
+                {index < pack.questions.length - 1 ? ui.nextQuestion : ui.nextSet}
               </button>
             </div>
           )}
@@ -247,13 +251,13 @@ export default function AdaptivePracticeCard({
       )}
 
       {!signedIn && pack && (
-        <small className="practiceSaveNote">Sign in karoge to answers mastery/weak-topic profile me save honge.</small>
+        <small className="practiceSaveNote">{ui.signInSave}</small>
       )}
 
       {error && (
         <div className="practiceError">
           <span>{error}</span>
-          <button type="button" onClick={() => void generate()}>Retry</button>
+          <button type="button" onClick={() => void generate()}>{ui.retry}</button>
         </div>
       )}
     </section>
