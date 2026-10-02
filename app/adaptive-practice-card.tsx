@@ -234,7 +234,7 @@ export default function AdaptivePracticeCard({
             </button>
           ) : (
             <div className={grade.correct ? "practiceResult correct" : "practiceResult incorrect"}>
-              <strong>{grade.correct ? "✅ Sahi jawab" : "🔁 Thoda aur practice"}</strong>
+              <strong>{grade.correct ? "✅" : "🔁"}</strong>
               <span>Score: {Math.round(grade.score)}/100</span>
               <p>{grade.feedback}</p>
               {grade.explanation && <small>{grade.explanation}</small>}
