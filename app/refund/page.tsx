@@ -10,50 +10,78 @@ export default function RefundPage() {
   return (
     <LegalShell
       title="Refund & Cancellation Policy"
-      subtitle="Payment handling for Gen-z AI subscriptions and paid study plans."
+      subtitle="Clear rules for Gen-z AI 30-day paid study plans."
     >
       <section>
-        <h2>1. Current pre-launch payment status</h2>
+        <h2>1. Current billing model</h2>
         <p>
-          Gen-z AI paid checkout is being enabled. Until a paid plan is visibly available on the
-          official Gen-z AI website, users should not make payment to any unofficial link, account
-          or person claiming to sell a Gen-z AI subscription.
+          Gen-z AI currently sells fixed 30-day paid plan access through the official website.
+          The checkout shows the plan and amount before payment. Current paid plans do not
+          automatically renew, so there is no future recurring charge to cancel.
         </p>
       </section>
 
       <section>
-        <h2>2. Successful payment but no activation</h2>
+        <h2>2. Refund request window</h2>
         <p>
-          When paid plans are live, a payment that is successfully captured but does not activate
-          the purchased plan will be investigated. After verification, the plan may be activated
-          or the eligible payment may be refunded through the original payment method.
+          A refund request should be submitted through the official Support page within 7
+          calendar days of the payment. Include the account email, payment/order reference and a
+          short explanation of the issue so the transaction can be verified.
         </p>
       </section>
 
       <section>
-        <h2>3. Duplicate or incorrect charges</h2>
+        <h2>3. Eligible refund cases</h2>
         <p>
-          Confirmed duplicate charges or payment-processing errors will be reviewed for correction
-          or refund. Bank and payment-network settlement times may affect when a refunded amount
-          appears in the customer&apos;s account.
+          After verification, a refund may be approved for a confirmed duplicate charge, a
+          captured payment where the purchased plan did not activate and could not be restored,
+          or a verified payment-processing error that charged the wrong Gen-z AI plan or amount.
         </p>
       </section>
 
       <section>
-        <h2>4. Cancellation</h2>
+        <h2>4. Cases normally not refundable</h2>
         <p>
-          If recurring billing is offered, users will be able to stop future renewal according to
-          the cancellation method shown with the plan. Cancellation stops future billing but does
-          not automatically reverse study usage already consumed during an active paid period.
+          A successfully activated paid plan is normally not refundable for change of mind,
+          unused days, unused quota, exhaustion of included daily limits, dissatisfaction with a
+          particular AI answer, or account restrictions caused by serious misuse of the service.
+          This does not limit any mandatory consumer right that applies by law.
         </p>
       </section>
 
       <section>
-        <h2>5. Final paid-plan terms</h2>
+        <h2>5. Failed or pending payments</h2>
         <p>
-          The exact billing cycle, refund-request window and plan-specific conditions will be
-          displayed before the first public paid checkout is activated. Applicable statutory
-          consumer rights remain unaffected.
+          If a payment fails or remains pending, do not immediately pay repeatedly. First check
+          whether the bank or payment app has debited the amount. A bank reversal for a failed
+          transaction can occur independently of a Gen-z AI refund.
+        </p>
+      </section>
+
+      <section>
+        <h2>6. Approved refunds</h2>
+        <p>
+          Approved refunds are sent back through the available original payment route. After a
+          refund is initiated, the bank, UPI app or payment network may require additional time
+          to show the credit. Gen-z AI cannot control the final bank-processing time.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. Cancellation and expiry</h2>
+        <p>
+          Because current paid plans are fixed 30-day access rather than automatic recurring
+          billing, access simply expires at the end of the paid period unless another plan is
+          purchased. A refund, where approved, may end the associated paid access.
+        </p>
+      </section>
+
+      <section>
+        <h2>8. How to request help</h2>
+        <p>
+          Use the official Gen-z AI Support page and select Payment / activation or Refund
+          request. Never send a password, OTP, card PIN or CVV in a support message. Applicable
+          statutory consumer rights remain unaffected.
         </p>
       </section>
     </LegalShell>
