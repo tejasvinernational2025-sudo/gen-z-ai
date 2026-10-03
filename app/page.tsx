@@ -1319,6 +1319,27 @@ export default function Home() {
         <p>{learningUi.hubDescription}</p>
       </section>
 
+      <section className="tuitionModeCard" aria-label="AI Tuition Mode">
+        <div>
+          <span>AI TUITION MODE · PHASE 1</span>
+          <h3>🎓 Your affordable personal tutor</h3>
+          <p>Daily guided tuition: learn a concept, practice it, check understanding, then revise weak topics.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => document.getElementById("home-tutor")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        >
+          Start today’s tuition
+        </button>
+        <div className="tuitionFlow" aria-label="Tuition lesson flow">
+          <strong>1 · Learn</strong>
+          <strong>2 · Practice</strong>
+          <strong>3 · Check</strong>
+          <strong>4 · Revise</strong>
+        </div>
+        <small>Built for students who need structured daily support without depending on expensive private tuition.</small>
+      </section>
+
       <div id="home-tutor">
         <HomeTutorCard
           signedIn={Boolean(user)}
