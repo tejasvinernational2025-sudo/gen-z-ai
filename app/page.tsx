@@ -165,7 +165,7 @@ function FormattedAnswer({ text }: { text: string }) {
   })}</div>;
 }
 
-const LANGUAGE_STORAGE_KEY = "genz-language";
+const LANGUAGE_STORAGE_KEY = "genz-response-language-v2";
 
 export default function Home() {
   const [language, setLanguage] = useState("English");
@@ -311,22 +311,20 @@ export default function Home() {
 
     void getLearningSnapshot()
       .then((snapshot) => {
-        let browserLanguage = "";
+        let urlLanguage = "";
+        let savedLanguage = "";
         try {
-          const urlLanguage = new URL(window.location.href).searchParams.get("lang") || "";
-          const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY) || "";
-          const candidate = urlLanguage || savedLanguage;
-          if (candidate && LANGUAGES.some((item) => item === candidate)) {
-            browserLanguage = candidate;
-          }
+          urlLanguage = new URL(window.location.href).searchParams.get("lang") || "";
+          savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY) || "";
         } catch {
-          browserLanguage = "";
+          urlLanguage = "";
+          savedLanguage = "";
         }
 
-        if (browserLanguage) {
-          applyLanguageLocally(browserLanguage);
-          if (snapshot.profile?.preferred_language !== browserLanguage) {
-            void savePreferredLanguage(browserLanguage).catch(() => {});
+        if (urlLanguage && LANGUAGES.some((item) => item === urlLanguage)) {
+          applyLanguageLocally(urlLanguage);
+          if (snapshot.profile?.preferred_language !== urlLanguage) {
+            void savePreferredLanguage(urlLanguage).catch(() => {});
           }
           return;
         }
@@ -334,7 +332,16 @@ export default function Home() {
         const accountLanguage = snapshot.profile?.preferred_language || "";
         if (accountLanguage && LANGUAGES.some((item) => item === accountLanguage)) {
           applyLanguageLocally(accountLanguage);
+          return;
         }
+
+        if (savedLanguage && LANGUAGES.some((item) => item === savedLanguage)) {
+          applyLanguageLocally(savedLanguage);
+          return;
+        }
+
+        applyLanguageLocally("English");
+        void savePreferredLanguage("English").catch(() => {});
       })
       .catch(() => {});
   }, [user]);
