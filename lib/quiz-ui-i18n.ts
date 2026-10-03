@@ -330,15 +330,9 @@ const TEXT: Record<string, QuizUiText> = {
 };
 
 function selectedLanguage(studentContext: string, language: string) {
+  void studentContext;
   const named = language.includes("—") ? language.split("—").pop()?.trim() : language.trim();
-  if (named) return named;
-
-  const medium = studentContext
-    .split("|")
-    .map((part) => part.trim())
-    .find((part) => /\bMedium$/i.test(part));
-
-  return medium ? medium.replace(/\s*Medium$/i, "").trim() : "English";
+  return named || "English";
 }
 
 export function getQuizUiText(studentContext: string, language: string) {
