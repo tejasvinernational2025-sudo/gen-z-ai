@@ -108,7 +108,10 @@ export default function SmartRevisionCard({
     setBusy((current) => current || "refresh");
     try {
       const headers = await authHeaders();
-      const response = await fetch("/api/revision", { headers, cache: "no-store" });
+      const response = await fetch(`/api/revision?language=${encodeURIComponent(language)}`, {
+        headers,
+        cache: "no-store",
+      });
       setDashboard((await parseJson(response)) as RevisionDashboard);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : `${ui.revisionEyebrow}: ${ui.refresh}`);
@@ -122,7 +125,7 @@ export default function SmartRevisionCard({
     const handler = () => void refresh();
     window.addEventListener("genz-learning-updated", handler);
     return () => window.removeEventListener("genz-learning-updated", handler);
-  }, [signedIn]);
+  }, [signedIn, language]);
 
   const currentQuestion = pack?.questions?.[index] || null;
 
