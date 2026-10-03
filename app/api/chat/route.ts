@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     const language =
       typeof body.language === "string" && body.language.trim()
         ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
-        : "Hinglish";
+        : "English";
 
     const studentContext = normalizeStudyContext(body.studentContext);
 
@@ -91,8 +91,8 @@ export async function POST(req: NextRequest) {
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "chat";
 
     const selectedLanguage = language.includes("—")
-      ? language.split("—").pop()?.trim() || "Hinglish"
-      : language.trim() || "Hinglish";
+      ? language.split("—").pop()?.trim() || "English"
+      : language.trim() || "English";
     const nativeLanguageInstruction =
       selectedLanguage === "Hinglish"
         ? "CRITICAL OUTPUT LANGUAGE REQUIREMENT: The Language selector is Hinglish. Answer in natural Hinglish using Latin script. This explicit language choice overrides the school medium and earlier conversation language."

@@ -168,11 +168,15 @@ function FormattedAnswer({ text }: { text: string }) {
 const LANGUAGE_STORAGE_KEY = "genz-language";
 
 export default function Home() {
-  const [language, setLanguage] = useState("Hinglish");
+  const [language, setLanguage] = useState("English");
   const [studentContext, setStudentContext] = useState<StudyContext>("General");
   const [schoolBoard, setSchoolBoard] = useState("");
   const [schoolClass, setSchoolClass] = useState("Class 10");
   const [studyMedium, setStudyMedium] = useState("Hindi Medium");
+  const responseLanguageName = language.includes("—")
+    ? language.split("—").pop()?.trim() || "English"
+    : language.trim() || "English";
+  const isEnglish = responseLanguageName === "English";
   const effectiveStudentContext = schoolBoard
     ? buildBoardStudyContext(schoolBoard, schoolClass, studyMedium)
     : studentContext;
@@ -223,7 +227,7 @@ export default function Home() {
   }
 
   function changeLanguageAndReload(value: string) {
-    const nextLanguage = value.trim() || "Hinglish";
+    const nextLanguage = value.trim() || "English";
     applyLanguageLocally(nextLanguage);
 
     if (user) {
@@ -931,7 +935,7 @@ export default function Home() {
         <form className="authPanel authPanelExpanded authPanelSimple" onSubmit={submitLogin}>
           <div className="authIntro">
             <strong>Sign in to Gen-z AI</strong>
-            <span>Chats, study plan, progress aur revision sync rahenge.</span>
+            <span>{isEnglish ? "Chats, study plan, progress and revision will stay synced." : "Chats, study plan, progress aur revision sync rahenge."}</span>
           </div>
 
           <button type="button" className="googleSignInButton" onClick={handleGoogleSignIn}>
@@ -957,7 +961,7 @@ export default function Home() {
           </button>
 
           <p className="authPrivacyNote">
-            Password ya OTP yaad rakhne ki zarurat nahi. Secure sign-in link email par aayega.
+            {isEnglish ? "No password or OTP to remember. A secure sign-in link will be sent to your email." : "Password ya OTP yaad rakhne ki zarurat nahi. Secure sign-in link email par aayega."}
           </p>
 
           <button type="button" className="authCloseButton" onClick={() => setAuthOpen(false)}>
@@ -977,7 +981,7 @@ export default function Home() {
           </div>
           <div className="historyList">
             {history.length === 0 ? (
-              <p>Abhi koi saved chat nahi hai.</p>
+              <p>{isEnglish ? "No saved chats yet." : "Abhi koi saved chat nahi hai."}</p>
             ) : (
               history.map((item) => (
                 <button key={item.id} onClick={() => openConversation(item)}>
@@ -1002,13 +1006,13 @@ export default function Home() {
         <div className="usageTop">
           <div>
             <span className="usageEyebrow">{user ? `${displayPlanName(quota?.plan || "free")} plan` : "Free plan"}</span>
-            <strong>{user ? "Aaj ke remaining uses" : "Daily free study allowance"}</strong>
+            <strong>{user ? (isEnglish ? "Today’s remaining uses" : "Aaj ke remaining uses") : "Daily free study allowance"}</strong>
             <small>
               {user
                 ? quotaLoading
-                  ? "Usage refresh ho rahi hai…"
-                  : "Daily limits India time par reset hoti hain."
-                : "Sign in karke daily limits track karo aur chat history save karo."}
+                  ? (isEnglish ? "Refreshing usage…" : "Usage refresh ho rahi hai…")
+                  : (isEnglish ? "Daily limits reset on India time." : "Daily limits India time par reset hoti hain.")
+                : (isEnglish ? "Sign in to track daily limits and save chat history." : "Sign in karke daily limits track karo aur chat history save karo.")}
             </small>
           </div>
           <button type="button" className="plansButton" onClick={() => setPlansOpen((value) => !value)}>
@@ -1107,7 +1111,7 @@ export default function Home() {
       <section className="contextBar" aria-label="Student context">
         <div>
           <strong>Study context</strong>
-          <span>Class/Exam ke hisaab se answer ki depth set karo</span>
+          <span>{isEnglish ? "Set answer depth for your class or exam" : "Class/Exam ke hisaab se answer ki depth set karo"}</span>
         </div>
         <select
           className="contextSelect"
@@ -1124,7 +1128,7 @@ export default function Home() {
       <section className="boardPicker" aria-label="School board and medium">
         <div className="boardPickerTitle">
           <strong>School Board & Medium</strong>
-          <span>State board students ke liye board, class aur medium select karo</span>
+          <span>{isEnglish ? "Select your board, class and school medium" : "State board students ke liye board, class aur medium select karo"}</span>
         </div>
         <div className="boardPickerGrid">
           <select
@@ -1192,8 +1196,8 @@ export default function Home() {
           {messages.length === 0 ? (
             <div className="empty">
               <div className="spark">✦</div>
-              <h3>Namaste! Main Gen-z AI hoon.</h3>
-              <p>{studentContext} context me question type karo, photo ya PDF upload karo. Main {language} me help karunga.</p>
+              <h3>{isEnglish ? "Hi! I’m Gen-z AI." : "Namaste! Main Gen-z AI hoon."}</h3>
+              <p>{isEnglish ? `Ask a question in ${studentContext} context, or upload a photo or PDF. I’ll help in English.` : `${studentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`}</p>
               <div className="quickGrid">
                 <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ Explain a chapter</button>
                 <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 Make notes</button>
@@ -1209,7 +1213,7 @@ export default function Home() {
               </div>
             ))
           )}
-          {loading && <div className="message assistant"><strong>Gen-z AI</strong><p>Soch raha hoon…</p></div>}
+          {loading && <div className="message assistant"><strong>Gen-z AI</strong><p>{isEnglish ? "Thinking…" : "Soch raha hoon…"}</p></div>}
         </div>
 
         {error && <div className="error">{error}</div>}

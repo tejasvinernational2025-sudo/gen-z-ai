@@ -27,20 +27,11 @@ function safeDifficulty(value: unknown): PracticeDifficulty {
 }
 
 function outputLanguageRule(studentContext: string, requestedLanguage: string) {
-  const mediumPart = studentContext
-    .split("|")
-    .map((part) => part.trim())
-    .find((part) => /\bMedium$/i.test(part));
-
-  const mediumLanguage = mediumPart
-    ? mediumPart.replace(/\s*Medium$/i, "").trim()
-    : "";
-
   const selectedLanguage = requestedLanguage.includes("—")
     ? requestedLanguage.split("—").pop()?.trim() || ""
     : requestedLanguage.trim();
 
-  const effectiveLanguage = selectedLanguage || mediumLanguage || "Hinglish";
+  const effectiveLanguage = selectedLanguage || "English";
   const languageStyle =
     effectiveLanguage === "Hinglish"
       ? "natural Hinglish using Latin script"
@@ -128,7 +119,7 @@ async function generatePractice(req: NextRequest, body: any) {
   const sourceQuestion = cleanText(body?.sourceQuestion, 1800);
   const sourceAnswer = cleanText(body?.sourceAnswer, 6500);
   const studentContext = cleanText(body?.studentContext, 180) || "General";
-  const language = cleanText(body?.language, 80) || "Hinglish";
+  const language = cleanText(body?.language, 80) || "English";
   const requestedTopic = cleanText(body?.topic, 140);
   const requestedSubject = cleanText(body?.subject, 80);
   const outputLanguage = outputLanguageRule(studentContext, language);
@@ -201,7 +192,7 @@ async function gradePractice(req: NextRequest, body: any) {
   const topic = cleanText(body?.topic, 140) || "Practice";
   const difficulty = safeDifficulty(body?.difficulty);
   const studentContext = cleanText(body?.studentContext, 180) || "General";
-  const language = cleanText(body?.language, 80) || "Hinglish";
+  const language = cleanText(body?.language, 80) || "English";
   const outputLanguage = outputLanguageRule(studentContext, language);
   const sourceType =
     body?.sourceType === "photo" || body?.sourceType === "quiz"
@@ -269,7 +260,7 @@ async function generateQuiz(req: NextRequest, body: any) {
   const topic = cleanText(body?.topic, 140);
   const subject = cleanText(body?.subject, 80) || "General";
   const studentContext = cleanText(body?.studentContext, 180) || "General";
-  const language = cleanText(body?.language, 80) || "Hinglish";
+  const language = cleanText(body?.language, 80) || "English";
   const outputLanguage = outputLanguageRule(studentContext, language);
 
   if (!topic) {

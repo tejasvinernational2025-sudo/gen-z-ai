@@ -62,6 +62,10 @@ export default function StudySourcesCard({
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const ui = getLearningHubUiText(studentContext, language);
+  const responseLanguageName = language.includes("—")
+    ? language.split("—").pop()?.trim() || "English"
+    : language.trim() || "English";
+  const isEnglish = responseLanguageName === "English";
 
   async function refresh() {
     if (!signedIn) {
@@ -93,7 +97,7 @@ export default function StudySourcesCard({
       return;
     }
     if (!title.trim()) {
-      setMessage("Book/chapter title likho.");
+      setMessage(isEnglish ? "Enter a book or chapter title." : "Book/chapter title likho.");
       return;
     }
 
@@ -102,7 +106,7 @@ export default function StudySourcesCard({
     try {
       let result: any;
       if (sourceType === "pdf") {
-        if (!pdfFile) throw new Error("PDF select karo.");
+        if (!pdfFile) throw new Error(isEnglish ? "Select a PDF." : "PDF select karo.");
         const pdfDataUrl = await pdfToDataUrl(pdfFile);
         result = await createPdfStudySource({
           title: title.trim(),
@@ -111,7 +115,7 @@ export default function StudySourcesCard({
           pdfDataUrl,
         });
       } else {
-        if (text.trim().length < 40) throw new Error("Chapter text thoda aur complete paste karo.");
+        if (text.trim().length < 40) throw new Error(isEnglish ? "Paste a little more chapter text." : "Chapter text thoda aur complete paste karo.");
         result = await createTextStudySource({
           title: title.trim(),
           subject: subject.trim(),
@@ -128,9 +132,9 @@ export default function StudySourcesCard({
       setText("");
       setPdfFile(null);
       setOpen(false);
-      setMessage("Study source save ho gaya aur grounding ON hai ✅");
+      setMessage(isEnglish ? "Study source saved and grounding is ON ✅" : "Study source save ho gaya aur grounding ON hai ✅");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Study source save nahi hua.");
+      setMessage(error instanceof Error ? error.message : (isEnglish ? "Study source could not be saved." : "Study source save nahi hua."));
     } finally {
       setBusy("");
     }
@@ -143,9 +147,9 @@ export default function StudySourcesCard({
       await deleteStudySourceClient(sourceId);
       if (activeSourceId === sourceId) onActiveChange("");
       await refresh();
-      setMessage("Study source remove ho gaya.");
+      setMessage(isEnglish ? "Study source removed." : "Study source remove ho gaya.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Source remove nahi hua.");
+      setMessage(error instanceof Error ? error.message : (isEnglish ? "Source could not be removed." : "Source remove nahi hua."));
     } finally {
       setBusy("");
     }
@@ -175,7 +179,7 @@ export default function StudySourcesCard({
           <p>
             {active
               ? `${active.title}${active.chapter ? ` · ${active.chapter}` : ""}`
-              : "Saved source select karo ya naya PDF/chapter add karo."}
+              : (isEnglish ? "Select a saved source or add a new PDF/chapter." : "Saved source select karo ya naya PDF/chapter add karo.")}
           </p>
         </div>
         <button type="button" onClick={() => setOpen((value) => !value)}>
@@ -238,7 +242,7 @@ export default function StudySourcesCard({
               onChange={(e) => setText(e.target.value)}
               rows={7}
               maxLength={120000}
-              placeholder="Chapter / notes / textbook text yahan paste karo…"
+              placeholder={isEnglish ? "Paste chapter / notes / textbook text here…" : "Chapter / notes / textbook text yahan paste karo…"}
             />
           )}
 
@@ -250,7 +254,7 @@ export default function StudySourcesCard({
 
       {active && (
         <div className="groundingBanner">
-          ✓ Answers, Photo Solve aur quizzes ko “{active.title}” se ground kiya jayega.
+          {isEnglish ? `✓ Answers, Photo Solve and quizzes will be grounded in “${active.title}”.` : `✓ Answers, Photo Solve aur quizzes ko “${active.title}” se ground kiya jayega.`}
         </div>
       )}
       {message && <div className="sourceMessage">{message}</div>}

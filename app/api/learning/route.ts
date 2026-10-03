@@ -210,7 +210,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "generate_plan") {
-      const language = cleanText(body?.language, 80) || "Hinglish";
+      const language = cleanText(body?.language, 80) || "English";
       const snapshot = await getLearningSnapshot(user.id);
       if (!snapshot.profile) {
         return NextResponse.json(
