@@ -298,6 +298,26 @@ export default function Home() {
 
     void getLearningSnapshot()
       .then((snapshot) => {
+        let browserLanguage = "";
+        try {
+          const urlLanguage = new URL(window.location.href).searchParams.get("lang") || "";
+          const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY) || "";
+          const candidate = urlLanguage || savedLanguage;
+          if (candidate && LANGUAGES.some((item) => item === candidate)) {
+            browserLanguage = candidate;
+          }
+        } catch {
+          browserLanguage = "";
+        }
+
+        if (browserLanguage) {
+          applyLanguageLocally(browserLanguage);
+          if (snapshot.profile?.preferred_language !== browserLanguage) {
+            void savePreferredLanguage(browserLanguage).catch(() => {});
+          }
+          return;
+        }
+
         const accountLanguage = snapshot.profile?.preferred_language || "";
         if (accountLanguage && LANGUAGES.some((item) => item === accountLanguage)) {
           applyLanguageLocally(accountLanguage);
