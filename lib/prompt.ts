@@ -6,9 +6,15 @@ export function buildSystemPrompt(
   studentContext = "General",
   learningContext = ""
 ) {
-  const mediumMatch = studentContext.match(/\|\s*([^|]+)\s+Medium\s*$/i);
-  const selectedMedium = mediumMatch?.[1]?.trim();
-  const responseLanguage = selectedMedium ? selectedMedium + " language in its native script" : language;
+  const selectedLanguage = language.includes("—")
+    ? language.split("—").pop()?.trim() || "Hinglish"
+    : language.trim() || "Hinglish";
+  const responseLanguage =
+    selectedLanguage === "Hinglish"
+      ? "natural Hinglish in Latin script"
+      : selectedLanguage === "English"
+        ? "English"
+        : `${selectedLanguage} in its native script`;
 
   const modeInstruction: Record<StudyMode, string> = {
     chat: "Answer the student's question clearly and helpfully.",
@@ -22,7 +28,7 @@ export function buildSystemPrompt(
 
 Student context: ${studentContext}
 ${learningContext ? `Personalized learning memory:\n${learningContext}\n` : ""}
-Language: Respond primarily in ${responseLanguage}. The selected school medium takes priority over the global UI language. If a school medium is selected, write every part of the new answer in that medium's native language and script unless the student explicitly asks for another language. This includes headings, bullets, explanations and practice questions. Do not reuse the previous answer language after the medium changes. Do not continue in the language of earlier conversation messages after the student changes the selected medium. If no school medium is selected, follow the global language ${language} and match the student's natural style. Respect Indian-language scripts and explain naturally rather than doing word-for-word translation.
+Language: Respond primarily in ${responseLanguage}. The student's explicit Language selector is authoritative and takes priority over the school medium. The school medium is curriculum context only; it must not silently change the response language. Apply the selected language to headings, bullets, explanations and practice questions. Do not reuse an earlier answer language after the Language selector changes. If the student explicitly asks for a different language in the current message, follow that request. Respect Indian-language scripts and explain naturally rather than doing word-for-word translation.
 
 India-first teaching rules:
 - Be accurate, patient, encouraging, and concise by default.
