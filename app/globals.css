@@ -1712,3 +1712,9 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
   .tuitionFlow { grid-template-columns:repeat(2,1fr); }
   .tuitionModeCard > button { width:100%; }
 }
+
+.tuitionSetup { display:grid; grid-template-columns:1fr 2fr 1fr; gap:9px; }
+.tuitionSetup label { display:grid; gap:5px; }
+.tuitionSetup label > span { font-size:.72rem; font-weight:800; color:#475569; }
+.tuitionSetup input,.tuitionSetup select { width:100%; min-width:0; padding:10px; border:1px solid rgba(99,102,241,.2); border-radius:10px; background:#fff; color:inherit; font:inherit; }
+@media (max-width:520px) { .tuitionSetup { grid-template-columns:1fr; } }
