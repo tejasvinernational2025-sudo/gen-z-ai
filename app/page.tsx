@@ -214,7 +214,10 @@ export default function Home() {
   const [paymentReady, setPaymentReady] = useState(false);
   const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
   const [activeSourceId, setActiveSourceId] = useState("");
-  const [studySources, setStudySources] = useState<StudySourceSummary[]>([]);\n  const [tuitionSubject, setTuitionSubject] = useState("Science");\n  const [tuitionTopic, setTuitionTopic] = useState("");\n  const [tuitionMinutes, setTuitionMinutes] = useState(30);
+  const [studySources, setStudySources] = useState<StudySourceSummary[]>([]);
+  const [tuitionSubject, setTuitionSubject] = useState("Science");
+  const [tuitionTopic, setTuitionTopic] = useState("");
+  const [tuitionMinutes, setTuitionMinutes] = useState(30);
 
   function applyLanguageLocally(nextLanguage: string) {
     setLanguage(nextLanguage);
