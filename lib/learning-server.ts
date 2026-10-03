@@ -204,11 +204,20 @@ export async function localizeLearningSnapshotForDisplay(
   if (localizedPlan) {
     localizedPlan = {
       ...localizedPlan,
-      items: localizedPlan.items.map((item) => ({
-        ...item,
-        subject: hasIndicScript(item.subject) ? "Study subject" : item.subject,
-        topic: hasIndicScript(item.topic) ? "Saved learning topic" : item.topic,
-      })),
+      items: localizedPlan.items.map((item) => {
+        const subject = hasIndicScript(item.subject) ? "Study subject" : item.subject;
+        const topic = hasIndicScript(item.topic) ? "Saved learning topic" : item.topic;
+        let task = item.task;
+        if (hasIndicScript(task)) {
+          task =
+            item.key === "learn"
+              ? `Understand the concept: ${topic}. Ask Gen-z AI for a simple explanation and one example.`
+              : item.key === "practice"
+                ? `Practice: Solve 5 questions/MCQs on ${topic} and review your mistakes.`
+                : `Quick revision: Recall the key points/formulas for ${topic} without looking, then take a 3-question quiz.`;
+        }
+        return { ...item, subject, topic, task };
+      }),
     };
   }
 
