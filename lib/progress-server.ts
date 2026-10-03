@@ -278,13 +278,26 @@ export async function getProgressDashboard(userId: string) {
   const month = metrics(monthRows);
   const allTopicAnalytics = topicAnalytics(monthRows);
 
+  // Keep topic classifications mutually exclusive. A topic with 70%+ accuracy
+  // and enough evidence belongs in Strong topics even if it contains an old mistake.
+  const strongTopicKeys = new Set(
+    allTopicAnalytics
+      .filter((item) => item.attempts >= 2 && item.accuracy >= 70)
+      .map((item) => `${item.subject}::${item.topic}`)
+  );
+
   const weakTopics = allTopicAnalytics
-    .filter((item) => item.attempts >= 1 && item.mistakes > 0)
+    .filter(
+      (item) =>
+        item.attempts >= 1 &&
+        item.mistakes > 0 &&
+        !strongTopicKeys.has(`${item.subject}::${item.topic}`)
+    )
     .sort((a, b) => b.mistakes - a.mistakes || a.accuracy - b.accuracy || b.attempts - a.attempts)
     .slice(0, 6);
 
   const strongTopics = allTopicAnalytics
-    .filter((item) => item.attempts >= 2 && item.accuracy >= 70)
+    .filter((item) => strongTopicKeys.has(`${item.subject}::${item.topic}`))
     .sort((a, b) => b.accuracy - a.accuracy || b.averageScore - a.averageScore || b.attempts - a.attempts)
     .slice(0, 6);
 
