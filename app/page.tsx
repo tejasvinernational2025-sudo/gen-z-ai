@@ -222,14 +222,6 @@ export default function Home() {
     }
   }
 
-  function chooseLanguage(value: string) {
-    const nextLanguage = value.trim() || "Hinglish";
-    applyLanguageLocally(nextLanguage);
-    if (user) {
-      void savePreferredLanguage(nextLanguage).catch(() => {});
-    }
-  }
-
   function changeLanguageAndReload(value: string) {
     const nextLanguage = value.trim() || "Hinglish";
     applyLanguageLocally(nextLanguage);
