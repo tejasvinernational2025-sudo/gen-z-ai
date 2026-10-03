@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getLearningSnapshot,
   indiaDate,
+  localizeLearningSnapshotForDisplay,
   recordLearningSignal,
   requireLearningUser,
   saveDailyPlan,
   saveLearningProfile,
   updateDailyPlanCompleted,
+  updatePreferredLanguage,
   type DailyPlanItem,
 } from "@/lib/learning-server";
 
@@ -14,6 +16,7 @@ export const runtime = "nodejs";
 
 type LearningAction =
   | "save_profile"
+  | "save_language"
   | "generate_plan"
   | "complete_item"
   | "track_turn";
@@ -37,7 +40,10 @@ function uniqueSubjects(value: unknown) {
   return items.length ? Array.from(new Set(items)) : ["Mathematics", "Science", "English"];
 }
 
-function buildPlanItems(snapshot: Awaited<ReturnType<typeof getLearningSnapshot>>): DailyPlanItem[] {
+function buildPlanItems(
+  snapshot: Awaited<ReturnType<typeof getLearningSnapshot>>,
+  language: string
+): DailyPlanItem[] {
   const minutes = Math.max(15, snapshot.profile?.daily_minutes || 30);
   const weak = snapshot.weakTopics
     .filter((item) => item.mastery_score < 70 || item.last_signal === "needs_practice")
@@ -66,21 +72,30 @@ function buildPlanItems(snapshot: Awaited<ReturnType<typeof getLearningSnapshot>
       subject: firstSubject,
       topic: firstTopic,
       minutes: learnMinutes,
-      task: `Concept samjho: ${firstTopic}. Gen-z AI se simple explanation + 1 example lo.`,
+      task:
+        language === "English"
+          ? `Understand the concept: ${firstTopic}. Ask Gen-z AI for a simple explanation and one example.`
+          : `Concept samjho: ${firstTopic}. Gen-z AI se simple explanation + 1 example lo.`,
     },
     {
       key: "practice",
       subject: firstSubject,
       topic: firstTopic,
       minutes: practiceMinutes,
-      task: `Practice karo: ${firstTopic} par 5 questions/MCQs solve karo aur mistakes check karo.`,
+      task:
+        language === "English"
+          ? `Practice: Solve 5 questions/MCQs on ${firstTopic} and review your mistakes.`
+          : `Practice karo: ${firstTopic} par 5 questions/MCQs solve karo aur mistakes check karo.`,
     },
     {
       key: "recall",
       subject: secondSubject,
       topic: secondTopic,
       minutes: recallMinutes,
-      task: `Quick revision: ${secondTopic} ke key points/formulas bina dekhe recall karo, phir 3-question quiz lo.`,
+      task:
+        language === "English"
+          ? `Quick revision: Recall the key points/formulas for ${secondTopic} without looking, then take a 3-question quiz.`
+          : `Quick revision: ${secondTopic} ke key points/formulas bina dekhe recall karo, phir 3-question quiz lo.`,
     },
   ];
 }
@@ -150,9 +165,11 @@ async function classifyTurn(input: {
 export async function GET(req: NextRequest) {
   try {
     const user = await requireLearningUser(req);
+    const language = cleanText(req.nextUrl.searchParams.get("language"), 80);
     const snapshot = await getLearningSnapshot(user.id);
+    const displaySnapshot = await localizeLearningSnapshotForDisplay(snapshot, language);
     return NextResponse.json({
-      ...snapshot,
+      ...displaySnapshot,
       today: indiaDate(),
     });
   } catch (error) {
@@ -183,7 +200,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, profile });
     }
 
+    if (action === "save_language") {
+      const language = cleanText(body?.language, 80);
+      if (!language) {
+        return NextResponse.json({ error: "Language required." }, { status: 400 });
+      }
+      const profile = await updatePreferredLanguage(user.id, language);
+      return NextResponse.json({ ok: true, profile });
+    }
+
     if (action === "generate_plan") {
+      const language = cleanText(body?.language, 80) || "Hinglish";
       const snapshot = await getLearningSnapshot(user.id);
       if (!snapshot.profile) {
         return NextResponse.json(
@@ -192,7 +219,11 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const items = buildPlanItems(snapshot);
+      const canonicalSnapshot =
+        language === "English"
+          ? await localizeLearningSnapshotForDisplay(snapshot, "English")
+          : snapshot;
+      const items = buildPlanItems(canonicalSnapshot, language);
       const plan = await saveDailyPlan(user.id, items);
       return NextResponse.json({ ok: true, plan });
     }
