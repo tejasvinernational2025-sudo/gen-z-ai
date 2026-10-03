@@ -165,6 +165,8 @@ function FormattedAnswer({ text }: { text: string }) {
   })}</div>;
 }
 
+const LANGUAGE_STORAGE_KEY = "genz-language";
+
 export default function Home() {
   const [language, setLanguage] = useState("Hinglish");
   const [studentContext, setStudentContext] = useState<StudyContext>("General");
@@ -207,6 +209,27 @@ export default function Home() {
   const [paymentReady, setPaymentReady] = useState(false);
   const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
   const [activeSourceId, setActiveSourceId] = useState("");
+
+  function chooseLanguage(value: string) {
+    const nextLanguage = value.trim() || "Hinglish";
+    setLanguage(nextLanguage);
+    try {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
+    } catch {
+      // Ignore private-mode/storage failures; in-memory selection still works.
+    }
+  }
+
+  useEffect(() => {
+    try {
+      const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+      if (savedLanguage && LANGUAGES.some((item) => item === savedLanguage)) {
+        setLanguage(savedLanguage);
+      }
+    } catch {
+      // Keep the default language when storage is unavailable.
+    }
+  }, []);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -530,7 +553,7 @@ export default function Home() {
       const savedMessages = await loadConversation(user.id, item.id);
       setMessages(savedMessages);
       setConversationId(item.id);
-      setLanguage(item.language || "Hinglish");
+      chooseLanguage(item.language || "Hinglish");
       setStudentContext(normalizeStudyContext(item.student_context));
       setPhotoDataUrl(null);
       setPhotoName("");
@@ -825,7 +848,7 @@ export default function Home() {
           <select
             className="language"
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={(e) => chooseLanguage(e.target.value)}
             aria-label="Select response language"
           >
             {LANGUAGES.map((item) => (
