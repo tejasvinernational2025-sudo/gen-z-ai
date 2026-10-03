@@ -106,7 +106,7 @@ async function classifyTurn(input: {
         {
           role: "system",
           content:
-            'Classify one student learning turn. Return ONLY compact JSON: {"subject":"...","topic":"...","signal":"strong|needs_practice|practice"}. Use a stable school subject name and concise canonical topic name. "needs_practice" when the student is confused, asks for basic explanation, gives a wrong answer, or the assistant corrects a misconception. "strong" only when the student demonstrates a correct answer/understanding. Otherwise "practice". Always return subject and topic in concise canonical English, regardless of the student's selected language or script. Do not infer sensitive traits.',
+            'Classify one student learning turn. Return ONLY compact JSON: {"subject":"...","topic":"...","signal":"strong|needs_practice|practice"}. Use a stable school subject name and concise canonical topic name. "needs_practice" when the student is confused, asks for basic explanation, gives a wrong answer, or the assistant corrects a misconception. "strong" only when the student demonstrates a correct answer/understanding. Otherwise "practice". Always return subject and topic in concise canonical English, regardless of the selected language or script. Do not infer sensitive traits.',
         },
         {
           role: "user",
