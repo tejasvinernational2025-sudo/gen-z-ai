@@ -11,6 +11,7 @@ import HomeTutorCard from "@/app/home-tutor-card";
 import AdaptivePracticeCard from "@/app/adaptive-practice-card";
 import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
 import StudySourcesCard from "@/app/study-sources-card";
+import { listStudySourcesClient, type StudySourceSummary } from "@/lib/source-client";
 import ProgressDashboardCard from "@/app/progress-dashboard-card";
 import SmartRevisionCard from "@/app/smart-revision-card";
 import { getLearningSnapshot, savePreferredLanguage, trackLearningTurn } from "@/lib/learning-client";
@@ -213,6 +214,7 @@ export default function Home() {
   const [paymentReady, setPaymentReady] = useState(false);
   const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
   const [activeSourceId, setActiveSourceId] = useState("");
+  const [studySources, setStudySources] = useState<StudySourceSummary[]>([]);
 
   function applyLanguageLocally(nextLanguage: string) {
     setLanguage(nextLanguage);
@@ -434,6 +436,16 @@ export default function Home() {
         setPaymentPlans([]);
       });
   }, []);
+
+  const activeStudySource = studySources.find((item) => item.id === activeSourceId) || null;
+
+  useEffect(() => {
+    if (!user) {
+      setStudySources([]);
+      return;
+    }
+    void listStudySourcesClient().then(setStudySources).catch(() => setStudySources([]));
+  }, [user, activeSourceId]);
 
   const placeholder = useMemo(() => {
     if (pdfDataUrl) return composerUi.placeholders.pdf;
@@ -1216,6 +1228,12 @@ export default function Home() {
             messages.map((message, index) => (
               <div key={index} className={message.role === "user" ? "message user" : "message assistant"}>
                 <strong>{message.role === "user" ? "You" : "Gen-z AI"}</strong>
+                {message.role === "assistant" && activeStudySource && (
+                  <div className="groundingProof" role="status">
+                    📚 Grounded in: <strong>{activeStudySource.title}</strong>
+                    {activeStudySource.chapter ? ` · ${activeStudySource.chapter}` : ""}
+                  </div>
+                )}
                 {message.role === "assistant" ? <FormattedAnswer text={message.content} /> : <p>{message.content}</p>}
               </div>
             ))
