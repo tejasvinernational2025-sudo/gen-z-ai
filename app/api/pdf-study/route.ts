@@ -365,7 +365,7 @@ export async function POST(req: NextRequest) {
     const language =
       typeof body.language === "string" && body.language.trim()
         ? body.language.trim().slice(0, MAX_LANGUAGE_CHARS)
-        : "Hinglish";
+        : "English";
 
     const studentContext = normalizeStudyContext(body.studentContext);
     const requestedMode = body.mode;
