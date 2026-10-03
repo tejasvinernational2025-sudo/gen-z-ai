@@ -90,10 +90,15 @@ export async function POST(req: NextRequest) {
     const mode: StudyMode =
       requestedMode && ALLOWED_MODES.has(requestedMode) ? requestedMode : "chat";
 
-    const selectedMedium = studentContext.split(" | ")[2] || "";
-    const nativeLanguageInstruction = selectedMedium
-      ? `CRITICAL OUTPUT LANGUAGE REQUIREMENT: The selected medium is ${selectedMedium}. Answer only in the native language and native script of ${selectedMedium.replace(/ Medium$/i, "")}. Do not answer in Hindi or English unless ${selectedMedium} itself is Hindi Medium or English Medium. Translate even headings, definitions, examples, and exam questions into the selected medium. This requirement overrides conversation history and the language of the user's question.`
-      : "";
+    const selectedLanguage = language.includes("—")
+      ? language.split("—").pop()?.trim() || "Hinglish"
+      : language.trim() || "Hinglish";
+    const nativeLanguageInstruction =
+      selectedLanguage === "Hinglish"
+        ? "CRITICAL OUTPUT LANGUAGE REQUIREMENT: The Language selector is Hinglish. Answer in natural Hinglish using Latin script. This explicit language choice overrides the school medium and earlier conversation language."
+        : selectedLanguage === "English"
+          ? "CRITICAL OUTPUT LANGUAGE REQUIREMENT: The Language selector is English. Answer in English. This explicit language choice overrides the school medium and earlier conversation language."
+          : `CRITICAL OUTPUT LANGUAGE REQUIREMENT: The Language selector is ${selectedLanguage}. Answer in ${selectedLanguage} using its native script. Translate headings, definitions, examples and exam questions into ${selectedLanguage}. This explicit language choice overrides the school medium and earlier conversation language.`;
     const learningContext = await getLearningPromptContext(req);
     const latestQuestion = messages[messages.length - 1]?.content || "";
     const groundingContext = await getGroundingContext(req, body.sourceId, latestQuestion);

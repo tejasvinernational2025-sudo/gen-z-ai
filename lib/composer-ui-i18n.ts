@@ -287,15 +287,15 @@ const TEXT: Record<string, ComposerUiText> = {
 };
 
 function selectedLanguage(studentContext: string, language: string) {
+  const named = language.includes("—") ? language.split("—").pop()?.trim() : language.trim();
+  if (named) return named;
+
   const medium = studentContext
     .split("|")
     .map((part) => part.trim())
     .find((part) => /\bMedium$/i.test(part));
 
-  if (medium) return medium.replace(/\s*Medium$/i, "").trim();
-
-  const named = language.includes("—") ? language.split("—").pop()?.trim() : language.trim();
-  return named || "English";
+  return medium ? medium.replace(/\s*Medium$/i, "").trim() : "English";
 }
 
 export function getComposerUiText(studentContext: string, language: string) {

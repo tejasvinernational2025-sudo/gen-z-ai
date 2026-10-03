@@ -308,10 +308,15 @@ const ML: LearningHubUiText = {
 };
 
 function selectedLanguage(studentContext: string, language: string) {
-  const medium = studentContext.split("|").map((p) => p.trim()).find((p) => /\bMedium$/i.test(p));
-  if (medium) return medium.replace(/\s*Medium$/i, "").trim();
   const named = language.includes("—") ? language.split("—").pop()?.trim() : language.trim();
-  return named || "English";
+  if (named) return named;
+
+  const medium = studentContext
+    .split("|")
+    .map((part) => part.trim())
+    .find((part) => /\bMedium$/i.test(part));
+
+  return medium ? medium.replace(/\s*Medium$/i, "").trim() : "English";
 }
 
 export function getLearningHubUiText(studentContext: string, language: string) {
