@@ -222,11 +222,20 @@ export default function Home() {
     }
   }
 
-  function chooseLanguage(value: string) {
+  function changeLanguageAndReload(value: string) {
     const nextLanguage = value.trim() || "Hinglish";
     applyLanguageLocally(nextLanguage);
+
     if (user) {
       void savePreferredLanguage(nextLanguage).catch(() => {});
+    }
+
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", nextLanguage);
+      window.location.assign(url.toString());
+    } catch {
+      window.location.reload();
     }
   }
 
@@ -889,16 +898,19 @@ export default function Home() {
         </div>
 
         <div className="topActions">
-          <select
-            className="language"
-            value={language}
-            onChange={(e) => chooseLanguage(e.target.value)}
-            aria-label="Select response language"
-          >
-            {LANGUAGES.map((item) => (
-              <option key={item} value={item}>{item}</option>
-            ))}
-          </select>
+          <label className="languageControl">
+            <span>Response language</span>
+            <select
+              className="language"
+              value={language}
+              onChange={(e) => changeLanguageAndReload(e.target.value)}
+              aria-label="Select response language"
+            >
+              {LANGUAGES.map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+          </label>
 
           {user ? (
             <>
