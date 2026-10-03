@@ -1644,3 +1644,21 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
     padding-top: 24px;
   }
 }
+
+
+/* Grounded answer source proof */
+.groundingProof {
+  width: fit-content;
+  max-width: 100%;
+  margin: 6px 0 10px;
+  padding: 7px 10px;
+  border: 1px solid rgba(79,70,229,.18);
+  border-radius: 10px;
+  background: rgba(79,70,229,.07);
+  color: #4338ca;
+  font-size: .76rem;
+  line-height: 1.35;
+}
+.groundingProof strong {
+  font-weight: 850;
+}
