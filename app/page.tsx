@@ -13,7 +13,7 @@ import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
 import StudySourcesCard from "@/app/study-sources-card";
 import ProgressDashboardCard from "@/app/progress-dashboard-card";
 import SmartRevisionCard from "@/app/smart-revision-card";
-import { trackLearningTurn } from "@/lib/learning-client";
+import { getLearningSnapshot, savePreferredLanguage, trackLearningTurn } from "@/lib/learning-client";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   completeAuthFromUrl,
@@ -210,24 +210,36 @@ export default function Home() {
   const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
   const [activeSourceId, setActiveSourceId] = useState("");
 
-  function chooseLanguage(value: string) {
-    const nextLanguage = value.trim() || "Hinglish";
+  function applyLanguageLocally(nextLanguage: string) {
     setLanguage(nextLanguage);
     try {
       window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", nextLanguage);
+      window.history.replaceState(null, "", url.toString());
     } catch {
-      // Ignore private-mode/storage failures; in-memory selection still works.
+      // Keep the in-memory selection even if browser persistence is unavailable.
+    }
+  }
+
+  function chooseLanguage(value: string) {
+    const nextLanguage = value.trim() || "Hinglish";
+    applyLanguageLocally(nextLanguage);
+    if (user) {
+      void savePreferredLanguage(nextLanguage).catch(() => {});
     }
   }
 
   useEffect(() => {
     try {
+      const urlLanguage = new URL(window.location.href).searchParams.get("lang");
       const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-      if (savedLanguage && LANGUAGES.some((item) => item === savedLanguage)) {
-        setLanguage(savedLanguage);
+      const preferred = urlLanguage || savedLanguage || "";
+      if (preferred && LANGUAGES.some((item) => item === preferred)) {
+        applyLanguageLocally(preferred);
       }
     } catch {
-      // Keep the default language when storage is unavailable.
+      // Keep the default language when browser persistence is unavailable.
     }
   }, []);
 
@@ -280,6 +292,19 @@ export default function Home() {
 
     return () => window.clearInterval(timer);
   }, [authCooldown]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    void getLearningSnapshot()
+      .then((snapshot) => {
+        const accountLanguage = snapshot.profile?.preferred_language || "";
+        if (accountLanguage && LANGUAGES.some((item) => item === accountLanguage)) {
+          applyLanguageLocally(accountLanguage);
+        }
+      })
+      .catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -553,7 +578,6 @@ export default function Home() {
       const savedMessages = await loadConversation(user.id, item.id);
       setMessages(savedMessages);
       setConversationId(item.id);
-      chooseLanguage(item.language || "Hinglish");
       setStudentContext(normalizeStudyContext(item.student_context));
       setPhotoDataUrl(null);
       setPhotoName("");
