@@ -58,7 +58,7 @@ export default function HomeTutorCard({
 
     setLoading(true);
     try {
-      const data = await getLearningSnapshot();
+      const data = await getLearningSnapshot(language);
       setSnapshot(data);
       if (data.profile) {
         setGoal(
@@ -84,7 +84,7 @@ export default function HomeTutorCard({
     const handler = () => void refresh();
     window.addEventListener("genz-learning-updated", handler);
     return () => window.removeEventListener("genz-learning-updated", handler);
-  }, [signedIn]);
+  }, [signedIn, language]);
 
   const completedCount = useMemo(() => {
     if (!snapshot?.plan) return 0;
@@ -118,7 +118,7 @@ export default function HomeTutorCard({
         dailyMinutes,
         preferredSubjects: subjects,
       });
-      await generateDailyStudyPlan();
+      await generateDailyStudyPlan(language);
       await refresh();
       window.dispatchEvent(new Event("genz-learning-updated"));
       setSettingsOpen(false);
@@ -134,7 +134,7 @@ export default function HomeTutorCard({
     setBusy("plan");
     setMessage("");
     try {
-      await generateDailyStudyPlan();
+      await generateDailyStudyPlan(language);
       await refresh();
       window.dispatchEvent(new Event("genz-learning-updated"));
       setMessage(`✅ ${ui.todayPlan} · ${ui.refreshPlan}`);
