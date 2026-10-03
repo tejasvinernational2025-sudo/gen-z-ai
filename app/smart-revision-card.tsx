@@ -67,7 +67,7 @@ async function parseJson(response: Response) {
   try {
     data = raw ? JSON.parse(raw) : {};
   } catch {
-    throw new Error("Revision response read nahi hua.");
+    throw new Error("Revision response unavailable.");
   }
   if (!response.ok) throw new Error(data?.error || "Revision action failed.");
   return data;
@@ -111,7 +111,7 @@ export default function SmartRevisionCard({
       const response = await fetch("/api/revision", { headers, cache: "no-store" });
       setDashboard((await parseJson(response)) as RevisionDashboard);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Revision list load nahi hui.");
+      setMessage(error instanceof Error ? error.message : `${ui.revisionEyebrow}: ${ui.refresh}`);
     } finally {
       setBusy((current) => (current === "refresh" ? "" : current));
     }
@@ -170,7 +170,7 @@ export default function SmartRevisionCard({
       setOpen(true);
     } catch (error) {
       setActiveRevision(null);
-      setMessage(error instanceof Error ? error.message : "Revision practice start nahi hui.");
+      setMessage(error instanceof Error ? error.message : ui.practiceNow);
     } finally {
       setBusy("");
     }
@@ -204,7 +204,7 @@ export default function SmartRevisionCard({
       setGrade(data);
       setScores((current) => [...current, Math.max(0, Math.min(100, Number(data.score) || 0))]);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Revision answer check nahi hua.");
+      setMessage(error instanceof Error ? error.message : practiceUi.loading);
     } finally {
       setBusy("");
     }
@@ -231,9 +231,7 @@ export default function SmartRevisionCard({
       });
 
       const result = await parseJson(response);
-      setMessage(
-        `Revision complete ✅ Score ${average}/100 · Next review ${result.nextDue} (${result.nextInterval} day gap)`
-      );
+      setMessage(`✅ ${ui.reviewed}: ${average}/100 · ${ui.upcoming}: ${result.nextDue} (${result.nextInterval}d)`);
       setActiveRevision(null);
       setPack(null);
       setIndex(0);
@@ -244,7 +242,7 @@ export default function SmartRevisionCard({
       await refresh();
       window.dispatchEvent(new Event("genz-learning-updated"));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Revision complete save nahi hua.");
+      setMessage(error instanceof Error ? error.message : ui.reviseToday);
     } finally {
       setBusy("");
     }
@@ -275,10 +273,10 @@ export default function SmartRevisionCard({
         body: JSON.stringify({ action: "snooze", revisionId: item.id }),
       });
       const result = await parseJson(response);
-      setMessage(`“${item.topic}” kal ke liye move ho gaya · ${result.nextDue}`);
+      setMessage(`“${item.topic}” → ${ui.tomorrow} · ${result.nextDue}`);
       await refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Revision snooze nahi hua.");
+      setMessage(error instanceof Error ? error.message : ui.tomorrow);
     } finally {
       setBusy("");
     }
