@@ -23,6 +23,7 @@ export type LearningProfile = {
   goal: string;
   daily_minutes: number;
   preferred_subjects: string[];
+  preferred_language: string | null;
   updated_at: string;
 };
 
@@ -56,6 +57,169 @@ export type LearningSnapshot = {
   weakTopics: TopicProgress[];
   plan: DailyStudyPlan | null;
 };
+
+const englishLearningDisplayCache = new Map<string, LearningSnapshot>();
+
+function selectedLanguageName(language: string) {
+  return language.includes("—")
+    ? language.split("—").pop()?.trim() || ""
+    : language.trim();
+}
+
+function hasIndicScript(value: string) {
+  return /[\u0900-\u0D7F]/u.test(value);
+}
+
+function fallbackEnglishTask(item: DailyPlanItem) {
+  if (/^Concept samjho:/i.test(item.task)) {
+    return `Understand the concept: ${item.topic}. Ask Gen-z AI for a simple explanation and one example.`;
+  }
+  if (/^Practice karo:/i.test(item.task)) {
+    return `Practice: Solve 5 questions/MCQs on ${item.topic} and review your mistakes.`;
+  }
+  if (/^Quick revision:/i.test(item.task)) {
+    return `Quick revision: Recall the key points/formulas for ${item.topic} without looking, then take a 3-question quiz.`;
+  }
+  return item.task;
+}
+
+export async function localizeLearningSnapshotForDisplay(
+  snapshot: LearningSnapshot,
+  displayLanguage: string
+): Promise<LearningSnapshot> {
+  if (selectedLanguageName(displayLanguage) !== "English") return snapshot;
+
+  const cacheKey = JSON.stringify({
+    weakTopics: snapshot.weakTopics.map((item) => [item.subject, item.topic]),
+    plan: snapshot.plan?.items?.map((item) => [item.key, item.subject, item.topic, item.task]) || [],
+  });
+  const cached = englishLearningDisplayCache.get(cacheKey);
+  if (cached) return cached;
+
+  let localizedWeak = snapshot.weakTopics.map((item) => ({ ...item }));
+  let localizedPlan = snapshot.plan
+    ? {
+        ...snapshot.plan,
+        items: snapshot.plan.items.map((item) => ({
+          ...item,
+          task: fallbackEnglishTask(item),
+        })),
+      }
+    : null;
+
+  const apiKey = process.env.GROQ_API_KEY?.trim();
+  if (apiKey) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        signal: AbortSignal.timeout(6000),
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
+          messages: [
+            {
+              role: "system",
+              content:
+                'Translate school subject/topic labels and study-plan task text into concise natural English. Return ONLY JSON: {"weakTopics":[{"index":0,"subject":"...","topic":"..."}],"planItems":[{"key":"...","subject":"...","topic":"...","task":"..."}]}. Preserve academic meaning, numbers and task intent. Do not add explanations.',
+            },
+            {
+              role: "user",
+              content: JSON.stringify({
+                weakTopics: snapshot.weakTopics.map((item, index) => ({
+                  index,
+                  subject: item.subject,
+                  topic: item.topic,
+                })),
+                planItems:
+                  snapshot.plan?.items?.map((item) => ({
+                    key: item.key,
+                    subject: item.subject,
+                    topic: item.topic,
+                    task: item.task,
+                  })) || [],
+              }),
+            },
+          ],
+          temperature: 0,
+          max_completion_tokens: 900,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const raw = data?.choices?.[0]?.message?.content;
+        if (typeof raw === "string") {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed?.weakTopics)) {
+            for (const entry of parsed.weakTopics) {
+              const index = Number(entry?.index);
+              if (!Number.isInteger(index) || index < 0 || index >= localizedWeak.length) continue;
+              const subject = typeof entry?.subject === "string" ? entry.subject.trim().slice(0, 80) : "";
+              const topic = typeof entry?.topic === "string" ? entry.topic.trim().slice(0, 140) : "";
+              if (subject) localizedWeak[index].subject = subject;
+              if (topic) localizedWeak[index].topic = topic;
+            }
+          }
+          if (localizedPlan && Array.isArray(parsed?.planItems)) {
+            const byKey = new Map(parsed.planItems.map((entry: any) => [String(entry?.key || ""), entry]));
+            localizedPlan = {
+              ...localizedPlan,
+              items: localizedPlan.items.map((item) => {
+                const entry: any = byKey.get(item.key);
+                if (!entry) return item;
+                return {
+                  ...item,
+                  subject:
+                    typeof entry.subject === "string" && entry.subject.trim()
+                      ? entry.subject.trim().slice(0, 80)
+                      : item.subject,
+                  topic:
+                    typeof entry.topic === "string" && entry.topic.trim()
+                      ? entry.topic.trim().slice(0, 140)
+                      : item.topic,
+                  task:
+                    typeof entry.task === "string" && entry.task.trim()
+                      ? entry.task.trim().slice(0, 800)
+                      : item.task,
+                };
+              }),
+            };
+          }
+        }
+      }
+    } catch {
+      // Keep deterministic fallbacks when translation is temporarily unavailable.
+    }
+  }
+
+  localizedWeak = localizedWeak.map((item) => ({
+    ...item,
+    subject: hasIndicScript(item.subject) ? "Study subject" : item.subject,
+    topic: hasIndicScript(item.topic) ? "Saved learning topic" : item.topic,
+  }));
+  if (localizedPlan) {
+    localizedPlan = {
+      ...localizedPlan,
+      items: localizedPlan.items.map((item) => ({
+        ...item,
+        subject: hasIndicScript(item.subject) ? "Study subject" : item.subject,
+        topic: hasIndicScript(item.topic) ? "Saved learning topic" : item.topic,
+      })),
+    };
+  }
+
+  const localized: LearningSnapshot = {
+    ...snapshot,
+    weakTopics: localizedWeak,
+    plan: localizedPlan,
+  };
+  englishLearningDisplayCache.set(cacheKey, localized);
+  return localized;
+}
 
 function bearerToken(req: NextRequest) {
   const authorization = req.headers.get("authorization") || "";
@@ -134,7 +298,7 @@ export async function getLearningSnapshot(userId: string): Promise<LearningSnaps
 
   const [profileRows, topicRows, planRows] = await Promise.all([
     serviceJson(
-      `student_learning_profiles?user_id=eq.${safeUserId}&select=user_id,board,school_class,medium,goal,daily_minutes,preferred_subjects,updated_at&limit=1`
+      `student_learning_profiles?user_id=eq.${safeUserId}&select=user_id,board,school_class,medium,goal,daily_minutes,preferred_subjects,preferred_language,updated_at&limit=1`
     ),
     serviceJson(
       `topic_progress?user_id=eq.${safeUserId}&select=subject,topic,mastery_score,attempts,last_signal,last_mode,last_practiced_at&order=mastery_score.asc,last_practiced_at.desc&limit=6`
@@ -184,6 +348,22 @@ export async function saveLearningProfile(
     }
   );
 
+  return Array.isArray(rows) ? rows[0] ?? null : null;
+}
+
+export async function updatePreferredLanguage(userId: string, language: string) {
+  const safeUserId = encodeURIComponent(userId);
+  const rows = await serviceJson(
+    `student_learning_profiles?user_id=eq.${safeUserId}`,
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        preferred_language: language.trim().slice(0, 80) || null,
+        updated_at: new Date().toISOString(),
+      }),
+    }
+  );
   return Array.isArray(rows) ? rows[0] ?? null : null;
 }
 
