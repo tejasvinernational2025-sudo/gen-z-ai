@@ -72,7 +72,7 @@ export default function HomeTutorCard({
         }
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Learning profile load nahi hua.");
+      setMessage(error instanceof Error ? error.message : `${ui.homeEyebrow}: ${ui.refresh}`);
     } finally {
       setLoading(false);
     }
@@ -122,9 +122,9 @@ export default function HomeTutorCard({
       await refresh();
       window.dispatchEvent(new Event("genz-learning-updated"));
       setSettingsOpen(false);
-      setMessage("AI Home Tutor profile aur aaj ka study plan ready hai ✅");
+      setMessage(`✅ ${ui.homeTodayPlan}`);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Profile save nahi hua.");
+      setMessage(error instanceof Error ? error.message : ui.saveProfile);
     } finally {
       setBusy("");
     }
@@ -137,9 +137,9 @@ export default function HomeTutorCard({
       await generateDailyStudyPlan();
       await refresh();
       window.dispatchEvent(new Event("genz-learning-updated"));
-      setMessage("Aaj ka plan weak topics ke hisaab se refresh ho gaya.");
+      setMessage(`✅ ${ui.todayPlan} · ${ui.refreshPlan}`);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Study plan refresh nahi hua.");
+      setMessage(error instanceof Error ? error.message : ui.refreshPlan);
     } finally {
       setBusy("");
     }
@@ -152,7 +152,7 @@ export default function HomeTutorCard({
       await refresh();
       window.dispatchEvent(new Event("genz-learning-updated"));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Task update nahi hua.");
+      setMessage(error instanceof Error ? error.message : ui.todayProgress);
     } finally {
       setBusy("");
     }
@@ -264,7 +264,7 @@ export default function HomeTutorCard({
             <div className="weakTopics">
               <div className="homeTutorSectionTitle">
                 <strong>{ui.topicsAttention}</strong>
-                <span>AI chats aur quizzes se automatically update hote hain</span>
+                <span>{ui.progressDesc}</span>
               </div>
               <div className="weakTopicList">
                 {weakTopics.slice(0, 4).map((item) => (
@@ -282,7 +282,7 @@ export default function HomeTutorCard({
             <div className="homeTutorSectionTitle">
               <div>
                 <strong>{ui.todayPlan}</strong>
-                <span>{plan ? "Learn → Practice → Recall" : "Plan abhi generate nahi hua"}</span>
+                <span>{plan ? ui.hubFlow : ui.makePlan}</span>
               </div>
               <button
                 type="button"
@@ -316,13 +316,13 @@ export default function HomeTutorCard({
                 })}
               </div>
             ) : (
-              <p className="homeTutorEmpty">Profile save karke aaj ka personalized plan banao.</p>
+              <p className="homeTutorEmpty">{ui.saveProfile}</p>
             )}
           </div>
         </>
       )}
 
-      {loading && <div className="homeTutorMessage">Learning profile refresh ho rahi hai…</div>}
+      {loading && <div className="homeTutorMessage">{ui.homeEyebrow} · {ui.saving}</div>}
       {message && <div className="homeTutorMessage">{message}</div>}
     </section>
   );
