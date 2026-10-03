@@ -157,7 +157,8 @@ function renderInlineMarkdown(text: string) {
 }
 
 function FormattedAnswer({ text }: { text: string }) {
-  return <div className="formattedAnswer">{text.split("\n").map((line, index) => {
+  return <div className="formattedAnswer">{text.split("
+").map((line, index) => {
     const clean = line.trim();
     if (!clean) return <div className="answerGap" key={index} />;
     if (/^#{1,3}\s/.test(clean)) return <h3 key={index}>{renderInlineMarkdown(clean.replace(/^#{1,3}\s*/, ""))}</h3>;
@@ -775,7 +776,21 @@ export default function Home() {
     }
   }
 
-  function startGuidedTuition() {\n    const topic = tuitionTopic.trim();\n    if (!topic) {\n      setNotice("Tuition start karne ke liye chapter ya topic likho.");\n      document.getElementById("tuition-topic")?.focus();\n      return;\n    }\n    const lessonPrompt = "Act as my personal tuition teacher for " + tuitionSubject + ": " + topic + ". Run a " + tuitionMinutes + "-minute guided lesson for my current class/board context. Teach only one small concept at a time in " + responseLanguageName + ". Start with a very simple explanation and one relatable example, then ask exactly ONE understanding-check question and STOP so I can answer. If I answer incorrectly, explain it again more simply before continuing. After the lesson, give short practice, a mini-test, and clearly identify what I should revise next. Do not dump the full lesson at once.";\n    setMode("explain");\n    setInput(lessonPrompt);\n    setNotice("🎓 Guided tuition ready. Send button dabao to class start hogi.");\n    document.getElementById("chat-composer")?.scrollIntoView({ behavior: "smooth", block: "center" });\n  }\n\n  async function sendMessage(e: FormEvent) {
+  function startGuidedTuition() {
+    const topic = tuitionTopic.trim();
+    if (!topic) {
+      setNotice("Tuition start karne ke liye chapter ya topic likho.");
+      document.getElementById("tuition-topic")?.focus();
+      return;
+    }
+    const lessonPrompt = "Act as my personal tuition teacher for " + tuitionSubject + ": " + topic + ". Run a " + tuitionMinutes + "-minute guided lesson for my current class/board context. Teach only one small concept at a time in " + responseLanguageName + ". Start with a very simple explanation and one relatable example, then ask exactly ONE understanding-check question and STOP so I can answer. If I answer incorrectly, explain it again more simply before continuing. After the lesson, give short practice, a mini-test, and clearly identify what I should revise next. Do not dump the full lesson at once.";
+    setMode("explain");
+    setInput(lessonPrompt);
+    setNotice("🎓 Guided tuition ready. Send button dabao to class start hogi.");
+    document.getElementById("chat-composer")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  async function sendMessage(e: FormEvent) {
     e.preventDefault();
     const question = input.trim();
     if ((!question && !photoDataUrl && !pdfDataUrl) || loading) return;
