@@ -92,6 +92,10 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const ui = getLearningHubUiText(studentContext, language);
+  const responseLanguageName = language.includes("—")
+    ? language.split("—").pop()?.trim() || "English"
+    : language.trim() || "English";
+  const isEnglish = responseLanguageName === "English";
 
   async function refresh() {
     if (!signedIn) {
@@ -137,9 +141,9 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
     if (!data?.parentSummary) return;
     try {
       await navigator.clipboard.writeText(data.parentSummary);
-      setMessage("Parent summary copy ho gayi ✅");
+      setMessage(isEnglish ? "Parent summary copied ✅" : "Parent summary copy ho gayi ✅");
     } catch {
-      setMessage("Copy nahi hua. Summary ko long-press karke copy kar sakte ho.");
+      setMessage(isEnglish ? "Copy failed. Long-press the summary to copy it." : "Copy nahi hua. Summary ko long-press karke copy kar sakte ho.");
     }
   }
 
@@ -167,7 +171,7 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
           <p>
             {data?.profile?.goal
               ? `${data.profile.goal} · ${data.profile.daily_minutes || 30} min/day target`
-              : "Adaptive quiz aur practice se measurable progress track hoti hai."}
+              : (isEnglish ? "Adaptive quiz and practice track measurable progress." : "Adaptive quiz aur practice se measurable progress track hoti hai.")}
           </p>
         </div>
         <button type="button" onClick={() => setOpen((value) => !value)}>
@@ -175,7 +179,7 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
         </button>
       </div>
 
-      {busy && !data && <div className="progressMessage">Progress calculate ho rahi hai…</div>}
+      {busy && !data && <div className="progressMessage">{isEnglish ? "Calculating progress…" : "Progress calculate ho rahi hai…"}</div>}
 
       {data && (
         <>
@@ -234,7 +238,7 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
                       ))}
                     </div>
                   ) : (
-                    <p className="progressEmpty">Weak-topic analysis ke liye aur graded practice chahiye.</p>
+                    <p className="progressEmpty">{isEnglish ? "Complete more graded practice for weak-topic analysis." : "Weak-topic analysis ke liye aur graded practice chahiye."}</p>
                   )}
                 </div>
 
@@ -256,7 +260,7 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
                       ))}
                     </div>
                   ) : (
-                    <p className="progressEmpty">Strong-topic trend ke liye aur attempts complete karo.</p>
+                    <p className="progressEmpty">{isEnglish ? "Complete more attempts to build a strong-topic trend." : "Strong-topic trend ke liye aur attempts complete karo."}</p>
                   )}
                 </div>
               </div>
