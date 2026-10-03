@@ -36,21 +36,25 @@ function outputLanguageRule(studentContext: string, requestedLanguage: string) {
     ? mediumPart.replace(/\s*Medium$/i, "").trim()
     : "";
 
-  const effectiveLanguage = mediumLanguage || requestedLanguage || "Hinglish";
+  const selectedLanguage = requestedLanguage.includes("—")
+    ? requestedLanguage.split("—").pop()?.trim() || ""
+    : requestedLanguage.trim();
 
-  const instruction = mediumLanguage
-    ? [
-        `CRITICAL OUTPUT LANGUAGE REQUIREMENT: The selected study medium is ${mediumPart}.`,
-        `Write EVERY student-facing value in the native language and native script of ${mediumLanguage}.`,
-        "This includes subject/topic labels, questions, answer options, hints, expected answers, feedback and explanations.",
-        `This requirement overrides the requested UI language (${requestedLanguage || "Hinglish"}).`,
-        "Keep JSON property names/keys exactly as requested in English.",
-      ].join(" ")
-    : [
-        `Write EVERY student-facing value in ${effectiveLanguage}.`,
-        "This includes questions, hints, expected answers, feedback and explanations.",
-        "Keep JSON property names/keys exactly as requested in English.",
-      ].join(" ");
+  const effectiveLanguage = selectedLanguage || mediumLanguage || "Hinglish";
+  const languageStyle =
+    effectiveLanguage === "Hinglish"
+      ? "natural Hinglish using Latin script"
+      : effectiveLanguage === "English"
+        ? "English"
+        : `${effectiveLanguage} using its native script`;
+
+  const instruction = [
+    `CRITICAL OUTPUT LANGUAGE REQUIREMENT: The explicit Language selector is ${effectiveLanguage}.`,
+    `Write EVERY student-facing value in ${languageStyle}.`,
+    "This includes subject/topic labels, questions, answer options, hints, expected answers, feedback and explanations.",
+    "The Language selector overrides the school medium; the medium remains curriculum context only.",
+    "Keep JSON property names/keys exactly as requested in English.",
+  ].join(" ");
 
   return { effectiveLanguage, instruction };
 }
