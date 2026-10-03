@@ -9,6 +9,7 @@ create table if not exists public.student_learning_profiles (
   goal text not null default 'Overall improvement',
   daily_minutes integer not null default 30 check (daily_minutes between 10 and 180),
   preferred_subjects text[] not null default array['Mathematics','Science','English']::text[],
+  preferred_language text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
