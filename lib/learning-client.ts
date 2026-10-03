@@ -8,6 +8,7 @@ export type LearningProfile = {
   goal: string;
   daily_minutes: number;
   preferred_subjects: string[];
+  preferred_language: string | null;
   updated_at: string;
 };
 
@@ -43,11 +44,11 @@ export type LearningSnapshot = {
   today: string;
 };
 
-async function requestLearning(init?: RequestInit) {
+async function requestLearning(init?: RequestInit, query = "") {
   const accessToken = await getAccessToken();
   if (!accessToken) throw new Error("Sign in required.");
 
-  const response = await fetch("/api/learning", {
+  const response = await fetch(`/api/learning${query}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -69,8 +70,16 @@ async function requestLearning(init?: RequestInit) {
   return data;
 }
 
-export async function getLearningSnapshot(): Promise<LearningSnapshot> {
-  return requestLearning({ method: "GET" }) as Promise<LearningSnapshot>;
+export async function getLearningSnapshot(language = ""): Promise<LearningSnapshot> {
+  const query = language ? `?language=${encodeURIComponent(language)}` : "";
+  return requestLearning({ method: "GET" }, query) as Promise<LearningSnapshot>;
+}
+
+export async function savePreferredLanguage(language: string) {
+  return requestLearning({
+    method: "POST",
+    body: JSON.stringify({ action: "save_language", language }),
+  });
 }
 
 export async function saveLearningProfile(input: {
@@ -87,10 +96,10 @@ export async function saveLearningProfile(input: {
   });
 }
 
-export async function generateDailyStudyPlan() {
+export async function generateDailyStudyPlan(language = "") {
   return requestLearning({
     method: "POST",
-    body: JSON.stringify({ action: "generate_plan" }),
+    body: JSON.stringify({ action: "generate_plan", language }),
   });
 }
 
