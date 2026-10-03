@@ -65,6 +65,99 @@ export type RevisionItem = {
   last_reviewed_at: string | null;
 };
 
+const englishRevisionLabelCache = new Map<string, { subject: string; topic: string }>();
+
+function selectedLanguageName(language: string) {
+  return language.includes("—")
+    ? language.split("—").pop()?.trim() || ""
+    : language.trim();
+}
+
+function hasIndicScript(value: string) {
+  return /[\u0900-\u0D7F]/u.test(value);
+}
+
+async function englishRevisionLabels(items: RevisionItem[], displayLanguage: string) {
+  if (selectedLanguageName(displayLanguage) !== "English" || !items.length) return items;
+
+  const legacy = items.filter((item) => hasIndicScript(`${item.subject} ${item.topic}`));
+  if (!legacy.length) return items;
+
+  const missing = legacy.filter(
+    (item) => !englishRevisionLabelCache.has(`${item.subject}\n${item.topic}`)
+  );
+  const apiKey = process.env.GROQ_API_KEY?.trim();
+
+  if (missing.length && apiKey) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        signal: AbortSignal.timeout(6000),
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
+          messages: [
+            {
+              role: "system",
+              content:
+                'Translate school subject/topic labels into concise natural English. Return ONLY JSON: {"items":[{"id":"...","subject":"...","topic":"..."}]}. Preserve academic meaning; do not add explanations.',
+            },
+            {
+              role: "user",
+              content: JSON.stringify(
+                missing.map((item) => ({
+                  id: item.id,
+                  subject: item.subject,
+                  topic: item.topic,
+                }))
+              ),
+            },
+          ],
+          temperature: 0,
+          max_completion_tokens: 600,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const raw = data?.choices?.[0]?.message?.content;
+        if (typeof raw === "string") {
+          const parsed = JSON.parse(raw);
+          const translated = Array.isArray(parsed?.items) ? parsed.items : [];
+          for (const entry of translated) {
+            const source = missing.find((item) => item.id === String(entry?.id || ""));
+            if (!source) continue;
+            const subject = cleanText(entry?.subject, 80);
+            const topic = cleanText(entry?.topic, 140);
+            if (!subject || !topic) continue;
+            englishRevisionLabelCache.set(`${source.subject}\n${source.topic}`, { subject, topic });
+          }
+        }
+      }
+    } catch {
+      // Fall back to safe English placeholders below without changing stored learning data.
+    }
+  }
+
+  return items.map((item) => {
+    if (!hasIndicScript(`${item.subject} ${item.topic}`)) return item;
+    const translated = englishRevisionLabelCache.get(`${item.subject}\n${item.topic}`);
+    return {
+      ...item,
+      subject:
+        translated?.subject ||
+        (hasIndicScript(item.subject) ? "Study subject" : item.subject),
+      topic:
+        translated?.topic ||
+        (hasIndicScript(item.topic) ? "Saved revision topic" : item.topic),
+    };
+  });
+}
+
 async function syncWeakTopics(userId: string) {
   const safeUser = encodeURIComponent(userId);
   const rows = await serviceJson(
@@ -96,7 +189,7 @@ async function syncWeakTopics(userId: string) {
   }
 }
 
-export async function getRevisionDashboard(req: NextRequest) {
+export async function getRevisionDashboard(req: NextRequest, displayLanguage = "") {
   const user = await requireLearningUser(req);
   await syncWeakTopics(user.id);
 
@@ -119,6 +212,9 @@ export async function getRevisionDashboard(req: NextRequest) {
   const upcoming: RevisionItem[] = Array.isArray(upcomingRows) ? upcomingRows : [];
   const all: RevisionItem[] = Array.isArray(allRows) ? allRows : [];
 
+  const displayItems = await englishRevisionLabels([...due, ...upcoming], displayLanguage);
+  const displayById = new Map(displayItems.map((item) => [item.id, item] as const));
+
   const reviewed = all.filter((item) => Boolean(item.last_reviewed_at));
   const easyCount = reviewed.filter((item) => item.last_result === "easy").length;
   const averageScore = reviewed.length
@@ -129,8 +225,8 @@ export async function getRevisionDashboard(req: NextRequest) {
 
   return {
     today,
-    due,
-    upcoming,
+    due: due.map((item) => displayById.get(item.id) || item),
+    upcoming: upcoming.map((item) => displayById.get(item.id) || item),
     stats: {
       dueToday: due.length,
       scheduled: all.length,

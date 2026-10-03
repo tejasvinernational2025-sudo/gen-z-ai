@@ -13,7 +13,8 @@ function cleanAction(value: unknown) {
 
 export async function GET(req: NextRequest) {
   try {
-    return NextResponse.json(await getRevisionDashboard(req));
+    const language = req.nextUrl.searchParams.get("language") || "";
+    return NextResponse.json(await getRevisionDashboard(req, language));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Revision dashboard load nahi hua.";
     if (message === "AUTH_REQUIRED") {
