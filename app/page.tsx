@@ -189,7 +189,13 @@ export default function Home() {
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (messages.length === 0 && !loading) return;
+    window.setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+  }, [messages, loading]);
   const [error, setError] = useState("");
 
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
@@ -1263,6 +1269,7 @@ export default function Home() {
             ))
           )}
           {loading && <div className="message assistant"><strong>Gen-z AI</strong><p>{isEnglish ? "Thinking…" : "Soch raha hoon…"}</p></div>}
+          <div ref={messagesEndRef} className="messagesEnd" aria-hidden="true" />
         </div>
 
         {error && <div className="error">{error}</div>}
