@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LANGUAGES } from "@/lib/languages";
 import { getComposerUiText } from "@/lib/composer-ui-i18n";
