@@ -29,7 +29,7 @@ import {
   type SavedConversation,
 } from "@/lib/chat-history";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: "user" | "assistant"; content: string; apiContent?: string };
 
 type PaymentPlanConfig = {
   id: "student" | "student_plus";
@@ -804,12 +804,15 @@ export default function Home() {
         ? "Is PDF ko student ke liye summarize karo aur important revision points do."
         : "Is photo me jo study question hai use step-by-step solve karo.");
 
+    const isGuidedTuitionPrompt = !pdfDataUrl && !photoDataUrl && userText.startsWith("Act as my personal tuition teacher for ");
     const visibleText = pdfDataUrl
       ? `📄 ${userText}`
       : photoDataUrl
         ? `📷 ${userText}`
-        : userText;
-    const nextMessages: Message[] = [...messages, { role: "user", content: visibleText }];
+        : isGuidedTuitionPrompt
+          ? `🎓 ${tuitionSubject} · ${tuitionTopic.trim()} · Guided tuition`
+          : userText;
+    const nextMessages: Message[] = [...messages, { role: "user", content: visibleText, ...(isGuidedTuitionPrompt ? { apiContent: userText } : {}) }];
 
     setMessages(nextMessages);
     setInput("");
@@ -828,7 +831,7 @@ export default function Home() {
         ? { pdfDataUrl, prompt: userText, language, mode, studentContext: effectiveStudentContext }
         : photoDataUrl
           ? { imageDataUrl: photoDataUrl, prompt: userText, language, mode, studentContext: effectiveStudentContext, sourceId: activeSourceId || undefined }
-          : { messages: nextMessages, language, mode, studentContext: effectiveStudentContext, sourceId: activeSourceId || undefined };
+          : { messages: nextMessages.map((message) => ({ role: message.role, content: message.apiContent || message.content })), language, mode, studentContext: effectiveStudentContext, sourceId: activeSourceId || undefined };
 
       const accessToken = user ? await getAccessToken() : null;
 
