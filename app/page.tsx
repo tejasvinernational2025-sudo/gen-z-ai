@@ -215,6 +215,9 @@ export default function Home() {
   const [paymentLoadingPlan, setPaymentLoadingPlan] = useState<string | null>(null);
   const [activeSourceId, setActiveSourceId] = useState("");
   const [studySources, setStudySources] = useState<StudySourceSummary[]>([]);
+  const [tuitionSubject, setTuitionSubject] = useState("Science");
+  const [tuitionTopic, setTuitionTopic] = useState("");
+  const [tuitionMinutes, setTuitionMinutes] = useState(30);
 
   function applyLanguageLocally(nextLanguage: string) {
     setLanguage(nextLanguage);
@@ -772,6 +775,20 @@ export default function Home() {
     }
   }
 
+  function startGuidedTuition() {
+    const topic = tuitionTopic.trim();
+    if (!topic) {
+      setNotice("Tuition start karne ke liye chapter ya topic likho.");
+      document.getElementById("tuition-topic")?.focus();
+      return;
+    }
+    const lessonPrompt = "Act as my personal tuition teacher for " + tuitionSubject + ": " + topic + ". Run a " + tuitionMinutes + "-minute guided lesson for my current class/board context. Teach only one small concept at a time in " + responseLanguageName + ". Start with a very simple explanation and one relatable example, then ask exactly ONE understanding-check question and STOP so I can answer. If I answer incorrectly, explain it again more simply before continuing. After the lesson, give short practice, a mini-test, and clearly identify what I should revise next. Do not dump the full lesson at once.";
+    setMode("explain");
+    setInput(lessonPrompt);
+    setNotice("🎓 Guided tuition ready. Send button dabao to class start hogi.");
+    document.getElementById("chat-composer")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
     const question = input.trim();
@@ -1321,23 +1338,18 @@ export default function Home() {
 
       <section className="tuitionModeCard" aria-label="AI Tuition Mode">
         <div>
-          <span>AI TUITION MODE · PHASE 1</span>
-          <h3>🎓 Your affordable personal tutor</h3>
-          <p>Daily guided tuition: learn a concept, practice it, check understanding, then revise weak topics.</p>
+          <span>AI TUITION MODE · GUIDED CLASS</span>
+          <h3>🎓 Start a personal tuition class</h3>
+          <p>Choose a subject and topic. Your AI tutor teaches one concept at a time, checks understanding, then moves to practice and revision.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => document.getElementById("home-tutor")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-        >
-          Start today’s tuition
-        </button>
-        <div className="tuitionFlow" aria-label="Tuition lesson flow">
-          <strong>1 · Learn</strong>
-          <strong>2 · Practice</strong>
-          <strong>3 · Check</strong>
-          <strong>4 · Revise</strong>
+        <div className="tuitionSetup">
+          <label><span>Subject</span><select value={tuitionSubject} onChange={(e) => setTuitionSubject(e.target.value)}>{["Mathematics", "Science", "English", "Hindi", "Social Science"].map((subject) => (<option key={subject} value={subject}>{subject}</option>))}</select></label>
+          <label className="tuitionTopicField"><span>Chapter / topic</span><input id="tuition-topic" value={tuitionTopic} onChange={(e) => setTuitionTopic(e.target.value)} placeholder="e.g. Cell respiration" /></label>
+          <label><span>Class time</span><select value={tuitionMinutes} onChange={(e) => setTuitionMinutes(Number(e.target.value))}>{[20, 30, 45, 60].map((minutes) => (<option key={minutes} value={minutes}>{minutes} min</option>))}</select></label>
         </div>
-        <small>Built for students who need structured daily support without depending on expensive private tuition.</small>
+        <button type="button" onClick={startGuidedTuition}>Start guided tuition</button>
+        <div className="tuitionFlow" aria-label="Tuition lesson flow"><strong>1 · Learn</strong><strong>2 · Check</strong><strong>3 · Practice</strong><strong>4 · Revise</strong></div>
+        <small>The tutor pauses after each understanding check so the student participates instead of only reading an AI answer.</small>
       </section>
 
       <div id="home-tutor">
