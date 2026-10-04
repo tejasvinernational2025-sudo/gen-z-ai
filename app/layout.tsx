@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import PwaRegister from "./pwa-register";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://genzstudy.in"),
@@ -25,8 +24,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <PwaRegister />
         {children}
-        <Analytics />
-        <SpeedInsights />
+        <Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
+        <Script src="/_vercel/speed-insights/script.js" strategy="afterInteractive" />
       </body>
     </html>
   );
