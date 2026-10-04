@@ -1718,3 +1718,6 @@ footer { text-align:center; color:#898b9c; font-size:12px; padding:20px 0 0; }
 .tuitionSetup label > span { font-size:.72rem; font-weight:800; color:#475569; }
 .tuitionSetup input,.tuitionSetup select { width:100%; min-width:0; padding:10px; border:1px solid rgba(99,102,241,.2); border-radius:10px; background:#fff; color:inherit; font:inherit; }
 @media (max-width:520px) { .tuitionSetup { grid-template-columns:1fr; } }
+
+.messagesEnd { height:1px; scroll-margin-bottom:92px; }
+@media (max-width:520px) { .messages { max-height:64vh; padding:16px; scroll-padding-bottom:96px; } .message { max-width:94%; } .formattedAnswer p { overflow-wrap:anywhere; } }
