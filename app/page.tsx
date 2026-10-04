@@ -157,8 +157,7 @@ function renderInlineMarkdown(text: string) {
 }
 
 function FormattedAnswer({ text }: { text: string }) {
-  return <div className="formattedAnswer">{text.split("
-").map((line, index) => {
+  return <div className="formattedAnswer">{text.split("\n").map((line, index) => {
     const clean = line.trim();
     if (!clean) return <div className="answerGap" key={index} />;
     if (/^#{1,3}\s/.test(clean)) return <h3 key={index}>{renderInlineMarkdown(clean.replace(/^#{1,3}\s*/, ""))}</h3>;
