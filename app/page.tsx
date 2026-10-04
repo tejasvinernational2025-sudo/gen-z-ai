@@ -785,12 +785,12 @@ export default function Home() {
     const lessonPrompt = "Act as my personal tuition teacher for " + tuitionSubject + ": " + topic + ". Run a " + tuitionMinutes + "-minute guided lesson for my current class/board context. Teach only one small concept at a time in " + responseLanguageName + ". Start with a very simple explanation and one relatable example, then ask exactly ONE understanding-check question and STOP so I can answer. If I answer incorrectly, explain it again more simply before continuing. After the lesson, give short practice, a mini-test, and clearly identify what I should revise next. Do not dump the full lesson at once.";
     setMode("explain");
     setInput(lessonPrompt);
-    setNotice("🎓 Guided tuition ready. Class start karne ke liye blue send arrow dabao.");
+    setNotice("🎓 Guided tuition class start ho rahi hai…");
     window.setTimeout(() => {
       const composer = document.getElementById("chat-composer");
       composer?.scrollIntoView({ behavior: "smooth", block: "center" });
-      composer?.querySelector<HTMLTextAreaElement>("textarea")?.focus();
-    }, 50);
+      if (composer instanceof HTMLFormElement) composer.requestSubmit();
+    }, 150);
   }
 
   async function sendMessage(e: FormEvent) {
