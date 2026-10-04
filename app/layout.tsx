@@ -7,6 +7,21 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://genzstudy.in"),
   title: "Gen-z AI | India-first Affordable AI Tutor",
   description: "Affordable multilingual AI tutor for Indian students with regional-language learning, Photo Solve, PDF study, notes, quizzes and exam prep.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "https://genzstudy.in",
+    siteName: "Gen-z AI",
+    title: "Gen-z AI | Affordable Personal AI Tutor for Indian Students",
+    description: "Learn, practise and revise with Guided Tuition, Photo Solve, PDF Study and multilingual AI support.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Gen-z AI affordable personal AI tutor" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Gen-z AI | Affordable Personal AI Tutor",
+    description: "Guided Tuition, Photo Solve, PDF Study and multilingual learning support for Indian students.",
+    images: ["/opengraph-image"],
+  },
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
