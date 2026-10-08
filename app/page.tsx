@@ -186,6 +186,34 @@ export default function Home() {
     : `${studentContext} | ${schoolClass} | ${studyMedium}`;
   const composerUi = getComposerUiText(effectiveStudentContext, language);
   const learningUi = getLearningHubUiText(learningStudentContext, language);
+  const homeCopy = (() => {
+    const hindi = responseLanguageName === "Hindi";
+    const hinglish = responseLanguageName === "Hinglish";
+    if (hindi) return {
+      subtitle: "भारतीय छात्रों के लिए किफायती AI ट्यूटर", language: "पढ़ाई की भाषा", signIn: "लॉगिन", history: "इतिहास",
+      badge: "हर भारतीय छात्र के लिए", heading: "सवाल मुश्किल है?", accent: "अपनी भाषा में आसान तरीके से सीखें।",
+      description: "गणित के सवाल की फोटो लें, विज्ञान का अध्याय समझें या परीक्षा की तैयारी करें। Gen-z AI के साथ चरण-दर-चरण सीखें।",
+      cta: "मुफ्त पढ़ाई शुरू करें →", free: "हर दिन मुफ्त: 20 AI चैट · 3 फोटो समाधान · 2 PDF अध्ययन। शुरू करने के लिए भुगतान जरूरी नहीं।",
+      langTitle: "आपकी भाषा। आपकी पढ़ाई।", langBody: "ऊपर अपनी पसंद की भाषा चुनें और Gen-z AI से हर विषय आसान तरीके से समझें।",
+      allowance: "रोज़ाना मुफ्त पढ़ाई", plans: "प्लान देखें", signInFree: "मुफ्त उपयोग के लिए लॉगिन करें",
+    };
+    if (hinglish) return {
+      subtitle: "Indian students ke liye affordable AI tutor", language: "Study language", signIn: "Login", history: "History",
+      badge: "Har Indian student ke liye", heading: "Question mushkil hai?", accent: "Apni language mein step by step seekho.",
+      description: "Maths question ki photo lo, Science chapter samjho ya exams ke liye revise karo. Gen-z AI ke saath aasaan learning.",
+      cta: "Free Study Shuru Karo →", free: "Roz free: 20 AI chats · 3 photo solutions · 2 PDF studies. Shuru karne ke liye payment nahi.",
+      langTitle: "Tumhari language. Tumhari padhai.", langBody: "Upar apni language choose karo aur concepts aasaani se samjho.",
+      allowance: "Daily free study", plans: "Plans dekho", signInFree: "Free uses ke liye login karo",
+    };
+    return {
+      subtitle: "India-first affordable AI tutor", language: "Study language", signIn: "Sign in", history: "History",
+      badge: "Built for every Indian student", heading: "Stuck on a question?", accent: "Learn it step by step, in your language.",
+      description: "Snap a maths question, understand a science chapter, or revise for exams. Gen-z AI helps you learn with Guided Tuition, Photo Solve and PDF Study.",
+      cta: "{homeCopy.cta}", free: "Free daily access: 20 AI chats · 3 photo solutions · 2 PDF studies. No payment needed to start.",
+      langTitle: "Your language. Your learning.", langBody: "Choose your preferred study language above and ask Gen-z AI to explain concepts step by step.",
+      allowance: "Daily free study allowance", plans: "View plans", signInFree: "{homeCopy.signInFree}",
+    };
+  })();
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -240,18 +268,7 @@ export default function Home() {
   function changeLanguageAndReload(value: string) {
     const nextLanguage = value.trim() || "English";
     applyLanguageLocally(nextLanguage);
-
-    if (user) {
-      void savePreferredLanguage(nextLanguage).catch(() => {});
-    }
-
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", nextLanguage);
-      window.location.assign(url.toString());
-    } catch {
-      window.location.reload();
-    }
+    if (user) void savePreferredLanguage(nextLanguage).catch(() => {});
   }
 
   useEffect(() => {
@@ -946,18 +963,18 @@ export default function Home() {
           <div className="logo">G</div>
           <div>
             <h1>Gen-z AI</h1>
-            <p>India-first affordable AI tutor</p>
+            <p>{homeCopy.subtitle}</p>
           </div>
         </div>
 
         <div className="topActions">
           <label className="languageControl">
-            <span>Response language</span>
+            <span>{homeCopy.language}</span>
             <select
               className="language"
               value={language}
               onChange={(e) => changeLanguageAndReload(e.target.value)}
-              aria-label="Select response language"
+              aria-label="Select study language"
             >
               {LANGUAGES.map((item) => (
                 <option key={item} value={item}>{item}</option>
@@ -967,13 +984,13 @@ export default function Home() {
 
           {user ? (
             <>
-              <button className="ghostButton" onClick={() => setHistoryOpen((value) => !value)}>History</button>
+              <button className="ghostButton" onClick={() => setHistoryOpen((value) => !value)}>{homeCopy.history}</button>
               <button className="accountButton" onClick={handleSignOut} title="Sign out">
                 {user.email?.slice(0, 1).toUpperCase() || "U"}
               </button>
             </>
           ) : supabaseReady ? (
-            <button className="ghostButton" onClick={() => setAuthOpen((value) => !value)}>Sign in</button>
+            <button className="ghostButton" onClick={() => setAuthOpen((value) => !value)}>{homeCopy.signIn}</button>
           ) : (
             <span className="guestPill">Guest</span>
           )}
@@ -1046,25 +1063,25 @@ export default function Home() {
       {notice && <div className="notice">{notice}</div>}
 
       <section className="hero">
-        <span className="badge">Built for every Indian student</span>
-        <h2>Stuck on a question? <span>Learn it step by step, in your language.</span></h2>
-        <p>Snap a maths question, understand a science chapter, or revise for exams. Gen-z AI helps you learn with Guided Tuition, Photo Solve and PDF Study.</p>
+        <span className="badge">{homeCopy.badge}</span>
+        <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
+        <p>{homeCopy.description}</p>
         <a className="usageSignIn" href="#study-workspace" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
           Start Learning Free →
         </a>
-        <p style={{ marginTop: 10, fontSize: "0.9rem" }}>Free daily access: 20 AI chats · 3 photo solutions · 2 PDF studies. No payment needed to start.</p>
+        <p style={{ marginTop: 10, fontSize: "0.9rem" }}>{homeCopy.free}</p>
       </section>
 
       <section aria-label="Learn in your language" style={{ padding: "18px 20px", margin: "16px 0", borderRadius: 16, background: "rgba(99,102,241,0.09)" }}>
-        <h3 style={{ margin: "0 0 8px" }}>Your language. Your learning.</h3>
-        <p style={{ margin: "0 0 10px" }}>Hindi mein samjho ya English mein padho — choose your preferred study language above and ask Gen-z AI to explain concepts step by step.</p>
+        <h3 style={{ margin: "0 0 8px" }}>{homeCopy.langTitle}</h3>
+        <p style={{ margin: "0 0 10px" }}>{homeCopy.langBody}</p>
         <small>अपनी भाषा में सवाल पूछें और आसान तरीके से समझें।</small>
       </section>
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
           <div>
             <span className="usageEyebrow">{user ? `${displayPlanName(quota?.plan || "free")} plan` : "Free plan"}</span>
-            <strong>{user ? (isEnglish ? "Today’s remaining uses" : "Aaj ke remaining uses") : "Daily free study allowance"}</strong>
+            <strong>{user ? (isEnglish ? "Today’s remaining uses" : "Aaj ke remaining uses") : homeCopy.allowance}</strong>
             <small>
               {user
                 ? quotaLoading
@@ -1074,7 +1091,7 @@ export default function Home() {
             </small>
           </div>
           <button type="button" className="plansButton" onClick={() => setPlansOpen((value) => !value)}>
-            {plansOpen ? "Hide plans" : "View plans"}
+            {plansOpen ? "Hide plans" : homeCopy.plans}
           </button>
         </div>
 
