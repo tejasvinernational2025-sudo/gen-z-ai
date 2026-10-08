@@ -1047,8 +1047,12 @@ export default function Home() {
 
       <section className="hero">
         <span className="badge">Built for every Indian student</span>
-        <h2>Study smarter, <span>in your language.</span></h2>
-        <p>Ask doubts, understand concepts, solve questions from photos, study PDFs, make notes and prepare for exams.</p>
+        <h2>Stuck on a question? <span>Learn it step by step, in your language.</span></h2>
+        <p>Snap a maths question, understand a science chapter, or revise for exams. Gen-z AI helps you learn with Guided Tuition, Photo Solve and PDF Study.</p>
+        <a className="usageSignIn" href="#learning-hub" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
+          Start Learning Free →
+        </a>
+        <p style={{ marginTop: 10, fontSize: "0.9rem" }}>Free daily access: 20 AI chats · 3 photo solutions · 2 PDF studies. No payment needed to start.</p>
       </section>
 
       <section className="usageCard" aria-label="Daily free usage">
