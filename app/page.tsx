@@ -1049,12 +1049,17 @@ export default function Home() {
         <span className="badge">Built for every Indian student</span>
         <h2>Stuck on a question? <span>Learn it step by step, in your language.</span></h2>
         <p>Snap a maths question, understand a science chapter, or revise for exams. Gen-z AI helps you learn with Guided Tuition, Photo Solve and PDF Study.</p>
-        <a className="usageSignIn" href="#learning-hub" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
+        <a className="usageSignIn" href="#study-workspace" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
           Start Learning Free →
         </a>
         <p style={{ marginTop: 10, fontSize: "0.9rem" }}>Free daily access: 20 AI chats · 3 photo solutions · 2 PDF studies. No payment needed to start.</p>
       </section>
 
+      <section aria-label="Learn in your language" style={{ padding: "18px 20px", margin: "16px 0", borderRadius: 16, background: "rgba(99,102,241,0.09)" }}>
+        <h3 style={{ margin: "0 0 8px" }}>Your language. Your learning.</h3>
+        <p style={{ margin: "0 0 10px" }}>Hindi mein samjho ya English mein padho — choose your preferred study language above and ask Gen-z AI to explain concepts step by step.</p>
+        <small>अपनी भाषा में सवाल पूछें और आसान तरीके से समझें।</small>
+      </section>
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
           <div>
@@ -1244,7 +1249,7 @@ export default function Home() {
         />
       )}
 
-      <section className="chatCard">
+      <section id="study-workspace" className="chatCard">
         <div className="messages">
           {messages.length === 0 ? (
             <div className="empty">
