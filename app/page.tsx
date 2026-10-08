@@ -1067,7 +1067,7 @@ export default function Home() {
         <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
         <p>{homeCopy.description}</p>
         <a className="usageSignIn" href="#study-workspace" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
-          Start Learning Free →
+          {homeCopy.cta}
         </a>
         <p style={{ marginTop: 10, fontSize: "0.9rem" }}>{homeCopy.free}</p>
       </section>
