@@ -209,9 +209,9 @@ export default function Home() {
       subtitle: "India-first affordable AI tutor", language: "Study language", signIn: "Sign in", history: "History",
       badge: "Built for every Indian student", heading: "Stuck on a question?", accent: "Learn it step by step, in your language.",
       description: "Snap a maths question, understand a science chapter, or revise for exams. Gen-z AI helps you learn with Guided Tuition, Photo Solve and PDF Study.",
-      cta: "{homeCopy.cta}", free: "Free daily access: 20 AI chats · 3 photo solutions · 2 PDF studies. No payment needed to start.",
+      cta: "Start Learning Free →", free: "Free daily access: 20 AI chats · 3 photo solutions · 2 PDF studies. No payment needed to start.",
       langTitle: "Your language. Your learning.", langBody: "Choose your preferred study language above and ask Gen-z AI to explain concepts step by step.",
-      allowance: "Daily free study allowance", plans: "View plans", signInFree: "{homeCopy.signInFree}",
+      allowance: "Daily free study allowance", plans: "View plans", signInFree: "Sign in for free uses",
     };
   })();
   const [mode, setMode] = useState<StudyMode>("chat");
@@ -1067,7 +1067,7 @@ export default function Home() {
         <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
         <p>{homeCopy.description}</p>
         <a className="usageSignIn" href="#study-workspace" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
-          Start Learning Free →
+          {homeCopy.cta}
         </a>
         <p style={{ marginTop: 10, fontSize: "0.9rem" }}>{homeCopy.free}</p>
       </section>
