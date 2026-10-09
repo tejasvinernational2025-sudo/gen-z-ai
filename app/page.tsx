@@ -1062,6 +1062,7 @@ export default function Home() {
 
       {notice && <div className="notice">{notice}</div>}
 
+      <section style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"#edf3ff",color:"#172b58"}}><strong>📚 Free Study Resources</strong><p style={{margin:"8px 0"}}>Previous-year paper guide · Physics, Chemistry & Maths formula sheets · Printable syllabus tracker</p><a href="/resources" style={{fontWeight:800,color:"#234bd4"}}>Explore Free Resources →</a></section>
       <section className="hero">
         <span className="badge">{homeCopy.badge}</span>
         <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
