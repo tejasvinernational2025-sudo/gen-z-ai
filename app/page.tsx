@@ -1087,7 +1087,7 @@ export default function Home() {
                 ? quotaLoading
                   ? (isEnglish ? "Refreshing usage…" : "Usage refresh ho rahi hai…")
                   : (isEnglish ? "Daily limits reset on India time." : "Daily limits India time par reset hoti hain.")
-                : (isEnglish ? "Sign in to track daily limits and save chat history." : "Sign in karke daily limits track karo aur chat history save karo.")}
+                : (isEnglish ? "Sign in to track daily limits and save chat history." : "लॉगिन करके रोज़ाना उपयोग और चैट इतिहास देखें।")}
             </small>
           </div>
           <button type="button" className="plansButton" onClick={() => setPlansOpen((value) => !value)}>
@@ -1099,17 +1099,17 @@ export default function Home() {
           <div className="usageStat">
             <span>✨ Chat</span>
             <strong>{user && quota ? quota.chat.remaining : 20}</strong>
-            <small>{user && quota ? `of ${quota.chat.limit} left` : "per day"}</small>
+            <small>{user && quota ? `of ${quota.chat.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
           </div>
           <div className="usageStat">
             <span>📷 Photo Solve</span>
             <strong>{user && quota ? quota.photo.remaining : 3}</strong>
-            <small>{user && quota ? `of ${quota.photo.limit} left` : "per day"}</small>
+            <small>{user && quota ? `of ${quota.photo.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
           </div>
           <div className="usageStat">
             <span>📄 PDF Study</span>
             <strong>{user && quota ? quota.pdf.remaining : 2}</strong>
-            <small>{user && quota ? `of ${quota.pdf.limit} left` : "per day"}</small>
+            <small>{user && quota ? `of ${quota.pdf.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
           </div>
         </div>
 
@@ -1274,10 +1274,10 @@ export default function Home() {
               <h3>{isEnglish ? "Hi! I’m Gen-z AI." : "Namaste! Main Gen-z AI hoon."}</h3>
               <p>{isEnglish ? `Ask a question in ${studentContext} context, or upload a photo or PDF. I’ll help in English.` : `${studentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`}</p>
               <div className="quickGrid">
-                <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ Explain a chapter</button>
-                <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 Make notes</button>
-                <button onClick={() => setInput("Indian Constitution par 5 MCQ quiz lo")}>🎯 Start a quiz</button>
-                <button onClick={() => setInput("JEE ke liye quadratic equations revise karao")}>📚 Exam revision</button>
+                <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ {responseLanguageName === "Hindi" ? "अध्याय समझें" : responseLanguageName === "Hinglish" ? "Chapter samjho" : "Explain a chapter"}</button>
+                <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 {responseLanguageName === "Hindi" ? "नोट्स बनाएँ" : responseLanguageName === "Hinglish" ? "Notes banao" : "Make notes"}</button>
+                <button onClick={() => setInput("Indian Constitution par 5 MCQ quiz lo")}>🎯 {responseLanguageName === "Hindi" ? "क्विज़ शुरू करें" : responseLanguageName === "Hinglish" ? "Quiz shuru karo" : "Start a quiz"}</button>
+                <button onClick={() => setInput("JEE ke liye quadratic equations revise karao")}>📚 {responseLanguageName === "Hindi" ? "परीक्षा की तैयारी" : responseLanguageName === "Hinglish" ? "Exam revision karo" : "Exam revision"}</button>
               </div>
             </div>
           ) : (
