@@ -186,6 +186,22 @@ export default function Home() {
     : `${studentContext} | ${schoolClass} | ${studyMedium}`;
   const composerUi = getComposerUiText(effectiveStudentContext, language);
   const learningUi = getLearningHubUiText(learningStudentContext, language);
+  const tamil = responseLanguageName === "Tamil";
+  const screenCopy = tamil ? {
+    plan:"இலவசத் திட்டம்", remaining:"இன்றைய மீதமுள்ள பயன்பாடுகள்", viewPlans:"திட்டங்களைப் பார்க்க", hidePlans:"திட்டங்களை மறைக்க", chat:"உரையாடல்", photo:"படத் தீர்வு", pdf:"PDF படிப்பு", left:"மீதம்", day:"ஒரு நாளுக்கு",
+    context:"படிப்பு நிலை", contextDesc:"உங்கள் வகுப்பு அல்லது தேர்வுக்கு ஏற்ற பதில்களைப் பெறுங்கள்", board:"பள்ளி வாரியம் மற்றும் பயிற்று மொழி", boardDesc:"வாரியம், வகுப்பு மற்றும் பயிற்று மொழியைத் தேர்ந்தெடுக்கவும்",
+    modes:{chat:"AI-யிடம் கேளுங்கள்",explain:"விளக்கம்",notes:"குறிப்புகள்",quiz:"வினாடி வினா",exam:"தேர்வுத் தயாரிப்பு"},
+    welcome:"வணக்கம்! நான் Gen-z AI.", welcomeDesc:"உங்கள் கேள்வியை எழுதுங்கள் அல்லது படம் அல்லது PDF-ஐ பதிவேற்றுங்கள். தமிழில் உதவுகிறேன்.",
+    history:"வரலாறு", signedIn:"உள்நுழைவு வெற்றிகரமாக முடிந்தது. உரையாடல் வரலாறு இயக்கத்தில் உள்ளது.", description:"வழிகாட்டப்பட்ட பயிற்சி · படத் தீர்வு · PDF படிப்பு · திறமையான மீள்பார்வை",
+    free:"தினமும் இலவசம்: 20 AI உரையாடல்கள் · 3 படத் தீர்வுகள் · 2 PDF படிப்புகள்",
+  } : responseLanguageName === "Hindi" ? {
+    plan:"मुफ्त प्लान",remaining:"आज के बचे हुए उपयोग",viewPlans:"प्लान देखें",hidePlans:"प्लान छिपाएँ",chat:"चैट",photo:"फोटो समाधान",pdf:"PDF अध्ययन",left:"बाकी",day:"प्रतिदिन",
+    context:"अध्ययन स्तर",contextDesc:"कक्षा या परीक्षा के अनुसार जवाब पाएँ",board:"स्कूल बोर्ड और माध्यम",boardDesc:"अपना बोर्ड, कक्षा और माध्यम चुनें",
+    modes:{chat:"AI से पूछें",explain:"समझाएँ",notes:"नोट्स",quiz:"प्रश्नोत्तरी",exam:"परीक्षा तैयारी"},
+    welcome:"नमस्ते! मैं Gen-z AI हूँ।",welcomeDesc:"अपना सवाल लिखें या फोटो या PDF अपलोड करें। मैं हिंदी में मदद करूँगा।",
+    history:"इतिहास",signedIn:"लॉगिन सफल हुआ। चैट इतिहास चालू है।",description:"मार्गदर्शित ट्यूशन · फोटो समाधान · PDF अध्ययन · स्मार्ट रिविज़न",
+    free:"रोज़ मुफ्त: 20 AI चैट · 3 फोटो समाधान · 2 PDF अध्ययन",
+  } : null;
   const homeCopy = (() => {
     const hindi = responseLanguageName === "Hindi";
     const hinglish = responseLanguageName === "Hinglish";
@@ -230,11 +246,11 @@ export default function Home() {
     };
     const localized = regional[responseLanguageName];
     if (localized) return {
-      subtitle: "Gen-z AI", language: "Language / भाषा", signIn: "Sign in", history: "History",
-      ...localized, description: "Guided Tuition · Photo Solve · PDF Study · Smart Revision",
-      free: "20 AI chats · 3 Photo Solve · 2 PDF Study / day",
+      subtitle: "Gen-z AI", language: "Language / भाषा", signIn: "Sign in", history: screenCopy?.history || "History",
+      ...localized, description: screenCopy?.description || "Guided Tuition · Photo Solve · PDF Study · Smart Revision",
+      free: screenCopy?.free || "20 AI chats · 3 Photo Solve · 2 PDF Study / day",
       langBody: localized.accent, allowance: "Daily free study allowance",
-      plans: "View plans", signInFree: "Sign in for free uses",
+      plans: screenCopy?.viewPlans || "View plans", signInFree: "Sign in for free uses",
     };
     return {
       subtitle: "India-first affordable AI tutor", language: "Study language", signIn: "Sign in", history: "History",
@@ -1123,8 +1139,8 @@ export default function Home() {
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
           <div>
-            <span className="usageEyebrow">{user ? `${displayPlanName(quota?.plan || "free")} plan` : "Free plan"}</span>
-            <strong>{user ? (isEnglish ? "Today’s remaining uses" : "Aaj ke remaining uses") : homeCopy.allowance}</strong>
+            <span className="usageEyebrow">{screenCopy?.plan || (user ? `${displayPlanName(quota?.plan || "free")} plan` : "Free plan")}</span>
+            <strong>{screenCopy?.remaining || (user ? (isEnglish ? "Today’s remaining uses" : "Aaj ke remaining uses") : homeCopy.allowance)}</strong>
             <small>
               {user
                 ? quotaLoading
@@ -1134,23 +1150,23 @@ export default function Home() {
             </small>
           </div>
           <button type="button" className="plansButton" onClick={() => setPlansOpen((value) => !value)}>
-            {plansOpen ? "Hide plans" : homeCopy.plans}
+            {plansOpen ? (screenCopy?.hidePlans || "Hide plans") : homeCopy.plans}
           </button>
         </div>
 
         <div className="usageGrid">
           <div className="usageStat">
-            <span>✨ Chat</span>
+            <span>✨ {screenCopy?.chat || "Chat"}</span>
             <strong>{user && quota ? quota.chat.remaining : 20}</strong>
             <small>{user && quota ? `of ${quota.chat.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
           </div>
           <div className="usageStat">
-            <span>📷 Photo Solve</span>
+            <span>📷 {screenCopy?.photo || "Photo Solve"}</span>
             <strong>{user && quota ? quota.photo.remaining : 3}</strong>
             <small>{user && quota ? `of ${quota.photo.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
           </div>
           <div className="usageStat">
-            <span>📄 PDF Study</span>
+            <span>📄 {screenCopy?.pdf || "PDF Study"}</span>
             <strong>{user && quota ? quota.pdf.remaining : 2}</strong>
             <small>{user && quota ? `of ${quota.pdf.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
           </div>
@@ -1228,8 +1244,8 @@ export default function Home() {
 
       <section className="contextBar" aria-label="Student context">
         <div>
-          <strong>Study context</strong>
-          <span>{isEnglish ? "Set answer depth for your class or exam" : "Class/Exam ke hisaab se answer ki depth set karo"}</span>
+          <strong>{screenCopy?.context || "Study context"}</strong>
+          <span>{screenCopy?.contextDesc || (isEnglish ? "Set answer depth for your class or exam" : "Class/Exam ke hisaab se answer ki depth set karo")}</span>
         </div>
         <select
           className="contextSelect"
@@ -1245,8 +1261,8 @@ export default function Home() {
 
       <section className="boardPicker" aria-label="School board and medium">
         <div className="boardPickerTitle">
-          <strong>School Board & Medium</strong>
-          <span>{isEnglish ? "Select your board, class and school medium" : "State board students ke liye board, class aur medium select karo"}</span>
+          <strong>{screenCopy?.board || "School Board & Medium"}</strong>
+          <span>{screenCopy?.boardDesc || (isEnglish ? "Select your board, class and school medium" : "State board students ke liye board, class aur medium select karo")}</span>
         </div>
         <div className="boardPickerGrid">
           <select
@@ -1295,7 +1311,7 @@ export default function Home() {
             onClick={() => setMode(item.id)}
           >
             <span>{item.emoji}</span>
-            {item.label}
+            {screenCopy?.modes[item.id] || item.label}
           </button>
         ))}
       </section>
@@ -1314,8 +1330,8 @@ export default function Home() {
           {messages.length === 0 ? (
             <div className="empty">
               <div className="spark">✦</div>
-              <h3>{isEnglish ? "Hi! I’m Gen-z AI." : "Namaste! Main Gen-z AI hoon."}</h3>
-              <p>{isEnglish ? `Ask a question in ${studentContext} context, or upload a photo or PDF. I’ll help in English.` : `${studentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`}</p>
+              <h3>{screenCopy?.welcome || (isEnglish ? "Hi! I’m Gen-z AI." : "Namaste! Main Gen-z AI hoon.")}</h3>
+              <p>{screenCopy?.welcomeDesc || (isEnglish ? `Ask a question in ${studentContext} context, or upload a photo or PDF. I’ll help in English.` : `${studentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`)}</p>
               <div className="quickGrid">
                 <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ {responseLanguageName === "Hindi" ? "अध्याय समझें" : responseLanguageName === "Hinglish" ? "Chapter samjho" : "Explain a chapter"}</button>
                 <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 {responseLanguageName === "Hindi" ? "नोट्स बनाएँ" : responseLanguageName === "Hinglish" ? "Notes banao" : "Make notes"}</button>
