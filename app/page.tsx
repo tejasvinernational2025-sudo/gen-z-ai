@@ -205,6 +205,37 @@ export default function Home() {
       langTitle: "Tumhari language. Tumhari padhai.", langBody: "Upar apni language choose karo aur concepts aasaani se samjho.",
       allowance: "Daily free study", plans: "Plans dekho", signInFree: "Free uses ke liye login karo",
     };
+    const regional: Record<string, { heading: string; accent: string; cta: string; badge: string; langTitle: string }> = {
+      Assamese: { heading:"প্ৰশ্নটো কঠিন নেকি?", accent:"নিজৰ ভাষাত ধাপে ধাপে শিকক।", cta:"বিনামূলীয়াকৈ পঢ়া আৰম্ভ কৰক →", badge:"ভাৰতীয় শিক্ষাৰ্থীৰ বাবে", langTitle:"আপোনাৰ ভাষা, আপোনাৰ শিক্ষা" },
+      Bengali: { heading:"প্রশ্ন কঠিন লাগছে?", accent:"নিজের ভাষায় ধাপে ধাপে শেখো।", cta:"বিনামূল্যে পড়া শুরু করুন →", badge:"ভারতীয় শিক্ষার্থীদের জন্য", langTitle:"তোমার ভাষা, তোমার পড়াশোনা" },
+      Bodo: { heading:"सोंलु गोब्राब नामा?", accent:"नोंथांनि रावजों सोलों।", cta:"फ्रि सोलोंनाय जागाय →", badge:"भारतनि फरायसाफोरनि थाखाय", langTitle:"नोंथांनि राव, नोंथांनि सोलोंनाय" },
+      Dogri: { heading:"सुआल औखा लगदा ऐ?", accent:"अपनी भाशा च सिक्खो।", cta:"मुफ्त पढ़ाई शुरू करो →", badge:"भारती विद्यार्थियें आस्तै", langTitle:"तुंदी भाशा, तुंदी पढ़ाई" },
+      Gujarati: { heading:"પ્રશ્ન મુશ્કેલ લાગે છે?", accent:"તમારી ભાષામાં પગલું દર પગલું શીખો.", cta:"મફતમાં શીખવાનું શરૂ કરો →", badge:"ભારતીય વિદ્યાર્થીઓ માટે", langTitle:"તમારી ભાષા, તમારું શિક્ષણ" },
+      Kannada: { heading:"ಪ್ರಶ್ನೆ ಕಷ್ಟವಾಗಿದೆಯೇ?", accent:"ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಹಂತ ಹಂತವಾಗಿ ಕಲಿಯಿರಿ.", cta:"ಉಚಿತವಾಗಿ ಕಲಿಯಲು ಪ್ರಾರಂಭಿಸಿ →", badge:"ಭಾರತೀಯ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ", langTitle:"ನಿಮ್ಮ ಭಾಷೆ, ನಿಮ್ಮ ಕಲಿಕೆ" },
+      Kashmiri: { heading:"سوال چھا مُشکِل؟", accent:"پننِس زبانہِ منز ہیٚچھِو۔", cta:"مُفت ہیٚچھُن شروع کٔرِو →", badge:"ہِندوستانُک طالب علم", langTitle:"تُہنز زبان، تُہنز تعلیم" },
+      Konkani: { heading:"प्रस्न कठीण दिसता?", accent:"आपल्या भाशेंत शिका.", cta:"फुकट शिकपाक सुरवात करात →", badge:"भारतीय विद्यार्थ्यां खातीर", langTitle:"तुमची भास, तुमचें शिक्षण" },
+      Maithili: { heading:"प्रश्न कठिन लगैत अछि?", accent:"अपन भाषा मे सीखू।", cta:"मुफ्त पढ़ाइ शुरू करू →", badge:"भारतीय छात्र सभ लेल", langTitle:"अहाँक भाषा, अहाँक पढ़ाइ" },
+      Malayalam: { heading:"ചോദ്യം ബുദ്ധിമുട്ടാണോ?", accent:"നിങ്ങളുടെ ഭാഷയിൽ ഘട്ടം ഘട്ടമായി പഠിക്കൂ.", cta:"സൗജന്യമായി പഠിക്കാൻ തുടങ്ങൂ →", badge:"ഇന്ത്യൻ വിദ്യാർത്ഥികൾക്കായി", langTitle:"നിങ്ങളുടെ ഭാഷ, നിങ്ങളുടെ പഠനം" },
+      Manipuri: { heading:"ꯋꯥꯍꯪ ꯑꯁꯤ ꯑꯋꯥꯕ꯭ꯔꯥ?", accent:"ꯅꯍꯥꯛꯀꯤ ꯂꯣꯜꯗ ꯇꯝꯕꯤꯌꯨ।", cta:"ꯐ꯭ꯔꯤꯗ ꯇꯝꯕ ꯍꯧꯔꯣ →", badge:"ꯏꯟꯗꯤꯌꯥꯒꯤ ꯃꯍꯩꯔꯣꯏꯁꯤꯡꯒꯤꯗꯃꯛ", langTitle:"ꯅꯍꯥꯛꯀꯤ ꯂꯣꯜ, ꯅꯍꯥꯛꯀꯤ ꯃꯍꯩ" },
+      Marathi: { heading:"प्रश्न कठीण वाटतोय?", accent:"आपल्या भाषेत टप्प्याटप्प्याने शिका.", cta:"मोफत शिकायला सुरुवात करा →", badge:"भारतीय विद्यार्थ्यांसाठी", langTitle:"तुमची भाषा, तुमचे शिक्षण" },
+      Nepali: { heading:"प्रश्न गाह्रो लाग्यो?", accent:"आफ्नो भाषामा चरणबद्ध सिक्नुहोस्।", cta:"निःशुल्क पढ्न सुरु गर्नुहोस् →", badge:"भारतीय विद्यार्थीहरूका लागि", langTitle:"तपाईंको भाषा, तपाईंको पढाइ" },
+      Odia: { heading:"ପ୍ରଶ୍ନ କଷ୍ଟକର ଲାଗୁଛି?", accent:"ନିଜ ଭାଷାରେ ପର୍ଯ୍ୟାୟକ୍ରମେ ଶିଖନ୍ତୁ।", cta:"ମାଗଣାରେ ପଢ଼ିବା ଆରମ୍ଭ କରନ୍ତୁ →", badge:"ଭାରତୀୟ ଛାତ୍ରଛାତ୍ରୀଙ୍କ ପାଇଁ", langTitle:"ଆପଣଙ୍କ ଭାଷା, ଆପଣଙ୍କ ଶିକ୍ଷା" },
+      Punjabi: { heading:"ਸਵਾਲ ਔਖਾ ਲੱਗ ਰਿਹਾ ਹੈ?", accent:"ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਕਦਮ-ਦਰ-ਕਦਮ ਸਿੱਖੋ।", cta:"ਮੁਫ਼ਤ ਪੜ੍ਹਾਈ ਸ਼ੁਰੂ ਕਰੋ →", badge:"ਭਾਰਤੀ ਵਿਦਿਆਰਥੀਆਂ ਲਈ", langTitle:"ਤੁਹਾਡੀ ਭਾਸ਼ਾ, ਤੁਹਾਡੀ ਪੜ੍ਹਾਈ" },
+      Sanskrit: { heading:"प्रश्नः कठिनः अस्ति?", accent:"स्वभाषायां क्रमशः पठन्तु।", cta:"निःशुल्कम् अध्ययनम् आरभत →", badge:"भारतीयविद्यार्थिभ्यः", langTitle:"भवतः भाषा, भवतः अध्ययनम्" },
+      Santali: { heading:"ᱠᱩᱠᱞᱤ ᱠᱚᱴᱷᱤᱱ ᱠᱟᱱᱟ?", accent:"ᱟᱢᱟᱜ ᱯᱟᱹᱨᱥᱤ ᱛᱮ ᱥᱮᱪᱮᱫᱽ ᱢᱮ।", cta:"ᱯᱷᱨᱤ ᱛᱮ ᱥᱮᱪᱮᱫᱽ ᱮᱦᱚᱵᱽ ᱢᱮ →", badge:"ᱵᱷᱟᱨᱚᱛ ᱨᱮᱱ ᱯᱟᱹᱴᱷᱩᱣᱟᱹ", langTitle:"ᱟᱢᱟᱜ ᱯᱟᱹᱨᱥᱤ, ᱟᱢᱟᱜ ᱥᱮᱪᱮᱫᱽ" },
+      Sindhi: { heading:"سوال ڏکيو آهي؟", accent:"پنهنجي ٻوليءَ ۾ سکو.", cta:"مفت پڙهڻ شروع ڪريو →", badge:"ڀارتي شاگردن لاءِ", langTitle:"توهان جي ٻولي، توهان جي پڙهائي" },
+      Tamil: { heading:"கேள்வி கடினமாக உள்ளதா?", accent:"உங்கள் மொழியில் படிப்படியாகக் கற்றுக்கொள்ளுங்கள்.", cta:"இலவசமாக கற்கத் தொடங்குங்கள் →", badge:"இந்திய மாணவர்களுக்காக", langTitle:"உங்கள் மொழி, உங்கள் கல்வி" },
+      Telugu: { heading:"ప్రశ్న కష్టంగా ఉందా?", accent:"మీ భాషలో దశలవారీగా నేర్చుకోండి.", cta:"ఉచితంగా నేర్చుకోవడం ప్రారంభించండి →", badge:"భారతీయ విద్యార్థుల కోసం", langTitle:"మీ భాష, మీ చదువు" },
+      Urdu: { heading:"سوال مشکل لگ رہا ہے؟", accent:"اپنی زبان میں قدم بہ قدم سیکھیں۔", cta:"مفت پڑھائی شروع کریں →", badge:"بھارتی طلبہ کے لیے", langTitle:"آپ کی زبان، آپ کی تعلیم" },
+    };
+    const localized = regional[responseLanguageName];
+    if (localized) return {
+      subtitle: "Gen-z AI", language: "Language / भाषा", signIn: "Sign in", history: "History",
+      ...localized, description: "Guided Tuition · Photo Solve · PDF Study · Smart Revision",
+      free: "20 AI chats · 3 Photo Solve · 2 PDF Study / day",
+      langBody: localized.accent, allowance: "Daily free study allowance",
+      plans: "View plans", signInFree: "Sign in for free uses",
+    };
     return {
       subtitle: "India-first affordable AI tutor", language: "Study language", signIn: "Sign in", history: "History",
       badge: "Built for every Indian student", heading: "Stuck on a question?", accent: "Learn it step by step, in your language.",
