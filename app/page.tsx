@@ -245,6 +245,17 @@ export default function Home() {
       allowance: "Daily free study allowance", plans: "View plans", signInFree: "Sign in for free uses",
     };
   })();
+  const resourceCopy = responseLanguageName === "Tamil" ? {
+    title:"இலவச படிப்பு வளங்கள்", description:"முந்தைய ஆண்டு வினாத்தாள்கள் · இயற்பியல், வேதியியல், கணித சூத்திரத் தாள்கள் · பாடத்திட்ட சரிபார்ப்புப் பட்டியல்", link:"இலவச வளங்களைப் பார்க்க →"
+  } : responseLanguageName === "Hindi" ? {
+    title:"मुफ्त अध्ययन सामग्री", description:"पिछले वर्षों के प्रश्नपत्र · भौतिकी, रसायन और गणित के सूत्र · पाठ्यक्रम चेकलिस्ट", link:"मुफ्त सामग्री देखें →"
+  } : responseLanguageName === "Bengali" ? {
+    title:"বিনামূল্যের পড়াশোনার উপকরণ", description:"পূর্ববর্তী বছরের প্রশ্নপত্র · পদার্থবিদ্যা, রসায়ন ও গণিতের সূত্র · সিলেবাস চেকলিস্ট", link:"বিনামূল্যের উপকরণ দেখুন →"
+  } : responseLanguageName === "Hinglish" ? {
+    title:"Free Study Resources", description:"Pichhle saalon ke papers · Physics, Chemistry aur Maths formula sheets · Syllabus checklist", link:"Free Resources Dekho →"
+  } : {
+    title:"Free Study Resources", description:"Previous-year paper guide · Physics, Chemistry & Maths formula sheets · Printable syllabus tracker", link:"Explore Free Resources →"
+  };
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -1093,7 +1104,7 @@ export default function Home() {
 
       {notice && <div className="notice">{notice}</div>}
 
-      <section style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"#edf3ff",color:"#172b58"}}><strong>📚 Free Study Resources</strong><p style={{margin:"8px 0"}}>Previous-year paper guide · Physics, Chemistry & Maths formula sheets · Printable syllabus tracker</p><a href="/resources" style={{fontWeight:800,color:"#234bd4"}}>Explore Free Resources →</a></section>
+      <section style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"#edf3ff",color:"#172b58"}}><strong>📚 {resourceCopy.title}</strong><p style={{margin:"8px 0"}}>{resourceCopy.description}</p><a href="/resources" style={{fontWeight:800,color:"#234bd4"}}>{resourceCopy.link}</a></section>
       <section className="hero">
         <span className="badge">{homeCopy.badge}</span>
         <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
