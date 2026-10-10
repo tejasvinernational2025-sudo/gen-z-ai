@@ -49,6 +49,20 @@ export default function HomeTutorCard({
   const [subjects, setSubjects] = useState<string[]>(["Mathematics", "Science", "English"]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const ui = getLearningHubUiText(studentContext, language);
+  const tamil = language.includes("Tamil");
+  const hindi = language.includes("Hindi") || language.includes("हिन्दी");
+  const displayGoal = (value: string) => {
+    if (tamil) return ({ "Overall improvement":"ஒட்டுமொத்த முன்னேற்றம்", "Board exam preparation":"வாரியத் தேர்வுத் தயாரிப்பு", "Concept clarity":"கருத்துத் தெளிவு", "Daily homework":"தினசரி வீட்டுப்பாடம்", "JEE foundation":"JEE அடிப்படை", "NEET foundation":"NEET அடிப்படை" } as Record<string,string>)[value] || value;
+    if (hindi) return ({ "Overall improvement":"समग्र सुधार", "Board exam preparation":"बोर्ड परीक्षा तैयारी", "Concept clarity":"विषय की स्पष्ट समझ", "Daily homework":"रोज़ का होमवर्क", "JEE foundation":"JEE की बुनियाद", "NEET foundation":"NEET की बुनियाद" } as Record<string,string>)[value] || value;
+    return value;
+  };
+  const displaySubject = (value: string) => {
+    if (tamil) return ({ Mathematics:"கணிதம்", Science:"அறிவியல்", English:"ஆங்கிலம்", Hindi:"இந்தி", "Social Science":"சமூக அறிவியல்" } as Record<string,string>)[value] || value;
+    if (hindi) return ({ Mathematics:"गणित", Science:"विज्ञान", English:"अंग्रेज़ी", Hindi:"हिन्दी", "Social Science":"सामाजिक विज्ञान" } as Record<string,string>)[value] || value;
+    return value;
+  };
+  const minutesLabel = tamil ? "நிமிடங்கள்" : hindi ? "मिनट" : "minutes";
+
 
   async function refresh() {
     if (!signedIn) {
@@ -185,7 +199,7 @@ export default function HomeTutorCard({
           <h3>{profile ? ui.homeTodayPlan : ui.homeSetupTitle}</h3>
           <p>
             {profile
-              ? `${profile.school_class || schoolClass} · ${profile.goal} · ${profile.daily_minutes} min/day`
+              ? `${profile.school_class || schoolClass} · ${displayGoal(profile.goal)} · ${profile.daily_minutes} ${minutesLabel}`
               : ui.homeProfileDesc}
           </p>
         </div>
@@ -204,7 +218,7 @@ export default function HomeTutorCard({
             <span>{ui.dailyTarget}</span>
             <select value={dailyMinutes} onChange={(e) => setDailyMinutes(Number(e.target.value))}>
               {[20, 30, 45, 60, 90].map((item) => (
-                <option key={item} value={item}>{item} minutes</option>
+                <option key={item} value={item}>{item} {minutesLabel}</option>
               ))}
             </select>
           </label>
@@ -212,7 +226,7 @@ export default function HomeTutorCard({
           <label>
             <span>{ui.mainGoal}</span>
             <select value={goal} onChange={(e) => setGoal(e.target.value as (typeof GOALS)[number])}>
-              {GOALS.map((item) => <option key={item} value={item}>{item}</option>)}
+              {GOALS.map((item) => <option key={item} value={item}>{displayGoal(item)}</option>)}
             </select>
           </label>
 
@@ -226,7 +240,7 @@ export default function HomeTutorCard({
                   className={subjects.includes(subject) ? "selected" : ""}
                   onClick={() => toggleSubject(subject)}
                 >
-                  {subjects.includes(subject) ? "✓ " : ""}{subject}
+                  {subjects.includes(subject) ? "✓ " : ""}{displaySubject(subject)}
                 </button>
               ))}
             </div>
