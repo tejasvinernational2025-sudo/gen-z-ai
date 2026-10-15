@@ -267,6 +267,18 @@ export default function Home() {
     title:"मुफ्त अध्ययन सामग्री", description:"पिछले वर्षों के प्रश्नपत्र · भौतिकी, रसायन और गणित के सूत्र · पाठ्यक्रम चेकलिस्ट", link:"मुफ्त सामग्री देखें →"
   } : responseLanguageName === "Bengali" ? {
     title:"বিনামূল্যের পড়াশোনার উপকরণ", description:"পূর্ববর্তী বছরের প্রশ্নপত্র · পদার্থবিদ্যা, রসায়ন ও গণিতের সূত্র · সিলেবাস চেকলিস্ট", link:"বিনামূল্যের উপকরণ দেখুন →"
+  } : responseLanguageName === "Gujarati" ? {
+    title:"મફત અભ્યાસ સામગ્રી", description:"અગાઉના વર્ષના પ્રશ્નપત્રો · ભૌતિકશાસ્ત્ર, રસાયણશાસ્ત્ર અને ગણિતના સૂત્રો · અભ્યાસક્રમ ચેકલિસ્ટ", link:"મફત સામગ્રી જુઓ →"
+  } : responseLanguageName === "Marathi" ? {
+    title:"मोफत अभ्यास साहित्य", description:"मागील वर्षांचे प्रश्नपत्र · भौतिकशास्त्र, रसायनशास्त्र आणि गणिताची सूत्रे · अभ्यासक्रम यादी", link:"मोफत साहित्य पाहा →"
+  } : responseLanguageName === "Punjabi" ? {
+    title:"ਮੁਫ਼ਤ ਪੜ੍ਹਾਈ ਸਮੱਗਰੀ", description:"ਪਿਛਲੇ ਸਾਲਾਂ ਦੇ ਪ੍ਰਸ਼ਨ ਪੱਤਰ · ਭੌਤਿਕ ਵਿਗਿਆਨ, ਰਸਾਇਣ ਅਤੇ ਗਣਿਤ ਦੇ ਫਾਰਮੂਲੇ · ਸਿਲੇਬਸ ਸੂਚੀ", link:"ਮੁਫ਼ਤ ਸਮੱਗਰੀ ਵੇਖੋ →"
+  } : responseLanguageName === "Telugu" ? {
+    title:"ఉచిత అధ్యయన వనరులు", description:"గత సంవత్సరాల ప్రశ్నపత్రాలు · భౌతిక, రసాయన, గణిత సూత్రాలు · సిలబస్ జాబితా", link:"ఉచిత వనరులు చూడండి →"
+  } : responseLanguageName === "Kannada" ? {
+    title:"ಉಚಿತ ಅಧ್ಯಯನ ಸಂಪನ್ಮೂಲಗಳು", description:"ಹಿಂದಿನ ವರ್ಷದ ಪ್ರಶ್ನೆಪತ್ರಿಕೆಗಳು · ಭೌತಶಾಸ್ತ್ರ, ರಸಾಯನಶಾಸ್ತ್ರ, ಗಣಿತ ಸೂತ್ರಗಳು · ಪಠ್ಯಕ್ರಮ ಪಟ್ಟಿ", link:"ಉಚಿತ ಸಂಪನ್ಮೂಲಗಳನ್ನು ನೋಡಿ →"
+  } : responseLanguageName === "Malayalam" ? {
+    title:"സൗജന്യ പഠന വിഭവങ്ങൾ", description:"മുൻ വർഷ ചോദ്യപേപ്പറുകൾ · ഫിസിക്സ്, കെമിസ്ട്രി, ഗണിത സൂത്രങ്ങൾ · സിലബസ് പട്ടിക", link:"സൗജന്യ വിഭവങ്ങൾ കാണൂ →"
   } : responseLanguageName === "Hinglish" ? {
     title:"Free Study Resources", description:"Pichhle saalon ke papers · Physics, Chemistry aur Maths formula sheets · Syllabus checklist", link:"Free Resources Dekho →"
   } : {
