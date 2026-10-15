@@ -307,6 +307,72 @@ const ML: LearningHubUiText = {
   practiceNow: "ഇപ്പോൾ പരിശീലിക്കുക", tomorrow: "നാളെ", upcoming: "വരാനിരിക്കുന്നവ", refresh: "പുതുക്കുക",
 };
 
+const GU: LearningHubUiText = {
+  hubEyebrow: "તમારું લર્નિંગ હબ",
+  hubFlow: "યોજના → અભ્યાસ → પ્રગતિ → પુનરાવર્તન",
+  hubDescription: "તમારી રોજની યોજના, પુસ્તકો, પ્રગતિ અને સ્માર્ટ રિવિઝન એક જગ્યાએ સંભાળો.",
+  signIn: "લૉગિન કરો",
+  close: "બંધ કરો",
+  view: "જુઓ",
+  homeEyebrow: "મારો AI હોમ ટ્યુટર",
+  homeSignedOutTitle: "વ્યક્તિગત અભ્યાસ યોજના અને નબળા વિષયો પર ધ્યાન",
+  homeSignedOutDesc: "તમારો અભ્યાસ યાદ રાખવા માટે લૉગિન કરો.",
+  homeTodayPlan: "આજની વ્યક્તિગત અભ્યાસ યોજના",
+  homeSetupTitle: "તમારી અભ્યાસ પ્રોફાઇલ બનાવો",
+  homeProfileDesc: "તમારું બોર્ડ, ધોરણ, લક્ષ્ય અને રોજનો અભ્યાસ સમય સાચવવામાં આવે છે.",
+  editProfile: "પ્રોફાઇલ બદલો",
+  setUp: "સેટ અપ કરો",
+  dailyTarget: "દૈનિક લક્ષ્ય",
+  mainGoal: "મુખ્ય લક્ષ્ય",
+  focusSubjects: "મુખ્ય વિષયો",
+  saveProfile: "પ્રોફાઇલ સાચવો અને આજની યોજના બનાવો",
+  saving: "સાચવી રહ્યા છીએ…",
+  weakTracked: "નબળા વિષયો નોંધાયા",
+  todayProgress: "આજની પ્રગતિ",
+  topicsAttention: "ધ્યાન આપવાના વિષયો",
+  todayPlan: "આજની યોજના",
+  refreshPlan: "યોજના તાજી કરો",
+  makePlan: "યોજના બનાવો",
+  progressEyebrow: "પરીક્ષાનું પ્રદર્શન",
+  progressTitle: "પ્રગતિ અને વાલી માટે સારાંશ",
+  progressDesc: "ક્વિઝ અને અભ્યાસની ચોકસાઈ, નબળા વિષયો અને અભ્યાસ યોજનાની પ્રગતિ એક જગ્યાએ.",
+  viewProgress: "પ્રગતિ જુઓ",
+  studyPlanCompletion: "અભ્યાસ યોજના પૂર્ણ",
+  activeDays: "સક્રિય દિવસો",
+  attempts: "પ્રયત્નો",
+  accuracy: "ચોકસાઈ",
+  avgScore: "સરેરાશ ગુણ",
+  trend: "વલણ",
+  needsRevision: "પુનરાવર્તન જરૂરી",
+  strongTopics: "મજબૂત વિષયો",
+  recentMistakes: "તાજેતરની ભૂલો",
+  parentSummary: "વાલી માટે સારાંશ",
+  sourcesEyebrow: "અધ્યાય / પુસ્તક સ્ત્રોત",
+  sourcesSignedOutTitle: "તમારા પુસ્તકને AI માટે સ્ત્રોત બનાવો",
+  sourcesSignedOutDesc: "PDF અથવા અધ્યાયનું લખાણ સાચવો અને પસંદ કરેલા સ્ત્રોત પરથી જવાબ મેળવો.",
+  groundingOn: "સ્ત્રોત ચાલુ",
+  makeBookSource: "પુસ્તકને AI સ્ત્રોત બનાવો",
+  addSource: "+ સ્ત્રોત ઉમેરો",
+  generalAi: "સામાન્ય AI",
+  noBookGrounding: "પુસ્તક સ્ત્રોત નથી",
+  pasteText: "લખાણ પેસ્ટ કરો",
+  saveUse: "સાચવો અને ઉપયોગ કરો",
+  revisionEyebrow: "સ્માર્ટ રિવિઝન",
+  revisionSignedOutTitle: "ભૂલી જતાં પહેલાં નબળા વિષયોનું પુનરાવર્તન કરો",
+  revisionSignedOutDesc: "નિયત સમયના પુનરાવર્તન માટે લૉગિન કરો.",
+  reviseToday: "આજે પુનરાવર્તન કરો",
+  hide: "છુપાવો",
+  revise: "પુનરાવર્તન",
+  dueToday: "આજે બાકી",
+  reviewed: "સમીક્ષા થઈ",
+  avgRevisionScore: "સરેરાશ પુનરાવર્તન ગુણ",
+  todaysRevision: "આજનું પુનરાવર્તન",
+  practiceNow: "હમણાં અભ્યાસ કરો",
+  tomorrow: "આવતીકાલે",
+  upcoming: "આગામી",
+  refresh: "તાજું કરો",
+};
+
 function selectedLanguage(studentContext: string, language: string) {
   void studentContext;
   const named = language.includes("—") ? language.split("—").pop()?.trim() : language.trim();
@@ -315,6 +381,7 @@ function selectedLanguage(studentContext: string, language: string) {
 
 export function getLearningHubUiText(studentContext: string, language: string) {
   const key = selectedLanguage(studentContext, language);
+  if (key === "Gujarati") return GU;
   if (key === "Hindi") return HI;
   if (key === "Kannada") return KN;
   if (key === "Tamil") return TA;
