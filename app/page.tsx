@@ -202,6 +202,18 @@ export default function Home() {
     history:"इतिहास",signedIn:"लॉगिन सफल हुआ। चैट इतिहास चालू है।",description:"मार्गदर्शित ट्यूशन · फोटो समाधान · PDF अध्ययन · स्मार्ट रिविज़न",
     free:"रोज़ मुफ्त: 20 AI चैट · 3 फोटो समाधान · 2 PDF अध्ययन",
   } : null;
+  const quickUi: Record<string, {guest:string; signIn:string; google:string; email:string; board:string; chats:string}> = {
+    Hindi: {guest:"अतिथि",signIn:"Gen-z AI में लॉगिन करें",google:"Google से जारी रखें",email:"ईमेल पता",board:"बोर्ड चुनें",chats:"आपकी चैट"},
+    Tamil: {guest:"விருந்தினர்",signIn:"Gen-z AI-யில் உள்நுழையுங்கள்",google:"Google மூலம் தொடரவும்",email:"மின்னஞ்சல் முகவரி",board:"வாரியத்தைத் தேர்ந்தெடுக்கவும்",chats:"உங்கள் உரையாடல்கள்"},
+    Telugu: {guest:"అతిథి",signIn:"Gen-z AI లో సైన్ ఇన్ చేయండి",google:"Google తో కొనసాగండి",email:"ఇమెయిల్ చిరునామా",board:"బోర్డు ఎంచుకోండి",chats:"మీ చాట్‌లు"},
+    Kannada: {guest:"ಅತಿಥಿ",signIn:"Gen-z AI ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ",google:"Google ಮೂಲಕ ಮುಂದುವರಿಯಿರಿ",email:"ಇಮೇಲ್ ವಿಳಾಸ",board:"ಮಂಡಳಿ ಆಯ್ಕೆಮಾಡಿ",chats:"ನಿಮ್ಮ ಚಾಟ್‌ಗಳು"},
+    Malayalam: {guest:"അതിഥി",signIn:"Gen-z AI-യിൽ പ്രവേശിക്കൂ",google:"Google ഉപയോഗിച്ച് തുടരൂ",email:"ഇമെയിൽ വിലാസം",board:"ബോർഡ് തിരഞ്ഞെടുക്കൂ",chats:"നിങ്ങളുടെ ചാറ്റുകൾ"},
+    Bengali: {guest:"অতিথি",signIn:"Gen-z AI-তে সাইন ইন করুন",google:"Google দিয়ে চালিয়ে যান",email:"ইমেইল ঠিকানা",board:"বোর্ড নির্বাচন করুন",chats:"আপনার চ্যাট"},
+    Gujarati: {guest:"મહેમાન",signIn:"Gen-z AI માં સાઇન ઇન કરો",google:"Google સાથે આગળ વધો",email:"ઈમેલ સરનામું",board:"બોર્ડ પસંદ કરો",chats:"તમારી ચેટ"},
+    Marathi: {guest:"पाहुणे",signIn:"Gen-z AI मध्ये लॉगिन करा",google:"Google सह पुढे जा",email:"ईमेल पत्ता",board:"बोर्ड निवडा",chats:"तुमच्या चॅट"},
+    Punjabi: {guest:"ਮਹਿਮਾਨ",signIn:"Gen-z AI ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ",google:"Google ਨਾਲ ਜਾਰੀ ਰੱਖੋ",email:"ਈਮੇਲ ਪਤਾ",board:"ਬੋਰਡ ਚੁਣੋ",chats:"ਤੁਹਾਡੀਆਂ ਚੈਟਾਂ"}
+  };
+  const quickCopy = quickUi[responseLanguageName];
   const homeCopy = (() => {
     const hindi = responseLanguageName === "Hindi";
     const hinglish = responseLanguageName === "Hinglish";
@@ -1119,7 +1131,7 @@ export default function Home() {
           ) : supabaseReady ? (
             <button className="ghostButton" onClick={() => setAuthOpen((value) => !value)}>{homeCopy.signIn}</button>
           ) : (
-            <span className="guestPill">Guest</span>
+            <span className="guestPill">{quickCopy?.guest || "Guest"}</span>
           )}
         </div>
       </header>
@@ -1127,18 +1139,18 @@ export default function Home() {
       {authOpen && (
         <form className="authPanel authPanelExpanded authPanelSimple" onSubmit={submitLogin}>
           <div className="authIntro">
-            <strong>Sign in to Gen-z AI</strong>
+            <strong>{quickCopy?.signIn || "Sign in to Gen-z AI"}</strong>
             <span>{isEnglish ? "Chats, study plan, progress and revision will stay synced." : "Chats, study plan, progress aur revision sync rahenge."}</span>
           </div>
 
           <button type="button" className="googleSignInButton" onClick={handleGoogleSignIn}>
-            Continue with Google
+            {quickCopy?.google || "Continue with Google"}
           </button>
 
           <div className="authDividerRow"><span>or use email</span></div>
 
           <label className="authEmailLabel">
-            <span>Email address</span>
+            <span>{quickCopy?.email || "Email address"}</span>
             <input
               type="email"
               value={authEmail}
@@ -1167,7 +1179,7 @@ export default function Home() {
         <section className="historyPanel">
           <div className="historyHeader">
             <div>
-              <strong>Your chats</strong>
+              <strong>{quickCopy?.chats || "Your chats"}</strong>
               <span>{user.email}</span>
             </div>
             <button onClick={newChat}>+ New chat</button>
@@ -1343,7 +1355,7 @@ export default function Home() {
             }}
             aria-label="Select school board"
           >
-            <option value="">Select Board</option>
+            <option value="">{quickCopy?.board || "Select Board"}</option>
             {SCHOOL_BOARDS.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
           <select
