@@ -201,6 +201,13 @@ export default function Home() {
     welcome:"नमस्ते! मैं Gen-z AI हूँ।",welcomeDesc:"अपना सवाल लिखें या फोटो या PDF अपलोड करें। मैं हिंदी में मदद करूँगा।",
     history:"इतिहास",signedIn:"लॉगिन सफल हुआ। चैट इतिहास चालू है।",description:"मार्गदर्शित ट्यूशन · फोटो समाधान · PDF अध्ययन · स्मार्ट रिविज़न",
     free:"रोज़ मुफ्त: 20 AI चैट · 3 फोटो समाधान · 2 PDF अध्ययन",
+  } : responseLanguageName === "Gujarati" ? {
+    plan:"મફત પ્લાન",remaining:"આજના બાકી ઉપયોગ",viewPlans:"પ્લાન જુઓ",hidePlans:"પ્લાન છુપાવો",chat:"ચેટ",photo:"ફોટો સોલ્વ",pdf:"PDF અભ્યાસ",left:"બાકી",day:"દરરોજ",
+    context:"અભ્યાસનું સ્તર",contextDesc:"તમારા ધોરણ અથવા પરીક્ષા મુજબ જવાબ મેળવો",board:"શાળા બોર્ડ અને માધ્યમ",boardDesc:"તમારું બોર્ડ, ધોરણ અને અભ્યાસનું માધ્યમ પસંદ કરો",
+    modes:{chat:"AI ને પૂછો",explain:"સમજાવો",notes:"નોંધો",quiz:"પ્રશ્નોત્તરી",exam:"પરીક્ષાની તૈયારી"},
+    welcome:"નમસ્તે! હું Gen-z AI છું.",welcomeDesc:"તમારો પ્રશ્ન લખો અથવા ફોટો કે PDF અપલોડ કરો. હું ગુજરાતીમાં મદદ કરીશ.",
+    history:"ઇતિહાસ",signedIn:"લૉગિન સફળ થયું. ચેટ ઇતિહાસ ચાલુ છે.",description:"માર્ગદર્શિત ટ્યુશન · ફોટો સોલ્વ · PDF અભ્યાસ · સ્માર્ટ રિવિઝન",
+    free:"દરરોજ મફત: 20 AI ચેટ · 3 ફોટો સોલ્વ · 2 PDF અભ્યાસ",
   } : null;
   const quickUi: Record<string, {guest:string; signIn:string; google:string; email:string; board:string; chats:string}> = {
     Hindi: {guest:"अतिथि",signIn:"Gen-z AI में लॉगिन करें",google:"Google से जारी रखें",email:"ईमेल पता",board:"बोर्ड चुनें",chats:"आपकी चैट"},
@@ -258,11 +265,11 @@ export default function Home() {
     };
     const localized = regional[responseLanguageName];
     if (localized) return {
-      subtitle: "Gen-z AI", language: "Language / भाषा", signIn: "Sign in", history: screenCopy?.history || "History",
+      subtitle: "Gen-z AI", language: responseLanguageName === "Gujarati" ? "અભ્યાસની ભાષા" : "Language / भाषा", signIn: responseLanguageName === "Gujarati" ? "લૉગિન" : "Sign in", history: screenCopy?.history || "History",
       ...localized, description: screenCopy?.description || "Guided Tuition · Photo Solve · PDF Study · Smart Revision",
       free: screenCopy?.free || "20 AI chats · 3 Photo Solve · 2 PDF Study / day",
-      langBody: localized.accent, allowance: "Daily free study allowance",
-      plans: screenCopy?.viewPlans || "View plans", signInFree: "Sign in for free uses",
+      langBody: localized.accent, allowance: responseLanguageName === "Gujarati" ? "દરરોજ મફત અભ્યાસ" : "Daily free study allowance",
+      plans: screenCopy?.viewPlans || "View plans", signInFree: responseLanguageName === "Gujarati" ? "મફત ઉપયોગ માટે લૉગિન કરો" : "Sign in for free uses",
     };
     return {
       subtitle: "India-first affordable AI tutor", language: "Study language", signIn: "Sign in", history: "History",
