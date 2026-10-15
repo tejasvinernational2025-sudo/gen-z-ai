@@ -5,8 +5,8 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://genzstudy.in"),
-  title: "Gen-z AI | India-first Affordable AI Tutor",
-  description: "Affordable multilingual AI tutor for Indian students with regional-language learning, Photo Solve, PDF study, notes, quizzes and exam prep.",
+  title: "Gen-z AI | Free Study Resources & Multilingual AI Tutor",
+  description: "Gen-z AI offers free study resources, formula sheets, a printable syllabus tracker and a multilingual AI tutor with Photo Solve, guided tuition and PDF study.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
