@@ -95,6 +95,7 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
   const responseLanguageName = language.includes("—")
     ? language.split("—").pop()?.trim() || "English"
     : language.trim() || "English";
+  const isMarathi = responseLanguageName === "Marathi";
   const isEnglish = responseLanguageName === "English";
 
   async function refresh() {
@@ -171,7 +172,7 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
           <p>
             {data?.profile?.goal
               ? `${data.profile.goal} · ${data.profile.daily_minutes || 30} min/day target`
-              : (isEnglish ? "Adaptive quiz and practice track measurable progress." : "Adaptive quiz aur practice se measurable progress track hoti hai.")}
+              : (isMarathi ? "अनुकूल चाचण्या आणि सरावातून तुमची प्रगती मोजता येते." : isEnglish ? "Adaptive quiz and practice track measurable progress." : "Adaptive quiz aur practice se measurable progress track hoti hai.")}
           </p>
         </div>
         <button type="button" onClick={() => setOpen((value) => !value)}>
@@ -185,19 +186,19 @@ export default function ProgressDashboardCard({ signedIn, language, studentConte
         <>
           <div className="progressQuickGrid">
             <div>
-              <span>7-day accuracy</span>
+              <span>{isMarathi ? "७ दिवसांची अचूकता" : "7-day accuracy"}</span>
               <strong>{data.week.accuracy}%</strong>
-              <small>{data.week.attempts} graded attempts</small>
+              <small>{data.week.attempts} {isMarathi ? "तपासलेले प्रयत्न" : "graded attempts"}</small>
             </div>
             <div>
               <span>{ui.studyPlanCompletion}</span>
               <strong>{data.plan.completionRate}%</strong>
-              <small>{data.plan.completedTasks}/{data.plan.totalTasks} tasks</small>
+              <small>{data.plan.completedTasks}/{data.plan.totalTasks} {isMarathi ? "कामे" : "tasks"}</small>
             </div>
             <div>
               <span>{ui.activeDays}</span>
               <strong>{data.activeDays7}/7</strong>
-              <small>practice or plan activity</small>
+              <small>{isMarathi ? "सराव किंवा अभ्यास योजनेतील सहभाग" : "practice or plan activity"}</small>
             </div>
           </div>
 
