@@ -272,6 +272,31 @@ export default function Home() {
   } : {
     title:"Free Study Resources", description:"Previous-year paper guide · Physics, Chemistry & Maths formula sheets · Printable syllabus tracker", link:"Explore Free Resources →"
   };
+  const tuitionCopy = responseLanguageName === "Tamil" ? {
+    eyebrow:"AI பயிற்சி · வழிகாட்டப்பட்ட வகுப்பு", title:"🎓 தனிப்பட்ட பயிற்சி வகுப்பைத் தொடங்குங்கள்",
+    description:"பாடத்தையும் தலைப்பையும் தேர்ந்தெடுக்கவும். உங்கள் AI ஆசிரியர் ஒவ்வொரு கருத்தாக விளக்கி, புரிதலைச் சரிபார்த்து, பயிற்சிக்கும் மீள்பார்வைக்கும் வழிகாட்டுவார்.",
+    subject:"பாடம்", topic:"அத்தியாயம் / தலைப்பு", example:"எ.கா. செல் சுவாசம்", duration:"வகுப்பு நேரம்",
+    start:"வழிகாட்டப்பட்ட பயிற்சியைத் தொடங்கு", steps:["1 · கற்றல்","2 · சரிபார்ப்பு","3 · பயிற்சி","4 · மீள்பார்வை"],
+    foot:"ஒவ்வொரு கருத்துக்குப் பிறகும் ஆசிரியர் புரிதலைச் சரிபார்க்க நிறுத்துவார்.",
+    subjects:["கணிதம்","அறிவியல்","ஆங்கிலம்","இந்தி","சமூக அறிவியல்"],
+    footer:"மாணவர்களுக்கு முன்னுரிமை · பல மொழிகள் · மலிவு", links:["உதவி","தனியுரிமை","விதிமுறைகள்","பணம் திரும்புதல்"]
+  } : responseLanguageName === "Hindi" ? {
+    eyebrow:"AI ट्यूशन · मार्गदर्शित कक्षा",title:"🎓 व्यक्तिगत ट्यूशन कक्षा शुरू करें",
+    description:"विषय और अध्याय चुनें। AI शिक्षक एक-एक अवधारणा समझाएगा, समझ की जाँच करेगा, फिर अभ्यास और दोहराव कराएगा।",
+    subject:"विषय",topic:"अध्याय / टॉपिक",example:"जैसे कोशिकीय श्वसन",duration:"कक्षा का समय",
+    start:"मार्गदर्शित ट्यूशन शुरू करें",steps:["1 · सीखें","2 · जाँचें","3 · अभ्यास","4 · दोहराएँ"],
+    foot:"हर अवधारणा के बाद शिक्षक समझ जाँचने के लिए रुकेगा।",
+    subjects:["गणित","विज्ञान","अंग्रेज़ी","हिंदी","सामाजिक विज्ञान"],
+    footer:"छात्र प्रथम · बहुभाषी · किफायती",links:["सहायता","गोपनीयता","नियम","रिफंड"]
+  } : {
+    eyebrow:"AI TUITION MODE · GUIDED CLASS",title:"🎓 Start a personal tuition class",
+    description:"Choose a subject and topic. Your AI tutor teaches one concept at a time, checks understanding, then moves to practice and revision.",
+    subject:"Subject",topic:"Chapter / topic",example:"e.g. Cell respiration",duration:"Class time",
+    start:"Start guided tuition",steps:["1 · Learn","2 · Check","3 · Practice","4 · Revise"],
+    foot:"The tutor pauses after each understanding check so the student participates instead of only reading an AI answer.",
+    subjects:["Mathematics","Science","English","Hindi","Social Science"],
+    footer:"Student-first · Multilingual · Affordable",links:["Support","Privacy","Terms","Refund & Cancellation"]
+  };
   const [mode, setMode] = useState<StudyMode>("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -1437,18 +1462,18 @@ export default function Home() {
 
       <section className="tuitionModeCard" aria-label="AI Tuition Mode">
         <div>
-          <span>AI TUITION MODE · GUIDED CLASS</span>
-          <h3>🎓 Start a personal tuition class</h3>
-          <p>Choose a subject and topic. Your AI tutor teaches one concept at a time, checks understanding, then moves to practice and revision.</p>
+          <span>{tuitionCopy.eyebrow}</span>
+          <h3>{tuitionCopy.title}</h3>
+          <p>{tuitionCopy.description}</p>
         </div>
         <div className="tuitionSetup">
-          <label><span>Subject</span><select value={tuitionSubject} onChange={(e) => setTuitionSubject(e.target.value)}>{["Mathematics", "Science", "English", "Hindi", "Social Science"].map((subject) => (<option key={subject} value={subject}>{subject}</option>))}</select></label>
-          <label className="tuitionTopicField"><span>Chapter / topic</span><input id="tuition-topic" value={tuitionTopic} onChange={(e) => setTuitionTopic(e.target.value)} placeholder="e.g. Cell respiration" /></label>
-          <label><span>Class time</span><select value={tuitionMinutes} onChange={(e) => setTuitionMinutes(Number(e.target.value))}>{[20, 30, 45, 60].map((minutes) => (<option key={minutes} value={minutes}>{minutes} min</option>))}</select></label>
+          <label><span>{tuitionCopy.subject}</span><select value={tuitionSubject} onChange={(e) => setTuitionSubject(e.target.value)}>{["Mathematics", "Science", "English", "Hindi", "Social Science"].map((subject) => (<option key={subject} value={subject}>{tuitionCopy.subjects[["Mathematics", "Science", "English", "Hindi", "Social Science"].indexOf(subject)]}</option>))}</select></label>
+          <label className="tuitionTopicField"><span>{tuitionCopy.topic}</span><input id="tuition-topic" value={tuitionTopic} onChange={(e) => setTuitionTopic(e.target.value)} placeholder={tuitionCopy.example} /></label>
+          <label><span>{tuitionCopy.duration}</span><select value={tuitionMinutes} onChange={(e) => setTuitionMinutes(Number(e.target.value))}>{[20, 30, 45, 60].map((minutes) => (<option key={minutes} value={minutes}>{minutes} min</option>))}</select></label>
         </div>
-        <button type="button" onClick={startGuidedTuition}>Start guided tuition</button>
-        <div className="tuitionFlow" aria-label="Tuition lesson flow"><strong>1 · Learn</strong><strong>2 · Check</strong><strong>3 · Practice</strong><strong>4 · Revise</strong></div>
-        <small>The tutor pauses after each understanding check so the student participates instead of only reading an AI answer.</small>
+        <button type="button" onClick={startGuidedTuition}>{tuitionCopy.start}</button>
+        <div className="tuitionFlow" aria-label="Tuition lesson flow">{tuitionCopy.steps.map((step) => <strong key={step}>{step}</strong>)}</div>
+        <small>{tuitionCopy.foot}</small>
       </section>
 
       <div id="home-tutor">
@@ -1494,12 +1519,12 @@ export default function Home() {
       </div>
 
       <footer>
-        <div><strong>Gen-z AI</strong> · Student-first · Multilingual · Affordable</div>
+        <div><strong>Gen-z AI</strong> · {tuitionCopy.footer}</div>
         <nav className="footerLinks" aria-label="Legal and support">
-          <a href="/support">Support</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-          <a href="/refund">Refund & Cancellation</a>
+          <a href="/support">{tuitionCopy.links[0]}</a>
+          <a href="/privacy">{tuitionCopy.links[1]}</a>
+          <a href="/terms">{tuitionCopy.links[2]}</a>
+          <a href="/refund">{tuitionCopy.links[3]}</a>
         </nav>
       </footer>
     </main>
