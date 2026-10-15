@@ -49,22 +49,25 @@ export default function HomeTutorCard({
   const [subjects, setSubjects] = useState<string[]>(["Mathematics", "Science", "English"]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const ui = getLearningHubUiText(studentContext, language);
+  const marathi = language.includes("Marathi");
   const gujarati = language.includes("Gujarati");
   const tamil = language.includes("Tamil");
   const hindi = language.includes("Hindi") || language.includes("हिन्दी");
   const displayGoal = (value: string) => {
+    if (marathi) return ({ "Overall improvement":"सर्वांगीण सुधारणा", "Board exam preparation":"बोर्ड परीक्षेची तयारी", "Concept clarity":"संकल्पना स्पष्ट समजून घेणे", "Daily homework":"दैनंदिन गृहपाठ", "JEE foundation":"JEE ची पायाभूत तयारी", "NEET foundation":"NEET ची पायाभूत तयारी" } as Record<string,string>)[value] || value;
     if (gujarati) return ({ "Overall improvement":"સર્વાંગી સુધારો", "Board exam preparation":"બોર્ડ પરીક્ષાની તૈયારી", "Concept clarity":"વિષયની સ્પષ્ટ સમજ", "Daily homework":"રોજનું હોમવર્ક", "JEE foundation":"JEE ની પાયાની તૈયારી", "NEET foundation":"NEET ની પાયાની તૈયારી" } as Record<string,string>)[value] || value;
     if (tamil) return ({ "Overall improvement":"ஒட்டுமொத்த முன்னேற்றம்", "Board exam preparation":"வாரியத் தேர்வுத் தயாரிப்பு", "Concept clarity":"கருத்துத் தெளிவு", "Daily homework":"தினசரி வீட்டுப்பாடம்", "JEE foundation":"JEE அடிப்படை", "NEET foundation":"NEET அடிப்படை" } as Record<string,string>)[value] || value;
     if (hindi) return ({ "Overall improvement":"समग्र सुधार", "Board exam preparation":"बोर्ड परीक्षा तैयारी", "Concept clarity":"विषय की स्पष्ट समझ", "Daily homework":"रोज़ का होमवर्क", "JEE foundation":"JEE की बुनियाद", "NEET foundation":"NEET की बुनियाद" } as Record<string,string>)[value] || value;
     return value;
   };
   const displaySubject = (value: string) => {
+    if (marathi) return ({ Mathematics:"गणित", Science:"विज्ञान", English:"इंग्रजी", Hindi:"हिंदी", "Social Science":"सामाजिक शास्त्र" } as Record<string,string>)[value] || value;
     if (gujarati) return ({ Mathematics:"ગણિત", Science:"વિજ્ઞાન", English:"અંગ્રેજી", Hindi:"હિન્દી", "Social Science":"સામાજિક વિજ્ઞાન" } as Record<string,string>)[value] || value;
     if (tamil) return ({ Mathematics:"கணிதம்", Science:"அறிவியல்", English:"ஆங்கிலம்", Hindi:"இந்தி", "Social Science":"சமூக அறிவியல்" } as Record<string,string>)[value] || value;
     if (hindi) return ({ Mathematics:"गणित", Science:"विज्ञान", English:"अंग्रेज़ी", Hindi:"हिन्दी", "Social Science":"सामाजिक विज्ञान" } as Record<string,string>)[value] || value;
     return value;
   };
-  const minutesLabel = gujarati ? "મિનિટ" : tamil ? "நிமிடங்கள்" : hindi ? "मिनट" : "minutes";
+  const minutesLabel = marathi ? "मिनिटे" : gujarati ? "મિનિટ" : tamil ? "நிமிடங்கள்" : hindi ? "मिनट" : "minutes";
 
 
   async function refresh() {
