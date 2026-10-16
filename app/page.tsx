@@ -208,6 +208,13 @@ export default function Home() {
     welcome:"નમસ્તે! હું Gen-z AI છું.",welcomeDesc:"તમારો પ્રશ્ન લખો અથવા ફોટો કે PDF અપલોડ કરો. હું ગુજરાતીમાં મદદ કરીશ.",
     history:"ઇતિહાસ",signedIn:"લૉગિન સફળ થયું. ચેટ ઇતિહાસ ચાલુ છે.",description:"માર્ગદર્શિત ટ્યુશન · ફોટો સોલ્વ · PDF અભ્યાસ · સ્માર્ટ રિવિઝન",
     free:"દરરોજ મફત: 20 AI ચેટ · 3 ફોટો સોલ્વ · 2 PDF અભ્યાસ",
+  } : responseLanguageName === "Marathi" ? {
+    plan:"मोफत योजना",remaining:"आजचे उरलेले वापर",viewPlans:"योजना पाहा",hidePlans:"योजना लपवा",chat:"चॅट",photo:"फोटो सोडवा",pdf:"PDF अभ्यास",left:"उरलेले",day:"दररोज",
+    context:"अभ्यासाची पातळी",contextDesc:"तुमच्या इयत्तेनुसार किंवा परीक्षेनुसार उत्तरे मिळवा",board:"शाळेचे बोर्ड आणि माध्यम",boardDesc:"तुमचे बोर्ड, इयत्ता आणि शिकण्याचे माध्यम निवडा",
+    modes:{chat:"AI ला विचारा",explain:"समजावून सांगा",notes:"नोंदी",quiz:"प्रश्नमंजुषा",exam:"परीक्षेची तयारी"},
+    welcome:"नमस्कार! मी Gen-z AI आहे.",welcomeDesc:"तुमचा प्रश्न लिहा किंवा फोटो किंवा PDF अपलोड करा. मी मराठीत मदत करेन.",
+    history:"इतिहास",signedIn:"लॉगिन यशस्वी. चॅट इतिहास सुरू आहे.",description:"मार्गदर्शित शिकवणी · फोटो सोडवा · PDF अभ्यास · स्मार्ट उजळणी",
+    free:"दररोज मोफत: 20 AI चॅट · 3 फोटो सोडवा · 2 PDF अभ्यास",
   } : null;
   const quickUi: Record<string, {guest:string; signIn:string; google:string; email:string; board:string; chats:string}> = {
     Hindi: {guest:"अतिथि",signIn:"Gen-z AI में लॉगिन करें",google:"Google से जारी रखें",email:"ईमेल पता",board:"बोर्ड चुनें",chats:"आपकी चैट"},
