@@ -65,6 +65,7 @@ export default function StudySourcesCard({
   const responseLanguageName = language.includes("—")
     ? language.split("—").pop()?.trim() || "English"
     : language.trim() || "English";
+  const isMarathi = responseLanguageName === "Marathi";
   const isEnglish = responseLanguageName === "English";
 
   async function refresh() {
@@ -179,7 +180,7 @@ export default function StudySourcesCard({
           <p>
             {active
               ? `${active.title}${active.chapter ? ` · ${active.chapter}` : ""}`
-              : (isEnglish ? "Select a saved source or add a new PDF/chapter." : "Saved source select karo ya naya PDF/chapter add karo.")}
+              : (isMarathi ? "जतन केलेला स्रोत निवडा किंवा नवीन PDF किंवा धडा जोडा." : isEnglish ? "Select a saved source or add a new PDF/chapter." : "Saved source select karo ya naya PDF/chapter add karo.")}
           </p>
         </div>
         <button type="button" onClick={() => setOpen((value) => !value)}>
