@@ -462,7 +462,8 @@ export default function Home() {
         }
 
         const currentUser = await getCurrentUser();
-        if (active) setUser(currentUser);
+        // Do not overwrite a newer OAuth SIGNED_IN event with an older null lookup.
+        if (active) setUser((previous) => currentUser ?? previous);
       } catch (err) {
         if (active) {
           // A transient callback/network error must not erase an existing signed-in UI.
@@ -475,8 +476,15 @@ export default function Home() {
       }
     })();
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active) setUser(session?.user ?? null);
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      if (session?.user) {
+        setUser(session.user);
+      } else if (event === "SIGNED_OUT") {
+        setUser(null);
+      }
+      // INITIAL_SESSION can arrive without a session during OAuth callback;
+      // let the callback/session lookup finish instead of flickering to guest.
     });
 
     return () => {
