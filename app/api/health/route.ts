@@ -4,6 +4,7 @@ export const runtime = "nodejs";
 
 export async function GET() {
   const providers = {
+    groq: Boolean(process.env.GROQ_API_KEY),
     gemini: Boolean(process.env.GEMINI_API_KEY),
     deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
     openai: Boolean(process.env.OPENAI_API_KEY),
@@ -22,7 +23,8 @@ export async function GET() {
       configured: Object.values(providers).some(Boolean),
       preferredProvider:
         process.env.GENZ_AI_PROVIDER ||
-        (providers.gemini ? "gemini" :
+        (providers.groq ? "groq" :
+        providers.gemini ? "gemini" :
         providers.deepseek ? "deepseek" :
         providers.openai ? "openai" :
         providers.claude ? "claude" : null),
