@@ -1227,6 +1227,7 @@ export default function Home() {
         <span className="badge">{homeCopy.badge}</span>
         <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
         <p>{homeCopy.description}</p>
+        {!user && <p style={{marginTop:12,fontWeight:700}}>{isEnglish ? "Try your first AI question without signing in. Sign in later to save your learning progress." : "बिना लॉगिन अपना पहला AI सवाल पूछें। पढ़ाई की प्रगति सेव करने के लिए बाद में लॉगिन करें।"}</p>}
         <a className="usageSignIn" href="#study-workspace" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
           {homeCopy.cta}
         </a>
@@ -1276,7 +1277,7 @@ export default function Home() {
 
         {!user && supabaseReady && (
           <button type="button" className="usageSignIn" onClick={() => setAuthOpen(true)}>
-            Sign in for tracked free uses
+            {isEnglish ? "Optional: Sign in to save progress" : "वैकल्पिक: प्रगति सेव करने के लिए लॉगिन"}
           </button>
         )}
       </section>
