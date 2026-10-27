@@ -62,9 +62,21 @@ async function parseJson(response: Response) {
   return data;
 }
 
+const QUIZ_TOPICS: Record<string, string[]> = {
+  "Science": ["Chemical Reactions and Equations", "Acids, Bases and Salts", "Life Processes", "Light: Reflection and Refraction", "Electricity", "Cell Structure", "Human Physiology"],
+  "Mathematics": ["Real Numbers", "Polynomials", "Quadratic Equations", "Triangles", "Trigonometry", "Statistics", "Probability"],
+  "Social Science": ["Nationalism in India", "Resources and Development", "Power Sharing", "Federalism", "Development", "Indian Constitution"],
+  "English": ["Reading Comprehension", "Grammar", "Writing Skills", "Literature"],
+  "History": ["Ancient India", "Medieval India", "Modern India", "Indian National Movement"],
+  "Geography": ["Physical Geography", "Indian Geography", "Climate", "Rivers", "Resources"],
+  "Polity": ["Constitution", "Fundamental Rights", "Parliament", "Judiciary", "Federalism"],
+  "Economy": ["National Income", "Inflation", "Banking", "Budget", "Economic Development"],
+  "CSAT": ["Comprehension", "Logical Reasoning", "Quantitative Aptitude", "Data Interpretation"]
+};
+
 export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId }: Props) {
   const [topic, setTopic] = useState("");
-  const [subject, setSubject] = useState("General");
+  const [subject, setSubject] = useState("Science");
   const [pack, setPack] = useState<QuizPack | null>(null);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -241,16 +253,21 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
       {!pack && (
         <div className="quizSetup">
+          <label style={{fontWeight:700}}>1. Choose Subject</label>
+          <select aria-label="Quiz subject" value={subject} onChange={(e) => {setSubject(e.target.value);setTopic("");}} style={{width:"100%",padding:12,borderRadius:10}}>
+            {Object.keys(QUIZ_TOPICS).map((name)=><option key={name} value={name}>{name}</option>)}
+            <option value="Other">Other subject</option>
+          </select>
+          <label style={{fontWeight:700}}>2. Choose Topic</label>
+          <select aria-label="Quiz topic" value={QUIZ_TOPICS[subject]?.includes(topic) ? topic : ""} onChange={(e)=>setTopic(e.target.value)} style={{width:"100%",padding:12,borderRadius:10}}>
+            <option value="">Select a topic</option>
+            {(QUIZ_TOPICS[subject] || []).map((name)=><option key={name} value={name}>{name}</option>)}
+          </select>
           <input
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder={ui.subjectPlaceholder}
-            maxLength={80}
-          />
-          <input
+            aria-label="Custom quiz topic (optional)"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder={ui.topicPlaceholder}
+            placeholder="Or type your own topic (optional)"
             maxLength={140}
           />
           <button type="button" onClick={() => void generateQuiz()} disabled={busy === "generate"}>
