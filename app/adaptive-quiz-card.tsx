@@ -320,7 +320,10 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
       {!pack && (
         <div className="quizSetup">
-          <p style={{margin:"0 0 8px"}}>{examTopics ? <>Exam: <strong>{studentContext}</strong> · Exam-wise topics</> : <>Selected class: <strong>{schoolClass}</strong>{!classTopics ? " · General topic suggestions (class-wise chapters coming soon)" : " · Class-wise chapter suggestions"}</>}</p>
+          <p style={{margin:"0 0 8px"}}>{examTopics ? <>Exam: <strong>{studentContext}</strong> · Exam-wise topics</> : <>Selected class: <strong>{schoolClass}</strong>{!classTopics ? " · General topic suggestions (class-wise chapters coming soon)" : " · Suggested class topics (verify textbook edition)"}</>}</p>
+          {!examTopics && <p style={{margin:"0 0 10px",fontSize:"0.88rem"}}>
+            Chapter suggestions may differ by board, textbook edition and academic year. Confirm your chapter in the <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer">official NCERT textbook catalogue</a>. You can type your exact chapter below.
+          </p>}
           <label style={{fontWeight:700}}>1. Choose Subject</label>
           <select aria-label="Quiz subject" value={selectedSubject} onChange={(e) => {setSubject(e.target.value);setTopic("");}} style={{width:"100%",padding:12,borderRadius:10}}>
             {availableSubjects.map((name)=><option key={name} value={name}>{name}</option>)}
