@@ -8,6 +8,10 @@ export const STUDY_CONTEXTS = [
   "State Board",
   "JEE",
   "NEET",
+  "NCERT",
+  "UPSC Prelims",
+  "UPSC Mains",
+  "UPSC CSAT",
   "CUET",
   "SSC",
   "College"
