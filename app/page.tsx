@@ -465,11 +465,11 @@ export default function Home() {
         if (active) setUser(currentUser);
       } catch (err) {
         if (active) {
-          setUser(null);
+          // A transient callback/network error must not erase an existing signed-in UI.
           setNotice(
             err instanceof Error
-              ? `Login complete nahi hua: ${err.message}`
-              : "Login complete nahi hua."
+              ? `Login session check failed: ${err.message}. Please retry if needed.`
+              : "Login session check failed. Please retry if needed."
           );
         }
       }
