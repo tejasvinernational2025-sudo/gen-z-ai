@@ -1364,7 +1364,13 @@ export default function Home() {
         <select
           className="contextSelect"
           value={studentContext}
-          onChange={(e) => setStudentContext(e.target.value as StudyContext)}
+          onChange={(e) => {
+            const value = e.target.value as StudyContext;
+            setStudentContext(value);
+            if (value === "Class 6–8") setSchoolClass("Class 8");
+            if (value === "Class 9–10") setSchoolClass("Class 10");
+            if (value === "Class 11–12") setSchoolClass("Class 12");
+          }}
           aria-label="Select class or exam"
         >
           {STUDY_CONTEXTS.map((item) => (
@@ -1384,7 +1390,7 @@ export default function Home() {
             onChange={(e) => {
               const board = e.target.value;
               setSchoolBoard(board);
-              if (board) setStudentContext(buildBoardStudyContext(board, schoolClass, studyMedium));
+
             }}
             aria-label="Select school board"
           >
@@ -1396,7 +1402,11 @@ export default function Home() {
             onChange={(e) => {
               const value = e.target.value;
               setSchoolClass(value);
-              if (schoolBoard) setStudentContext(buildBoardStudyContext(schoolBoard, value, studyMedium));
+              const grade = Number(value.replace("Class ", ""));
+              if (grade >= 6 && grade <= 8) setStudentContext("Class 6–8");
+              else if (grade >= 9 && grade <= 10) setStudentContext("Class 9–10");
+              else if (grade >= 11 && grade <= 12) setStudentContext("Class 11–12");
+              else setStudentContext("General");
             }}
             aria-label="Select class"
           >
@@ -1407,14 +1417,14 @@ export default function Home() {
             onChange={(e) => {
               const value = e.target.value;
               setStudyMedium(value);
-              if (schoolBoard) setStudentContext(buildBoardStudyContext(schoolBoard, schoolClass, value));
+
             }}
             aria-label="Select study medium"
           >
             {STUDY_MEDIUMS.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </div>
-        {schoolBoard && <div className="boardActive">✓ {studentContext}</div>}
+        {schoolBoard && <div className="boardActive">✓ {effectiveStudentContext}</div>}
       </section>
 
       <section className="modes" aria-label="Study modes">
@@ -1445,7 +1455,7 @@ export default function Home() {
             <div className="empty">
               <div className="spark">✦</div>
               <h3>{screenCopy?.welcome || (isEnglish ? "Hi! I’m Gen-z AI." : "Namaste! Main Gen-z AI hoon.")}</h3>
-              <p>{screenCopy?.welcomeDesc || (isEnglish ? `Ask a question in ${studentContext} context, or upload a photo or PDF. I’ll help in English.` : `${studentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`)}</p>
+              <p>{screenCopy?.welcomeDesc || (isEnglish ? `Ask a question in ${effectiveStudentContext} context, or upload a photo or PDF. I’ll help in English.` : `${effectiveStudentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`)}</p>
               <div className="quickGrid">
                 <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ {responseLanguageName === "Hindi" ? "अध्याय समझें" : responseLanguageName === "Hinglish" ? "Chapter samjho" : "Explain a chapter"}</button>
                 <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 {responseLanguageName === "Hindi" ? "नोट्स बनाएँ" : responseLanguageName === "Hinglish" ? "Notes banao" : "Make notes"}</button>
