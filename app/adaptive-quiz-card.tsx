@@ -161,6 +161,22 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
     setBusy("grade");
     setError("");
 
+    // Guest quizzes do not save attempts; grade instantly using the generated answer key.
+    if (!signedIn) {
+      const correct = selected === question.correctIndex;
+      setResult({
+        correct,
+        feedback: correct ? "✅" : `✓ ${question.options[question.correctIndex]}`,
+        explanation: question.explanation,
+        nextDifficulty: correct
+          ? question.difficulty === "easy" ? "medium" : "hard"
+          : question.difficulty === "hard" ? "medium" : "easy",
+      });
+      if (correct) setCorrectCount((value) => value + 1);
+      setBusy("");
+      return;
+    }
+
     try {
       const headers = await authHeaders();
       const response = await fetch("/api/practice", {
@@ -303,7 +319,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
       {pack && (
         <div className="quizScoreStrip">
           <span>{ui.currentSet}</span>
-          <strong>{correctCount}/{pack.questions.length} {ui.correctCount}</strong>
+          <strong>{correctCount}/{index + (result ? 1 : 0)} {ui.correctCount}</strong>
         </div>
       )}
 
