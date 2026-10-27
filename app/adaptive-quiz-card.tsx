@@ -48,6 +48,7 @@ type Props = {
   language: string;
   studentContext: string;
   sourceId: string;
+  schoolClass: string;
 };
 
 async function parseJson(response: Response) {
@@ -74,7 +75,19 @@ const QUIZ_TOPICS: Record<string, string[]> = {
   "CSAT": ["Comprehension", "Logical Reasoning", "Quantitative Aptitude", "Data Interpretation"]
 };
 
-export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId }: Props) {
+const CLASS_TOPICS: Record<string, Record<string, string[]>> = {
+  "Class 9": {
+    "Science": ["Matter in Our Surroundings", "Is Matter Around Us Pure?", "Atoms and Molecules", "Structure of the Atom", "The Fundamental Unit of Life", "Tissues", "Motion", "Force and Laws of Motion", "Gravitation", "Work and Energy", "Sound"],
+    "Mathematics": ["Number Systems", "Polynomials", "Coordinate Geometry", "Linear Equations in Two Variables", "Lines and Angles", "Triangles", "Quadrilaterals", "Circles", "Heron's Formula", "Surface Areas and Volumes", "Statistics"]
+  },
+  "Class 10": {
+    "Science": ["Chemical Reactions and Equations", "Acids, Bases and Salts", "Metals and Non-metals", "Carbon and its Compounds", "Life Processes", "Control and Coordination", "How do Organisms Reproduce?", "Heredity", "Light: Reflection and Refraction", "The Human Eye and the Colourful World", "Electricity", "Magnetic Effects of Electric Current", "Our Environment"],
+    "Mathematics": ["Real Numbers", "Polynomials", "Pair of Linear Equations in Two Variables", "Quadratic Equations", "Arithmetic Progressions", "Triangles", "Coordinate Geometry", "Introduction to Trigonometry", "Some Applications of Trigonometry", "Circles", "Areas Related to Circles", "Surface Areas and Volumes", "Statistics", "Probability"],
+    "Social Science": ["Nationalism in Europe", "Nationalism in India", "Resources and Development", "Water Resources", "Agriculture", "Power Sharing", "Federalism", "Political Parties", "Development", "Sectors of the Indian Economy", "Money and Credit"]
+  }
+};
+
+export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId, schoolClass }: Props) {
   const [topic, setTopic] = useState("");
   const [subject, setSubject] = useState("Science");
   const [pack, setPack] = useState<QuizPack | null>(null);
@@ -86,6 +99,11 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   const [performance, setPerformance] = useState<Performance | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const ui = getQuizUiText(studentContext, language);
+  const classTopics = CLASS_TOPICS[schoolClass];
+  const availableSubjects = classTopics ? Object.keys(classTopics) : Object.keys(QUIZ_TOPICS);
+  const availableTopics = classTopics ? (classTopics[subject] || []) : (QUIZ_TOPICS[subject] || []);
+  const selectedSubject = availableSubjects.includes(subject) ? subject : availableSubjects[0];
+  const selectedTopics = classTopics ? (classTopics[selectedSubject] || []) : (QUIZ_TOPICS[selectedSubject] || []);
 
   async function authHeaders(): Promise<Record<string, string>> {
     const token = signedIn ? await getAccessToken() : null;
@@ -117,7 +135,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
   async function generateQuiz(nextDifficulty?: Difficulty) {
     if (!topic.trim()) {
-      setError("Quiz ke liye topic likho.");
+      setError("Please select a chapter or enter a topic.");
       return;
     }
 
@@ -134,7 +152,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
       const payload = JSON.stringify({
         action: "generate_quiz",
         topic: topic.trim(),
-        subject: subject.trim() || "General",
+        subject: selectedSubject,
         studentContext,
         language,
         sourceId: sourceId || undefined,
@@ -253,15 +271,15 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
       {!pack && (
         <div className="quizSetup">
+          <p style={{margin:"0 0 8px"}}>Selected class: <strong>{schoolClass}</strong>{!classTopics ? " · General topic suggestions (class-wise chapters coming soon)" : " · Class-wise chapter suggestions"}</p>
           <label style={{fontWeight:700}}>1. Choose Subject</label>
-          <select aria-label="Quiz subject" value={subject} onChange={(e) => {setSubject(e.target.value);setTopic("");}} style={{width:"100%",padding:12,borderRadius:10}}>
-            {Object.keys(QUIZ_TOPICS).map((name)=><option key={name} value={name}>{name}</option>)}
-            <option value="Other">Other subject</option>
+          <select aria-label="Quiz subject" value={selectedSubject} onChange={(e) => {setSubject(e.target.value);setTopic("");}} style={{width:"100%",padding:12,borderRadius:10}}>
+            {availableSubjects.map((name)=><option key={name} value={name}>{name}</option>)}
           </select>
           <label style={{fontWeight:700}}>2. Choose Topic</label>
-          <select aria-label="Quiz topic" value={QUIZ_TOPICS[subject]?.includes(topic) ? topic : ""} onChange={(e)=>setTopic(e.target.value)} style={{width:"100%",padding:12,borderRadius:10}}>
+          <select aria-label="Quiz topic" value={selectedTopics.includes(topic) ? topic : ""} onChange={(e)=>setTopic(e.target.value)} style={{width:"100%",padding:12,borderRadius:10}}>
             <option value="">Select a topic</option>
-            {(QUIZ_TOPICS[subject] || []).map((name)=><option key={name} value={name}>{name}</option>)}
+            {selectedTopics.map((name)=><option key={name} value={name}>{name}</option>)}
           </select>
           <input
             aria-label="Custom quiz topic (optional)"
