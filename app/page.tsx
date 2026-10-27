@@ -8,7 +8,6 @@ import { getLearningHubUiText } from "@/lib/learning-hub-ui-i18n";
 import { STUDY_CONTEXTS, SCHOOL_BOARDS, SCHOOL_CLASSES, STUDY_MEDIUMS, buildBoardStudyContext, normalizeStudyContext, type StudyContext } from "@/lib/study-contexts";
 import type { StudyMode } from "@/lib/prompt";
 import HomeTutorCard from "@/app/home-tutor-card";
-import MockTestCard from "@/app/mock-test-card";
 import AdaptivePracticeCard from "@/app/adaptive-practice-card";
 import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
 import StudySourcesCard from "@/app/study-sources-card";
@@ -1365,25 +1364,14 @@ export default function Home() {
         </section>
       )}
 
-      <section aria-label="NCERT and UPSC preparation" style={{margin:"16px 0",padding:"18px 20px",borderRadius:16,background:"rgba(69,111,232,0.08)"}}>
-        <h3 style={{margin:"0 0 8px"}}>📚 NCERT & UPSC Preparation</h3>
-        <p style={{margin:"0 0 12px"}}>Choose your preparation track. AI Chat, practice and revision will use your selected exam context.</p>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {(["NCERT","UPSC Prelims","UPSC Mains","UPSC CSAT"] as const).map((track) => (
-            <button key={track} type="button" onClick={() => {setSchoolBoard("");setStudentContext(track);}}
-              aria-pressed={studentContext === track && !schoolBoard}
-              style={{padding:"10px 13px",borderRadius:10,border:"1px solid #7186bb",background:studentContext === track && !schoolBoard ? "#233d85" : "white",color:studentContext === track && !schoolBoard ? "white" : "#233d85",fontWeight:700}}>
-              {track}
-            </button>
-          ))}
+      <section aria-label="Explore learning tools" style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"rgba(69,111,232,0.07)"}}>
+        <h3 style={{margin:"0 0 12px"}}>Explore Learning</h3>
+        <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+          <a href="/ncert" style={{padding:"12px 16px",borderRadius:10,background:"white",fontWeight:700,textDecoration:"none"}}>📚 NCERT</a>
+          <a href="/upsc" style={{padding:"12px 16px",borderRadius:10,background:"white",fontWeight:700,textDecoration:"none"}}>🏛️ UPSC</a>
+          <a href="/mock-tests" style={{padding:"12px 16px",borderRadius:10,background:"white",fontWeight:700,textDecoration:"none"}}>📝 Mock Tests</a>
         </div>
-        <p style={{margin:"12px 0 0",fontSize:"0.9rem"}}>NCERT: select your class below, then ask for a subject or chapter. UPSC: choose Prelims, Mains or CSAT above.</p>
-        <p style={{margin:"8px 0 0",fontSize:"0.85rem"}}>
-          Official references: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer">NCERT textbooks</a> · <a href="https://upsc.gov.in/examinations/previous-question-papers" target="_blank" rel="noopener noreferrer">UPSC previous papers</a>
-        </p>
       </section>
-
-      <MockTestCard />
 
       <section className="contextBar" aria-label="Student context">
         <div>
