@@ -1269,12 +1269,12 @@ export default function Home() {
           <div className="usageStat">
             <span>📷 {screenCopy?.photo || "Photo Solve"}</span>
             <strong>{user && quota ? quota.photo.remaining : "—"}</strong>
-            <small>{user && quota ? `of ${quota.photo.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
+            <small>{user && quota ? `of ${quota.photo.limit} left` : (isEnglish ? "Sign in to track" : "लॉगिन पर ट्रैक होगा")}</small>
           </div>
           <div className="usageStat">
             <span>📄 {screenCopy?.pdf || "PDF Study"}</span>
             <strong>{user && quota ? quota.pdf.remaining : "—"}</strong>
-            <small>{user && quota ? `of ${quota.pdf.limit} left` : responseLanguageName === "Hindi" ? "प्रतिदिन" : "per day"}</small>
+            <small>{user && quota ? `of ${quota.pdf.limit} left` : (isEnglish ? "Sign in to track" : "लॉगिन पर ट्रैक होगा")}</small>
           </div>
         </div>
 
