@@ -87,6 +87,27 @@ const CLASS_TOPICS: Record<string, Record<string, string[]>> = {
   }
 };
 
+const UPSC_TOPICS: Record<string, Record<string, string[]>> = {
+  "UPSC Prelims": {
+    "History": ["Ancient India", "Medieval India", "Modern India", "Indian National Movement", "Art and Culture"],
+    "Geography": ["Physical Geography", "Indian Geography", "World Geography", "Climatology", "Mapping"],
+    "Polity": ["Constitution", "Fundamental Rights", "Parliament", "Judiciary", "Federalism", "Constitutional Bodies"],
+    "Economy": ["National Income", "Inflation", "Banking", "Fiscal Policy", "Economic Development"],
+    "Environment": ["Ecology", "Biodiversity", "Climate Change", "Conservation"],
+    "Science & Technology": ["Space", "Biotechnology", "Information Technology", "Basic Science"]
+  },
+  "UPSC Mains": {
+    "GS Paper I": ["Indian Heritage and Culture", "Modern Indian History", "World History", "Indian Society", "Geography"],
+    "GS Paper II": ["Constitution", "Governance", "Social Justice", "International Relations"],
+    "GS Paper III": ["Indian Economy", "Agriculture", "Science and Technology", "Environment", "Disaster Management", "Internal Security"],
+    "GS Paper IV": ["Ethics and Human Interface", "Attitude", "Aptitude and Foundational Values", "Emotional Intelligence", "Probity in Governance", "Case Studies"],
+    "Essay": ["Social Issues", "Governance", "Economy", "Philosophical Themes"]
+  },
+  "UPSC CSAT": {
+    "CSAT": ["Reading Comprehension", "Logical Reasoning", "Analytical Ability", "Decision Making", "Basic Numeracy", "Data Interpretation"]
+  }
+};
+
 export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId, schoolClass }: Props) {
   const [topic, setTopic] = useState("");
   const [subject, setSubject] = useState("Science");
@@ -99,7 +120,8 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   const [performance, setPerformance] = useState<Performance | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const ui = getQuizUiText(studentContext, language);
-  const classTopics = CLASS_TOPICS[schoolClass];
+  const examTopics = UPSC_TOPICS[studentContext];
+  const classTopics = examTopics || CLASS_TOPICS[schoolClass];
   const availableSubjects = classTopics ? Object.keys(classTopics) : Object.keys(QUIZ_TOPICS);
   const availableTopics = classTopics ? (classTopics[subject] || []) : (QUIZ_TOPICS[subject] || []);
   const selectedSubject = availableSubjects.includes(subject) ? subject : availableSubjects[0];
@@ -271,7 +293,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
       {!pack && (
         <div className="quizSetup">
-          <p style={{margin:"0 0 8px"}}>Selected class: <strong>{schoolClass}</strong>{!classTopics ? " · General topic suggestions (class-wise chapters coming soon)" : " · Class-wise chapter suggestions"}</p>
+          <p style={{margin:"0 0 8px"}}>{examTopics ? <>Exam: <strong>{studentContext}</strong> · Exam-wise topics</> : <>Selected class: <strong>{schoolClass}</strong>{!classTopics ? " · General topic suggestions (class-wise chapters coming soon)" : " · Class-wise chapter suggestions"}</>}</p>
           <label style={{fontWeight:700}}>1. Choose Subject</label>
           <select aria-label="Quiz subject" value={selectedSubject} onChange={(e) => {setSubject(e.target.value);setTopic("");}} style={{width:"100%",padding:12,borderRadius:10}}>
             {availableSubjects.map((name)=><option key={name} value={name}>{name}</option>)}
