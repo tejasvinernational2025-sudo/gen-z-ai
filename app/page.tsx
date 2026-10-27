@@ -1462,6 +1462,7 @@ export default function Home() {
           signedIn={Boolean(user)}
           language={language}
           studentContext={effectiveStudentContext}
+          schoolClass={schoolClass}
           sourceId={activeSourceId}
         />
       )}
