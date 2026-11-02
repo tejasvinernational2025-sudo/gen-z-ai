@@ -78,11 +78,13 @@ export default function StudySourcesCard({
     try {
       const list = await listStudySourcesClient();
       setSources(list);
+      setMessage("");
       if (activeSourceId && !list.some((item) => item.id === activeSourceId)) {
         onActiveChange("");
       }
-    } catch {
+    } catch (error) {
       setSources([]);
+      setMessage(error instanceof Error ? error.message : "Saved books load nahi ho paayi. Retry karo.");
     }
   }
 
