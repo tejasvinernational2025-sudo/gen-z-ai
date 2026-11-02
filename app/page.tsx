@@ -1366,10 +1366,11 @@ export default function Home() {
 
       <section aria-label="Explore learning tools" style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"rgba(69,111,232,0.07)"}}>
         <h3 style={{margin:"0 0 12px"}}>Explore Learning</h3>
+        <p style={{margin:"0 0 12px",fontSize:14}}>Choose a learning section below. Each option opens its own page.</p>
         <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
-          <a href="/ncert" style={{padding:"12px 16px",borderRadius:10,background:"white",fontWeight:700,textDecoration:"none"}}>📚 NCERT</a>
-          <a href="/upsc" style={{padding:"12px 16px",borderRadius:10,background:"white",fontWeight:700,textDecoration:"none"}}>🏛️ UPSC</a>
-          <a href="/mock-tests" style={{padding:"12px 16px",borderRadius:10,background:"white",fontWeight:700,textDecoration:"none"}}>📝 Mock Tests</a>
+          <a href="/ncert" aria-label="Open NCERT learning page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>📚 Open NCERT ↗</a>
+          <a href="/upsc" aria-label="Open UPSC preparation page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>🏛️ Open UPSC ↗</a>
+          <a href="/mock-tests" aria-label="Open mock tests page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>📝 Open Mock Tests ↗</a>
         </div>
       </section>
 
