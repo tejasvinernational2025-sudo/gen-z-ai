@@ -811,7 +811,7 @@ export default function Home() {
       setPdfName("genz-ai-test.pdf");
       setPhotoDataUrl(null);
       setPhotoName("");
-      setNotice("");
+      setNotice("Sample PDF attached! Type a question below and tap ➤ to ask the AI tutor.");
     } catch (err) {
       setNotice("");
       setError(err instanceof Error ? err.message : "Sample PDF load nahi ho pai.");
@@ -1547,7 +1547,8 @@ export default function Home() {
               onChange={(e) => handlePhotoChange(e.target.files?.[0])}
             />
             <label className="uploadLabel" htmlFor="pdf-upload">📄 {composerUi.askPdf}</label>
-            <button type="button" className="uploadLabel" onClick={loadSamplePdf}>⬇ {composerUi.samplePdf}</button>
+            <button type="button" className="uploadLabel" onClick={loadSamplePdf}>📎 Use Sample PDF</button>
+            <a className="uploadLabel" href="/api/sample-pdf" target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"inline-flex",alignItems:"center"}}>👁 View Sample PDF</a>
             <input
               id="pdf-upload"
               className="fileInput"
