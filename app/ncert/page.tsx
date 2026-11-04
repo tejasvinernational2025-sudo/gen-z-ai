@@ -136,6 +136,151 @@ const lessons: Record<string, Lesson> = {
   }
 };
 
+
+const scienceLessons: Record<string, Lesson> = {
+  "Food: Where Does It Come From": {
+    intro: "We get food from plants and animals. Different parts of plants and different animals provide ingredients for our meals.",
+    points: ["Plants give us fruits, vegetables, grains, pulses, oils and spices.", "Animals provide milk, eggs, meat and other food products.", "Herbivores eat plants, carnivores eat other animals, and omnivores eat both.", "An ingredient is a material used to prepare a dish."],
+    examples: [
+      { question: "Name two plant sources and two animal sources of food.", solution: "Plant sources: wheat and spinach. Animal sources: milk and eggs." },
+      { question: "A cow eats grass. What type of animal is it?", solution: "A cow is a herbivore because it eats plants." }
+    ],
+    practice: [
+      { question: "Which part of the mustard plant gives us oil?", answer: "Seeds." },
+      { question: "Is a bear generally a herbivore, carnivore or omnivore?", answer: "Omnivore; it eats both plant and animal food." },
+      { question: "Name one food item obtained from animals.", answer: "Milk, eggs, honey or meat." }
+    ],
+    quiz: { question: "Which of these is obtained from a plant?", options: ["Milk", "Honey", "Wheat", "Egg"], answer: 2, explain: "Wheat is a grain obtained from the wheat plant." }
+  },
+  "Components of Food": {
+    intro: "Food contains nutrients that help our body grow, provide energy and stay healthy. A balanced diet contains the nutrients our body needs in suitable amounts.",
+    points: ["Carbohydrates and fats are major energy-giving nutrients.", "Proteins help growth and repair of the body.", "Vitamins and minerals protect us and keep the body working well.", "Roughage and water are also important for good health.", "A balanced diet includes a variety of foods."],
+    examples: [
+      { question: "Why do we need proteins?", solution: "Proteins help the body grow and repair worn-out tissues." },
+      { question: "Why should we eat fruits and vegetables?", solution: "They provide vitamins, minerals, fibre and water that support good health." }
+    ],
+    practice: [
+      { question: "Which nutrient is mainly needed for growth and repair?", answer: "Proteins." },
+      { question: "Name one energy-giving nutrient.", answer: "Carbohydrates or fats." },
+      { question: "What is a balanced diet?", answer: "A diet containing all essential nutrients, roughage and water in suitable amounts." }
+    ],
+    quiz: { question: "Which nutrient helps in growth and repair?", options: ["Protein", "Water only", "Roughage", "Salt"], answer: 0, explain: "Proteins are needed for growth and repair of body tissues." }
+  },
+  "Fibre to Fabric": {
+    intro: "Clothes are made from fabrics, and fabrics are made from fibres. Fibres may come from plants, animals or be made artificially.",
+    points: ["Cotton and jute are plant fibres.", "Wool is obtained from the fleece of sheep and some other animals.", "Silk fibre is obtained from silkworm cocoons.", "Spinning converts fibres into yarn; weaving or knitting makes fabric from yarn."],
+    examples: [
+      { question: "How is cotton yarn made?", solution: "Cotton fibres are separated and twisted together by spinning to make yarn." },
+      { question: "What is the difference between weaving and knitting?", solution: "Weaving interlaces two sets of yarn; knitting uses loops of yarn." }
+    ],
+    practice: [
+      { question: "Name one plant fibre.", answer: "Cotton or jute." },
+      { question: "From which insect do we get silk?", answer: "Silkworm." },
+      { question: "What is spinning?", answer: "The process of making yarn from fibres." }
+    ],
+    quiz: { question: "Which of these is an animal fibre?", options: ["Jute", "Cotton", "Wool", "Flax"], answer: 2, explain: "Wool is obtained from the fleece of sheep and certain other animals." }
+  },
+  "Sorting Materials and Groups": {
+    intro: "We group materials by observing their properties. Sorting makes it easier to study materials and choose the right one for a particular use.",
+    points: ["Materials may be grouped by appearance, hardness, solubility and other properties.", "Some materials are lustrous (shiny), while others are non-lustrous.", "Some substances dissolve in water; others do not.", "Transparent materials allow light to pass through clearly; opaque materials do not."],
+    examples: [
+      { question: "Why is glass used for many window panes?", solution: "Ordinary clear glass is transparent, so it lets light pass through and allows us to see outside." },
+      { question: "Classify sugar and sand by their behaviour in water.", solution: "Sugar dissolves in water; sand does not dissolve." }
+    ],
+    practice: [
+      { question: "What do we call materials that allow us to see clearly through them?", answer: "Transparent materials." },
+      { question: "Is a wooden block generally transparent or opaque?", answer: "Opaque." },
+      { question: "Name one substance that dissolves in water.", answer: "Salt or sugar." }
+    ],
+    quiz: { question: "Which material is usually soluble in water?", options: ["Sand", "Sugar", "Sawdust", "Chalk powder"], answer: 1, explain: "Sugar dissolves in water and forms a solution." }
+  },
+  "Separation of Substances": {
+    intro: "We separate substances to remove unwanted materials or to obtain useful components of a mixture. Different methods are chosen for different mixtures.",
+    points: ["Handpicking removes visible unwanted components.", "Winnowing uses moving air to separate lighter and heavier components.", "Sieving separates particles of different sizes.", "Filtration separates an insoluble solid from a liquid.", "Evaporation can recover a dissolved solid from a solution."],
+    examples: [
+      { question: "How can stones be removed from rice?", solution: "By handpicking, because the stones can be seen and picked out." },
+      { question: "How can sand be separated from water?", solution: "Allow the sand to settle and carefully pour off the water, or use filtration." }
+    ],
+    practice: [
+      { question: "Which method separates bran from flour?", answer: "Sieving." },
+      { question: "Which method is used to separate grain from husk using wind?", answer: "Winnowing." },
+      { question: "How can salt be obtained from salt water?", answer: "By evaporation of the water." }
+    ],
+    quiz: { question: "Which method is suitable for separating tea leaves from tea?", options: ["Winnowing", "Filtration/straining", "Handpicking", "Threshing"], answer: 1, explain: "A strainer acts as a filter and holds back the tea leaves." }
+  },
+  "Changes Around Us": {
+    intro: "We observe many changes around us. Some changes can be reversed, while others cannot be easily reversed.",
+    points: ["Melting ice is reversible because water can be frozen again.", "Burning paper is irreversible; the original paper cannot be obtained back easily.", "Heating and cooling can cause changes in size or state.", "Some changes are slow, while others happen quickly."],
+    examples: [
+      { question: "Is folding a sheet of paper reversible?", solution: "Usually yes. The sheet can be unfolded, although creases may remain." },
+      { question: "Is cooking an egg reversible?", solution: "No. Cooking causes an irreversible change; a cooked egg cannot be changed back into a raw egg." }
+    ],
+    practice: [
+      { question: "Give one example of a reversible change.", answer: "Melting and freezing of ice, or stretching a spring within its limit." },
+      { question: "Is burning wood reversible?", answer: "No, it is irreversible." },
+      { question: "What happens to many materials when heated?", answer: "They may expand or change state; the exact change depends on the material." }
+    ],
+    quiz: { question: "Which is an irreversible change?", options: ["Freezing water", "Melting wax", "Burning a matchstick", "Folding a cloth"], answer: 2, explain: "Burning a matchstick produces new substances and cannot be reversed." }
+  },
+  "Getting to Know Plants": {
+    intro: "Plants have different parts that perform different functions. Roots, stems, leaves, flowers and fruits help a plant survive and reproduce.",
+    points: ["Roots usually anchor the plant and absorb water and minerals.", "The stem supports the plant and transports water and food.", "Leaves make food by photosynthesis.", "Flowers are involved in reproduction and may develop into fruits and seeds.", "Plants may have taproots or fibrous roots."],
+    examples: [
+      { question: "What is the main function of roots?", solution: "Roots anchor the plant and absorb water and minerals from the soil." },
+      { question: "Why are leaves often called the food factories of plants?", solution: "Leaves prepare food by photosynthesis using sunlight, water and carbon dioxide." }
+    ],
+    practice: [
+      { question: "Which part usually absorbs water from soil?", answer: "Roots." },
+      { question: "Name the green pigment in leaves.", answer: "Chlorophyll." },
+      { question: "What may develop into a fruit after fertilisation?", answer: "The ovary of a flower." }
+    ],
+    quiz: { question: "Which part of a plant mainly prepares food?", options: ["Root", "Leaf", "Flower stalk", "Seed coat"], answer: 1, explain: "Leaves contain chlorophyll and usually carry out photosynthesis." }
+  },
+  "Body Movements": {
+    intro: "Our body moves with the help of bones, muscles and joints. Different joints allow different kinds of movement.",
+    points: ["The human skeleton supports the body and protects many organs.", "A joint is where two or more bones meet.", "A hinge joint allows movement mainly in one direction, like the elbow.", "A ball-and-socket joint allows movement in many directions, like the shoulder.", "Muscles work by contracting and relaxing."],
+    examples: [
+      { question: "Why can the elbow bend but not rotate freely in every direction?", solution: "The elbow is a hinge joint, which mainly allows back-and-forth movement in one plane." },
+      { question: "How do muscles help move bones?", solution: "Muscles are attached to bones and pull them when they contract. Many muscles work in pairs." }
+    ],
+    practice: [
+      { question: "Which system gives the body its framework?", answer: "The skeletal system." },
+      { question: "Name the joint found at the shoulder.", answer: "Ball-and-socket joint." },
+      { question: "Do muscles push or pull bones?", answer: "Muscles pull bones when they contract." }
+    ],
+    quiz: { question: "Which joint allows movement in many directions?", options: ["Hinge", "Fixed", "Ball-and-socket", "Gliding only"], answer: 2, explain: "A ball-and-socket joint, such as the shoulder joint, allows movement in many directions." }
+  },
+  "The Living Organisms and Their Surroundings": {
+    intro: "Living organisms interact with their surroundings, called habitats. Organisms have features that help them survive in their habitats.",
+    points: ["A habitat is the place where an organism lives.", "Terrestrial habitats are on land; aquatic habitats are in water.", "Living things need food, water and air and show life processes.", "Adaptations are features that help organisms survive in particular surroundings.", "Plants and animals respond to changes around them."],
+    examples: [
+      { question: "Why does a fish have a streamlined body?", solution: "Its streamlined body helps it move through water with less resistance." },
+      { question: "What is a habitat? Give an example.", solution: "A habitat is the natural home of an organism. A pond is a habitat for fish and aquatic plants." }
+    ],
+    practice: [
+      { question: "What is a habitat?", answer: "The natural place or surroundings where an organism lives." },
+      { question: "Is a camel adapted to desert or polar conditions?", answer: "Desert conditions." },
+      { question: "Name one aquatic habitat.", answer: "Pond, lake, river or sea." }
+    ],
+    quiz: { question: "Which feature helps a fish swim efficiently?", options: ["Wings", "Streamlined body", "Thick fur", "Long legs"], answer: 1, explain: "A streamlined body reduces resistance as the fish moves through water." }
+  },
+  "Motion and Measurement of Distance": {
+    intro: "We measure distance to describe how far apart places or objects are. Motion describes a change in an object's position with time.",
+    points: ["The SI unit of length is the metre (m).", "A ruler or measuring tape can measure length.", "Use a suitable standard unit and place the scale correctly.", "An object is in motion if its position changes with time relative to a reference point.", "Motion may be rectilinear, circular or periodic."],
+    examples: [
+      { question: "Convert 250 cm into metres.", solution: "100 cm = 1 m, so 250 cm = 250 ÷ 100 = 2.5 m." },
+      { question: "A child moves around a circular track. What type of path is followed?", solution: "The child follows a circular path, so this is circular motion." }
+    ],
+    practice: [
+      { question: "What is the SI unit of length?", answer: "Metre (m)." },
+      { question: "Convert 3 m into centimetres.", answer: "300 cm." },
+      { question: "What type of motion does a swinging pendulum show approximately?", answer: "Periodic motion." }
+    ],
+    quiz: { question: "How many centimetres are there in 1 metre?", options: ["10", "100", "1,000", "1"], answer: 1, explain: "One metre is equal to 100 centimetres." }
+  }
+};
+const classSixScienceUnits = Object.keys(scienceLessons);
+
 const classSixMathTopics = Object.keys(lessons);
 const fieldStyle = { width: "100%", padding: 13, borderRadius: 10, border: "1px solid #b7c7e8", fontSize: 16, background: "#fff" };
 
@@ -147,7 +292,10 @@ export default function NCERTPage() {
   const [showAnswers, setShowAnswers] = useState(false);
   const [quizChoice, setQuizChoice] = useState<number | null>(null);
   const isClassSixMaths = schoolClass === "6" && subject === "Mathematics";
-  const lesson = isClassSixMaths && chapter ? lessons[chapter] : undefined;
+  const isClassSixScience = schoolClass === "6" && subject === "Science";
+  const isClassSixLesson = isClassSixMaths || isClassSixScience;
+  const activeUnits = isClassSixMaths ? classSixMathTopics : classSixScienceUnits;
+  const lesson = chapter ? (isClassSixMaths ? lessons[chapter] : isClassSixScience ? scienceLessons[chapter] : undefined) : undefined;
   const prompt = `I am studying Class ${schoolClass} ${subject}. ${chapter.trim() ? `Teach me the topic/chapter "${chapter.trim()}"` : "Help me choose and understand a topic"} in simple, age-appropriate language. Include a clear concept explanation, step-by-step solved examples, 5 practice questions with answers, and a short MCQ quiz. For mathematics, show every calculation step. Align the explanation with the student's school/NCERT level, but do not invent textbook wording or claim a topic is in a particular NCERT edition unless verified. If you are unsure about the textbook edition or chapter contents, say so.`;
 
   function changeClass(next: string) {
@@ -183,28 +331,28 @@ export default function NCERTPage() {
           {subjects[schoolClass].map(s=><option key={s}>{s}</option>)}
         </select>
       </label>
-      <label style={{display:"grid",gap:7,fontWeight:700}}>3. {isClassSixMaths ? "Select Class 6 Maths Topic" : "Enter Chapter Name"}
-        {isClassSixMaths ? (
+      <label style={{display:"grid",gap:7,fontWeight:700}}>3. {isClassSixLesson ? `Select Class 6 ${subject} Unit` : "Enter Chapter Name"}
+        {isClassSixLesson ? (
           <select value={chapter} onChange={e=>changeTopic(e.target.value)} style={fieldStyle}>
-            <option value="">Choose a Maths topic</option>
-            {classSixMathTopics.map(topic=><option key={topic} value={topic}>{topic}</option>)}
+            <option value="">Choose a {subject} unit</option>
+            {activeUnits.map(topic=><option key={topic} value={topic}>{topic}</option>)}
           </select>
         ) : (
           <input value={chapter} onChange={e=>{setChapter(e.target.value);setCopied(false);}} placeholder="Example: Electricity" style={fieldStyle} />
         )}
       </label>
-      {isClassSixMaths && (
+      {isClassSixLesson && (
         <div style={{background:"#fff",borderRadius:12,padding:14}}>
-          <strong>Class 6 Mathematics learning units</strong>
+          <strong>Class 6 {subject} learning units</strong>
           <ol style={{margin:"10px 0 0",paddingLeft:22,lineHeight:1.8}}>
-            {classSixMathTopics.map(topic=><li key={topic}>{topic}</li>)}
+            {activeUnits.map(topic=><li key={topic}>{topic}</li>)}
           </ol>
         </div>
       )}
       {lesson && (
         <section style={{background:"#fff",borderRadius:14,padding:16,display:"grid",gap:14}}>
           <div>
-            <p style={{margin:"0 0 5px",fontSize:12,fontWeight:800,color:"#3157bd",letterSpacing:".05em"}}>CLASS 6 • MATHEMATICS</p>
+            <p style={{margin:"0 0 5px",fontSize:12,fontWeight:800,color:"#3157bd",letterSpacing:".05em"}}>CLASS 6 • {subject.toUpperCase()}</p>
             <h2 style={{margin:"0 0 8px",fontSize:25}}>{chapter}</h2>
             <p style={{margin:0,lineHeight:1.7}}>{lesson.intro}</p>
           </div>
@@ -251,7 +399,7 @@ export default function NCERTPage() {
     </section>
     <section style={{marginTop:22,lineHeight:1.7}}>
       <h2>Textbook reference</h2>
-      <p>ये Gen-Z AI के Class 6 Maths learning units हैं। अलग-अलग बोर्ड और NCERT editions में chapter names या क्रम बदल सकते हैं। अपनी किताब से मिलान करें।</p>
+      <p>ये Gen-Z AI के Class 6 {subject} learning units हैं, जो आपके साझा किए गए syllabus के आधार पर तैयार किए गए हैं। अलग-अलग बोर्ड और NCERT editions में chapter names या क्रम बदल सकते हैं। अपनी किताब से मिलान करें।</p>
       <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer">Official NCERT Textbooks ↗</a>
       <p><Link href="/mock-tests">Try starter practice tests →</Link></p>
     </section>
