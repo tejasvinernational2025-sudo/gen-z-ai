@@ -13,18 +13,34 @@ const subjects: Record<string, string[]> = {
   "12": ["Mathematics", "Physics", "Chemistry", "Biology", "English", "History", "Geography", "Political Science", "Economics"],
 };
 
+// Class 6 Maths learning units requested for Gen-Z AI.
+// Keep this list separate from official textbook chapter claims because editions/boards can differ.
+const classSixMathTopics = [
+  "Integers",
+  "Fractions",
+  "Decimals",
+  "Algebra",
+  "Ratio and Proportion",
+  "Symmetry",
+  "Data Handling",
+  "Mensuration",
+];
+
 export default function NCERTPage() {
   const [schoolClass, setSchoolClass] = useState("10");
   const [subject, setSubject] = useState("Science");
   const [chapter, setChapter] = useState("");
   const [copied, setCopied] = useState(false);
-  const prompt = `I am studying Class ${schoolClass} NCERT ${subject}. ${chapter.trim() ? `Explain the chapter "${chapter.trim()}"` : "Help me choose and understand a chapter"} in simple language. Include key concepts, examples, 5 practice questions and answers. If you are unsure about the textbook edition or chapter contents, say so rather than inventing details.`;
+  const isClassSixMaths = schoolClass === "6" && subject === "Mathematics";
+  const prompt = `I am studying Class ${schoolClass} ${subject}. ${chapter.trim() ? `Teach me the topic/chapter "${chapter.trim()}"` : "Help me choose and understand a topic"} in simple, age-appropriate language. Include a clear concept explanation, step-by-step solved examples, 5 practice questions with answers, and a short MCQ quiz. For mathematics, show every calculation step. Align the explanation with the student's school/NCERT level, but do not invent textbook wording or claim a topic is in a particular NCERT edition unless verified. If you are unsure about the textbook edition or chapter contents, say so.`;
+
   function changeClass(next: string) {
     setSchoolClass(next);
     setSubject(subjects[next][0]);
     setChapter("");
     setCopied(false);
   }
+
   return <main style={{maxWidth:840,margin:"auto",padding:"24px 18px",fontFamily:"system-ui,sans-serif",color:"#162849"}}>
     <Link href="/">← Gen-Z AI Home</Link>
     <header style={{margin:"28px 0 20px"}}>
@@ -38,13 +54,28 @@ export default function NCERTPage() {
         </select>
       </label>
       <label style={{display:"grid",gap:7,fontWeight:700}}>2. Select Subject
-        <select value={subject} onChange={e=>{setSubject(e.target.value);setCopied(false);}} style={{padding:13,borderRadius:10,border:"1px solid #b7c7e8",fontSize:16}}>
+        <select value={subject} onChange={e=>{setSubject(e.target.value);setChapter("");setCopied(false);}} style={{padding:13,borderRadius:10,border:"1px solid #b7c7e8",fontSize:16}}>
           {subjects[schoolClass].map(s=><option key={s}>{s}</option>)}
         </select>
       </label>
-      <label style={{display:"grid",gap:7,fontWeight:700}}>3. Enter Chapter Name
-        <input value={chapter} onChange={e=>{setChapter(e.target.value);setCopied(false);}} placeholder="Example: Electricity" style={{padding:13,borderRadius:10,border:"1px solid #b7c7e8",fontSize:16}} />
+      <label style={{display:"grid",gap:7,fontWeight:700}}>3. {isClassSixMaths ? "Select Class 6 Maths Topic" : "Enter Chapter Name"}
+        {isClassSixMaths ? (
+          <select value={chapter} onChange={e=>{setChapter(e.target.value);setCopied(false);}} style={{padding:13,borderRadius:10,border:"1px solid #b7c7e8",fontSize:16}}>
+            <option value="">Choose a Maths topic</option>
+            {classSixMathTopics.map(topic=><option key={topic} value={topic}>{topic}</option>)}
+          </select>
+        ) : (
+          <input value={chapter} onChange={e=>{setChapter(e.target.value);setCopied(false);}} placeholder="Example: Electricity" style={{padding:13,borderRadius:10,border:"1px solid #b7c7e8",fontSize:16}} />
+        )}
       </label>
+      {isClassSixMaths && (
+        <div style={{background:"#fff",borderRadius:12,padding:14}}>
+          <strong>Class 6 Mathematics topics added</strong>
+          <ul style={{margin:"10px 0 0",paddingLeft:22,lineHeight:1.8}}>
+            {classSixMathTopics.map(topic=><li key={topic}>{topic}</li>)}
+          </ul>
+        </div>
+      )}
       <div style={{background:"white",borderRadius:12,padding:14}}>
         <strong>Your AI Study Question</strong>
         <p style={{lineHeight:1.65,overflowWrap:"anywhere"}}>{prompt}</p>
@@ -58,7 +89,7 @@ export default function NCERTPage() {
       <p>Chapter names may differ by NCERT edition or academic year. Check your actual textbook before studying.</p>
       <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer">Official NCERT Textbooks ↗</a>
       <p><Link href="/mock-tests">Try starter practice tests →</Link></p>
-      <p style={{fontSize:13,color:"#56647e"}}>Complete chapter-wise syllabus navigation and automated mastery tracking are still under development.</p>
+      <p style={{fontSize:13,color:"#56647e"}}>Class 6 Maths topic selection is now available here. Complete chapter-wise syllabus navigation and automated mastery tracking are still under development.</p>
     </section>
   </main>;
 }
