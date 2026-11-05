@@ -375,6 +375,7 @@ export default function NCERTPage() {
             <button type="button" onClick={()=>setShowAnswers(v=>!v)} style={{padding:"11px 14px",background:"#e7edff",color:"#173b9a",border:0,borderRadius:9,fontWeight:800}}>{showAnswers?"Hide answers":"Show answers"}</button>
             {showAnswers && <ol style={{margin:"10px 0 0",paddingLeft:22,lineHeight:1.8}}>{lesson.practice.map((item,i)=><li key={i} style={{paddingBottom:7}}><strong>{item.answer}</strong></li>)}</ol>}
           </div>
+          {isClassSixMaths && <Link href={`/?studyClass=6&studySubject=Mathematics&studyTopic=${encodeURIComponent(chapter)}#study-workspace`} style={{display:"block",padding:14,borderRadius:10,background:"#173b9a",color:"white",textAlign:"center",fontWeight:800,textDecoration:"none"}}>Start full adaptive quiz & save progress →</Link>}
           <div style={{borderTop:"1px solid #e0e7f5",paddingTop:14}}>
             <h3 style={{margin:"0 0 8px"}}>Quick chapter test</h3>
             <p style={{fontWeight:700,lineHeight:1.5}}>{lesson.quiz.question}</p>
