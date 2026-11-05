@@ -375,6 +375,14 @@ export default function Home() {
     footer:"Student-first · Multilingual · Affordable",links:["Support","Privacy","Terms","Refund & Cancellation"]
   };
   const [mode, setMode] = useState<StudyMode>("chat");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("studyClass") === "6" && params.get("studySubject") === "Mathematics" && params.get("studyTopic")) {
+      setSchoolClass("Class 6");
+      setMode("quiz");
+    }
+  }, []);
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
