@@ -279,6 +279,51 @@ const scienceLessons: Record<string, Lesson> = {
     quiz: { question: "How many centimetres are there in 1 metre?", options: ["10", "100", "1,000", "1"], answer: 1, explain: "One metre is equal to 100 centimetres." }
   }
 };
+Object.assign(scienceLessons, {
+  "Light": {
+    intro: "Light helps us see objects. It usually travels in straight lines.",
+    points: ["Luminous objects produce light; non-luminous objects reflect light.","Opaque objects block light and can form shadows.","Transparent objects let most light pass through.","A shadow needs a light source, an opaque object and a screen."],
+    examples: [{ question: "Why is a shadow formed?", solution: "An opaque object blocks light travelling in a straight line." }],
+    practice: [{ question: "Can we see through clear glass?", answer: "Yes, because it is transparent." }],
+    quiz: { question: "Which material makes a clear shadow?", options: ["Clear glass","Opaque cardboard","Clean water","Air"], answer: 1, explain: "Opaque cardboard blocks light and creates a shadow." }
+  },
+  "Electricity and Circuits": {
+    intro: "A simple electric circuit allows electric current to flow through a closed conducting path.",
+    points: ["A cell supplies electrical energy.","A closed circuit lets a bulb glow.","An open switch breaks the circuit.","Metals are usually conductors; rubber and plastic are insulators."],
+    examples: [{ question: "Why does a bulb not glow with an open switch?", solution: "The circuit is broken, so current cannot flow." }],
+    practice: [{ question: "Name a conductor.", answer: "Copper or aluminium." }],
+    quiz: { question: "When does a bulb glow?", options: ["Open circuit","Broken wire","Closed circuit","No cell"], answer: 2, explain: "A complete closed circuit allows current to flow." }
+  },
+  "Fun with Magnets": {
+    intro: "Magnets attract some materials and have north and south poles.",
+    points: ["Iron is attracted to a magnet.","Like magnetic poles repel and unlike poles attract.","A freely suspended magnet aligns roughly north–south.","Magnetic force can act without touching."],
+    examples: [{ question: "What happens when two north poles meet?", solution: "They repel each other." }],
+    practice: [{ question: "Name a magnetic material.", answer: "Iron." }],
+    quiz: { question: "Which poles attract?", options: ["North–north","South–south","North–south","None"], answer: 2, explain: "Unlike magnetic poles attract each other." }
+  },
+  "Water": {
+    intro: "Water is essential for living things and changes between solid, liquid and gas.",
+    points: ["Evaporation changes liquid water into water vapour.","Condensation changes vapour into liquid water.","Freezing changes water into ice.","The water cycle involves evaporation, condensation and precipitation."],
+    examples: [{ question: "What forms droplets on a cold glass?", solution: "Water vapour in air condenses on the cold surface." }],
+    practice: [{ question: "What is evaporation?", answer: "Liquid water changing into water vapour." }],
+    quiz: { question: "Which process makes clouds?", options: ["Freezing","Condensation","Melting","Filtering"], answer: 1, explain: "Cooling water vapour condenses into tiny droplets." }
+  },
+  "Air Around Us": {
+    intro: "Air is a mixture of gases that surrounds Earth.",
+    points: ["Nitrogen makes up most of the air.","Oxygen supports respiration and burning.","Air occupies space and has mass.","Moving air is called wind."],
+    examples: [{ question: "Why does an inverted empty glass resist water entering?", solution: "The glass contains air, which occupies space." }],
+    practice: [{ question: "Which gas do humans need for breathing?", answer: "Oxygen." }],
+    quiz: { question: "Which gas is most abundant in air?", options: ["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"], answer: 1, explain: "Nitrogen is the largest component of air." }
+  },
+  "Garbage In, Garbage Out": {
+    intro: "Waste management means reducing, reusing, recycling and disposing of waste responsibly.",
+    points: ["Biodegradable waste can decompose naturally.","Plastic and glass often require separate recycling.","Composting turns organic waste into manure.","Separating wet and dry waste helps safe processing."],
+    examples: [{ question: "What can be composted?", solution: "Vegetable peels, leaves and other suitable organic waste." }],
+    practice: [{ question: "Why separate waste?", answer: "Different materials need different treatment or recycling." }],
+    quiz: { question: "Which is suitable for composting?", options: ["Plastic wrapper","Glass bottle","Vegetable peels","Metal can"], answer: 2, explain: "Vegetable peels biodegrade and can be composted." }
+  }
+});
+
 const classSixScienceUnits = Object.keys(scienceLessons);
 
 const classSixMathTopics = Object.keys(lessons);
