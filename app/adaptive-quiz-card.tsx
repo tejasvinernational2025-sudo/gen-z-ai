@@ -140,8 +140,8 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const requested = params.get("studyTopic");
-    if (schoolClass === "Class 6" && params.get("studyClass") === "6" && params.get("studySubject") === "Mathematics" && requested && ["Integers", "Fractions", "Decimals", "Algebra", "Ratio and Proportion", "Symmetry", "Data Handling"].includes(requested)) {
-      setSubject("Mathematics");
+    if (schoolClass === "Class 6" && params.get("studyClass") === "6" && ["Mathematics", "Science"].includes(params.get("studySubject") || "") && requested && (params.get("studySubject") === "Science" || ["Integers", "Fractions", "Decimals", "Algebra", "Ratio and Proportion", "Symmetry", "Data Handling"].includes(requested))) {
+      setSubject(params.get("studySubject") || "Mathematics");
       setTopic(requested);
     }
   }, [schoolClass]);
