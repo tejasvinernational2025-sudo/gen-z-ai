@@ -78,7 +78,7 @@ const QUIZ_TOPICS: Record<string, string[]> = {
 const CLASS_TOPICS: Record<string, Record<string, string[]>> = {
   "Class 6": {
     "Science": ["The Wonderful World of Science", "Diversity in the Living World", "Mindful Eating: A Path to a Healthy Body", "Exploring Magnets", "Measurement of Length and Motion", "Materials Around Us", "Temperature and its Measurement", "A Journey through States of Water", "Methods of Separation in Everyday Life", "Living Creatures: Exploring their Characteristics", "Nature's Treasures", "Beyond Earth"],
-    "Mathematics": ["Patterns in Mathematics", "Lines and Angles", "Number Play", "Data Handling and Presentation", "Prime Time", "Perimeter and Area", "Fractions", "Playing with Constructions", "Symmetry", "The Other Side of Zero"],
+    "Mathematics": ["Integers", "Fractions", "Decimals", "Algebra", "Ratio and Proportion", "Symmetry", "Data Handling", "Patterns in Mathematics", "Lines and Angles", "Number Play", "Data Handling and Presentation", "Prime Time", "Perimeter and Area", "Fractions", "Playing with Constructions", "Symmetry", "The Other Side of Zero"],
     "Social Science": ["Locating Places on the Earth", "Oceans and Continents", "Landforms and Life", "Timeline and Sources of History", "India, That Is Bharat", "The Beginnings of Indian Civilisation", "India's Cultural Roots", "Unity in Diversity", "Family and Community", "Grassroots Democracy", "The Value of Work", "Economic Activities Around Us"]
   },
   "Class 7": {
