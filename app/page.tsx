@@ -377,7 +377,7 @@ export default function Home() {
   const [mode, setMode] = useState<StudyMode>("chat");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("studyClass") === "6" && params.get("studySubject") === "Mathematics" && params.get("studyTopic")) {
+    if (params.get("studyClass") === "6" && ["Mathematics", "Science"].includes(params.get("studySubject") || "") && params.get("studyTopic")) {
       setSchoolClass("Class 6");
       setMode("quiz");
     }
