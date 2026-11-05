@@ -137,6 +137,15 @@ const UPSC_TOPICS: Record<string, Record<string, string[]>> = {
 
 export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId, schoolClass }: Props) {
   const [topic, setTopic] = useState("");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get("studyTopic");
+    if (schoolClass === "Class 6" && params.get("studyClass") === "6" && params.get("studySubject") === "Mathematics" && requested && ["Integers", "Fractions", "Decimals", "Algebra", "Ratio and Proportion", "Symmetry", "Data Handling"].includes(requested)) {
+      setSubject("Mathematics");
+      setTopic(requested);
+    }
+  }, [schoolClass]);
+
   const [subject, setSubject] = useState("Science");
   const [pack, setPack] = useState<QuizPack | null>(null);
   const [index, setIndex] = useState(0);
