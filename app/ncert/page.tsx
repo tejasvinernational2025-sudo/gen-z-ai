@@ -346,7 +346,7 @@ export default function NCERTPage() {
   const isClassSixScience = schoolClass === "6" && subject === "Science";
   const isClassSixEnglish = schoolClass === "6" && subject === "English";
   const isClassSevenMaths = schoolClass === "7" && subject === "Mathematics";
-  const isClassSixLesson = isClassSixMaths || isClassSixScience || isClassSixEnglish || isClassSevenMaths;
+  const hasChapterList = isClassSixMaths || isClassSixScience || isClassSixEnglish || isClassSevenMaths;
   const activeUnits = isClassSixMaths ? classSixMathTopics : isClassSixScience ? classSixScienceUnits : isClassSixEnglish ? classSixEnglishChapters.map(item => item.chapter) : classSevenLegacyMaths;
   const lesson = chapter ? (isClassSixMaths ? lessons[chapter] : isClassSixScience ? scienceLessons[chapter] : undefined) : undefined;
   const prompt = `I am studying Class ${schoolClass} ${subject}. ${chapter.trim() ? `Teach me the topic/chapter "${chapter.trim()}"` : "Help me choose and understand a topic"} in simple, age-appropriate language. Include a clear concept explanation, step-by-step solved examples, 5 practice questions with answers, and a short MCQ quiz. For mathematics, show every calculation step. Align the explanation with the student's school/NCERT level, but do not invent textbook wording or claim a topic is in a particular NCERT edition unless verified. If you are unsure about the textbook edition or chapter contents, say so.`;
@@ -384,28 +384,29 @@ export default function NCERTPage() {
           {subjects[schoolClass].map(s=><option key={s}>{s}</option>)}
         </select>
       </label>
-      <label style={{display:"grid",gap:7,fontWeight:700}}>3. {isClassSixLesson ? `Select Class 6 ${subject} Unit` : "Enter Chapter Name"}
-        {isClassSixLesson ? (
+      <label style={{display:"grid",gap:7,fontWeight:700}}>3. {hasChapterList ? `Select Class ${schoolClass} ${subject} Chapter` : "Enter Chapter Name"}
+        {hasChapterList ? (
           <select value={chapter} onChange={e=>changeTopic(e.target.value)} style={fieldStyle}>
-            <option value="">Choose a {subject} unit</option>
+            <option value="">Choose a {subject} chapter</option>
             {activeUnits.map(topic=><option key={topic} value={topic}>{isClassSixEnglish ? `${classSixEnglishChapters.find(item=>item.chapter===topic)?.book} — ${topic}` : topic}</option>)}
           </select>
         ) : (
           <input value={chapter} onChange={e=>{setChapter(e.target.value);setCopied(false);}} placeholder="Example: Electricity" style={fieldStyle} />
         )}
       </label>
-      {isClassSixLesson && (
+      {hasChapterList && (
         <div style={{background:"#fff",borderRadius:12,padding:14}}>
-          <strong>Class 6 {subject} learning units</strong>
+          <strong>Class {schoolClass} {subject} chapters</strong>
           <ol style={{margin:"10px 0 0",paddingLeft:22,lineHeight:1.8}}>
             {activeUnits.map(topic=><li key={topic}>{isClassSixEnglish ? `${classSixEnglishChapters.find(item=>item.chapter===topic)?.book}: ${topic}` : topic}</li>)}
           </ol>
         </div>
       )}
+      {hasChapterList && <p style={{margin:0,fontSize:13,color:"#475569"}}>These are the chapters you provided (older NCERT edition). Check your textbook edition before studying.</p>}
       {lesson && (
         <section style={{background:"#fff",borderRadius:14,padding:16,display:"grid",gap:14}}>
           <div>
-            <p style={{margin:"0 0 5px",fontSize:12,fontWeight:800,color:"#3157bd",letterSpacing:".05em"}}>CLASS 6 • {subject.toUpperCase()}</p>
+            <p style={{margin:"0 0 5px",fontSize:12,fontWeight:800,color:"#3157bd",letterSpacing:".05em"}}>CLASS {schoolClass} • {subject.toUpperCase()}</p>
             <h2 style={{margin:"0 0 8px",fontSize:25}}>{chapter}</h2>
             <p style={{margin:0,lineHeight:1.7}}>{lesson.intro}</p>
           </div>
@@ -428,7 +429,7 @@ export default function NCERTPage() {
             <button type="button" onClick={()=>setShowAnswers(v=>!v)} style={{padding:"11px 14px",background:"#e7edff",color:"#173b9a",border:0,borderRadius:9,fontWeight:800}}>{showAnswers?"Hide answers":"Show answers"}</button>
             {showAnswers && <ol style={{margin:"10px 0 0",paddingLeft:22,lineHeight:1.8}}>{lesson.practice.map((item,i)=><li key={i} style={{paddingBottom:7}}><strong>{item.answer}</strong></li>)}</ol>}
           </div>
-          {isClassSixLesson && <Link href={`/?studyClass=6&studySubject=${encodeURIComponent(subject)}&studyTopic=${encodeURIComponent(chapter)}#study-workspace`} style={{display:"block",padding:14,borderRadius:10,background:"#173b9a",color:"white",textAlign:"center",fontWeight:800,textDecoration:"none"}}>Start full adaptive quiz & save progress →</Link>}
+          {hasChapterList && <Link href={`/?studyClass=6&studySubject=${encodeURIComponent(subject)}&studyTopic=${encodeURIComponent(chapter)}#study-workspace`} style={{display:"block",padding:14,borderRadius:10,background:"#173b9a",color:"white",textAlign:"center",fontWeight:800,textDecoration:"none"}}>Start full adaptive quiz & save progress →</Link>}
           <div style={{borderTop:"1px solid #e0e7f5",paddingTop:14}}>
             <h3 style={{margin:"0 0 8px"}}>Quick chapter test</h3>
             <p style={{fontWeight:700,lineHeight:1.5}}>{lesson.quiz.question}</p>
@@ -443,6 +444,7 @@ export default function NCERTPage() {
           </div>
         </section>
       )}
+      {hasChapterList && chapter && !lesson && <p style={{margin:0,padding:13,background:"#fff",borderRadius:10}}>Chapter selected: <strong>{chapter}</strong>. Detailed lesson content is being prepared. Use the AI Tutor for an explanation, or practise with the adaptive quiz.</p>}
       <div style={{background:"white",borderRadius:12,padding:14}}>
         <strong>Your AI Study Question</strong>
         <p style={{lineHeight:1.65,overflowWrap:"anywhere"}}>{prompt}</p>
