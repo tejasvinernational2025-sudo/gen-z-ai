@@ -326,7 +326,7 @@ Object.assign(scienceLessons, {
 
 const classSixEnglishBooks: Record<string, string[]> = {
   "Honeysuckle": ["Taro’s Reward", "The Quarrel", "An Indian-American Woman in Space: Kalpana Chawla", "A Different Kind of School", "Where Do All the Teachers Go?", "The Wonderful Words", "A Game of Chance", "Desert Animals", "The Banyan Tree"],
-  "A Pact with the Sun": ["A Tale of Two Birds"]
+  "A Pact with the Sun": ["A Tale of Two Birds", "The Friendly Mongoose", "The Shepherd’s Treasure", "Tansen", "The Monkey and the Crocodile", "The Wonder Called Sleep", "A Pact with the Sun"]
 };
 const classSixEnglishChapters = Object.entries(classSixEnglishBooks).flatMap(([book, chapters]) => chapters.map(chapter => ({book, chapter})));
 const classSixScienceUnits = Object.keys(scienceLessons);
