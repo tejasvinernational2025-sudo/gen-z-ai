@@ -445,6 +445,7 @@ export default function NCERTPage() {
         </section>
       )}
       {hasChapterList && chapter && !lesson && <p style={{margin:0,padding:13,background:"#fff",borderRadius:10}}>Chapter selected: <strong>{chapter}</strong>. Detailed lesson content is being prepared. Use the AI Tutor for an explanation, or practise with the adaptive quiz.</p>}
+      {hasChapterList && chapter && <Link href={`/?studyClass=${schoolClass}&studySubject=${encodeURIComponent(subject)}&studyTopic=${encodeURIComponent(chapter)}#study-workspace`} style={{display:"block",padding:14,borderRadius:10,background:"#173b9a",color:"white",textAlign:"center",fontWeight:800,textDecoration:"none"}}>Practice this chapter with Adaptive Quiz →</Link>}
       <div style={{background:"white",borderRadius:12,padding:14}}>
         <strong>Your AI Study Question</strong>
         <p style={{lineHeight:1.65,overflowWrap:"anywhere"}}>{prompt}</p>
