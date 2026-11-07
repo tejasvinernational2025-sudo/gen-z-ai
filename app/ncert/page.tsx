@@ -329,6 +329,7 @@ const classSixEnglishBooks: Record<string, string[]> = {
   "A Pact with the Sun": ["A Tale of Two Birds", "The Friendly Mongoose", "The Shepherd’s Treasure", "Tansen", "The Monkey and the Crocodile", "The Wonder Called Sleep", "A Pact with the Sun"]
 };
 const classSixEnglishChapters = Object.entries(classSixEnglishBooks).flatMap(([book, chapters]) => chapters.map(chapter => ({book, chapter})));
+const classSevenLegacyMaths = ["Integers","Fractions and Decimals","Data Handling","Simple Equations","Lines and Angles","The Triangle and Its Properties","Comparing Quantities","Rational Numbers","Perimeter and Area","Algebraic Expressions","Exponents and Powers","Symmetry"];
 const classSixScienceUnits = Object.keys(scienceLessons);
 
 const classSixMathTopics = Object.keys(lessons);
@@ -344,8 +345,9 @@ export default function NCERTPage() {
   const isClassSixMaths = schoolClass === "6" && subject === "Mathematics";
   const isClassSixScience = schoolClass === "6" && subject === "Science";
   const isClassSixEnglish = schoolClass === "6" && subject === "English";
-  const isClassSixLesson = isClassSixMaths || isClassSixScience || isClassSixEnglish;
-  const activeUnits = isClassSixMaths ? classSixMathTopics : isClassSixScience ? classSixScienceUnits : classSixEnglishChapters.map(item => item.chapter);
+  const isClassSevenMaths = schoolClass === "7" && subject === "Mathematics";
+  const isClassSixLesson = isClassSixMaths || isClassSixScience || isClassSixEnglish || isClassSevenMaths;
+  const activeUnits = isClassSixMaths ? classSixMathTopics : isClassSixScience ? classSixScienceUnits : isClassSixEnglish ? classSixEnglishChapters.map(item => item.chapter) : classSevenLegacyMaths;
   const lesson = chapter ? (isClassSixMaths ? lessons[chapter] : isClassSixScience ? scienceLessons[chapter] : undefined) : undefined;
   const prompt = `I am studying Class ${schoolClass} ${subject}. ${chapter.trim() ? `Teach me the topic/chapter "${chapter.trim()}"` : "Help me choose and understand a topic"} in simple, age-appropriate language. Include a clear concept explanation, step-by-step solved examples, 5 practice questions with answers, and a short MCQ quiz. For mathematics, show every calculation step. Align the explanation with the student's school/NCERT level, but do not invent textbook wording or claim a topic is in a particular NCERT edition unless verified. If you are unsure about the textbook edition or chapter contents, say so.`;
 
