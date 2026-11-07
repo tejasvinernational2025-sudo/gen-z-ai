@@ -324,6 +324,11 @@ Object.assign(scienceLessons, {
   }
 });
 
+const classSixEnglishBooks: Record<string, string[]> = {
+  "Honeysuckle": ["Taro’s Reward", "The Quarrel", "An Indian-American Woman in Space: Kalpana Chawla", "A Different Kind of School", "Where Do All the Teachers Go?", "The Wonderful Words", "A Game of Chance", "Desert Animals", "The Banyan Tree"],
+  "A Pact with the Sun": ["A Tale of Two Birds"]
+};
+const classSixEnglishChapters = Object.entries(classSixEnglishBooks).flatMap(([book, chapters]) => chapters.map(chapter => ({book, chapter})));
 const classSixScienceUnits = Object.keys(scienceLessons);
 
 const classSixMathTopics = Object.keys(lessons);
@@ -338,8 +343,9 @@ export default function NCERTPage() {
   const [quizChoice, setQuizChoice] = useState<number | null>(null);
   const isClassSixMaths = schoolClass === "6" && subject === "Mathematics";
   const isClassSixScience = schoolClass === "6" && subject === "Science";
-  const isClassSixLesson = isClassSixMaths || isClassSixScience;
-  const activeUnits = isClassSixMaths ? classSixMathTopics : classSixScienceUnits;
+  const isClassSixEnglish = schoolClass === "6" && subject === "English";
+  const isClassSixLesson = isClassSixMaths || isClassSixScience || isClassSixEnglish;
+  const activeUnits = isClassSixMaths ? classSixMathTopics : isClassSixScience ? classSixScienceUnits : classSixEnglishChapters.map(item => item.chapter);
   const lesson = chapter ? (isClassSixMaths ? lessons[chapter] : isClassSixScience ? scienceLessons[chapter] : undefined) : undefined;
   const prompt = `I am studying Class ${schoolClass} ${subject}. ${chapter.trim() ? `Teach me the topic/chapter "${chapter.trim()}"` : "Help me choose and understand a topic"} in simple, age-appropriate language. Include a clear concept explanation, step-by-step solved examples, 5 practice questions with answers, and a short MCQ quiz. For mathematics, show every calculation step. Align the explanation with the student's school/NCERT level, but do not invent textbook wording or claim a topic is in a particular NCERT edition unless verified. If you are unsure about the textbook edition or chapter contents, say so.`;
 
@@ -380,7 +386,7 @@ export default function NCERTPage() {
         {isClassSixLesson ? (
           <select value={chapter} onChange={e=>changeTopic(e.target.value)} style={fieldStyle}>
             <option value="">Choose a {subject} unit</option>
-            {activeUnits.map(topic=><option key={topic} value={topic}>{topic}</option>)}
+            {activeUnits.map(topic=><option key={topic} value={topic}>{isClassSixEnglish ? `${classSixEnglishChapters.find(item=>item.chapter===topic)?.book} — ${topic}` : topic}</option>)}
           </select>
         ) : (
           <input value={chapter} onChange={e=>{setChapter(e.target.value);setCopied(false);}} placeholder="Example: Electricity" style={fieldStyle} />
@@ -390,7 +396,7 @@ export default function NCERTPage() {
         <div style={{background:"#fff",borderRadius:12,padding:14}}>
           <strong>Class 6 {subject} learning units</strong>
           <ol style={{margin:"10px 0 0",paddingLeft:22,lineHeight:1.8}}>
-            {activeUnits.map(topic=><li key={topic}>{topic}</li>)}
+            {activeUnits.map(topic=><li key={topic}>{isClassSixEnglish ? `${classSixEnglishChapters.find(item=>item.chapter===topic)?.book}: ${topic}` : topic}</li>)}
           </ol>
         </div>
       )}
