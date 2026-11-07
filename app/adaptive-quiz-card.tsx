@@ -79,6 +79,7 @@ const CLASS_TOPICS: Record<string, Record<string, string[]>> = {
   "Class 6": {
     "Science": ["Food: Where Does It Come From", "Components of Food", "Fibre to Fabric", "Sorting Materials and Groups", "Separation of Substances", "Changes Around Us", "Getting to Know Plants", "Body Movements", "The Living Organisms and Their Surroundings", "Motion and Measurement of Distance", "Light", "Electricity and Circuits", "Fun with Magnets", "Water", "Air Around Us", "Garbage In, Garbage Out", "The Wonderful World of Science", "Diversity in the Living World", "Mindful Eating: A Path to a Healthy Body", "Exploring Magnets", "Measurement of Length and Motion", "Materials Around Us", "Temperature and its Measurement", "A Journey through States of Water", "Methods of Separation in Everyday Life", "Living Creatures: Exploring their Characteristics", "Nature's Treasures", "Beyond Earth"],
     "Mathematics": ["Integers","Fractions","Decimals","Algebra","Ratio and Proportion","Symmetry","Data Handling","Patterns in Mathematics","Lines and Angles","Number Play","Data Handling and Presentation","Prime Time","Perimeter and Area","Playing with Constructions","The Other Side of Zero"],
+    "English": ["Taro’s Reward", "The Quarrel", "An Indian-American Woman in Space: Kalpana Chawla", "A Different Kind of School", "Where Do All the Teachers Go?", "The Wonderful Words", "A Game of Chance", "Desert Animals", "The Banyan Tree", "A Tale of Two Birds", "The Friendly Mongoose", "The Shepherd’s Treasure", "Tansen", "The Monkey and the Crocodile", "The Wonder Called Sleep", "A Pact with the Sun"],
     "Social Science": ["Locating Places on the Earth", "Oceans and Continents", "Landforms and Life", "Timeline and Sources of History", "India, That Is Bharat", "The Beginnings of Indian Civilisation", "India's Cultural Roots", "Unity in Diversity", "Family and Community", "Grassroots Democracy", "The Value of Work", "Economic Activities Around Us"]
   },
   "Class 7": {
@@ -140,8 +141,10 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const requested = params.get("studyTopic");
-    if (schoolClass === "Class 6" && params.get("studyClass") === "6" && ["Mathematics", "Science"].includes(params.get("studySubject") || "") && requested && (params.get("studySubject") === "Science" || ["Integers", "Fractions", "Decimals", "Algebra", "Ratio and Proportion", "Symmetry", "Data Handling"].includes(requested))) {
-      setSubject(params.get("studySubject") || "Mathematics");
+    const requestedClass = params.get("studyClass");
+    const requestedSubject = params.get("studySubject");
+    if (requested && requestedClass && schoolClass === `Class ${requestedClass}` && requestedSubject && CLASS_TOPICS[schoolClass]?.[requestedSubject]?.includes(requested)) {
+      setSubject(requestedSubject);
       setTopic(requested);
     }
   }, [schoolClass]);
