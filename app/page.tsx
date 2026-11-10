@@ -1243,6 +1243,112 @@ export default function Home() {
       {notice && <div className="notice">{notice}</div>}
 
       <section style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"#edf3ff",color:"#172b58"}}><strong>📚 {resourceCopy.title}</strong><p style={{margin:"8px 0"}}>{resourceCopy.description}</p><a href="/resources" style={{fontWeight:800,color:"#234bd4"}}>{resourceCopy.link}</a></section>
+      <div style={{margin:"12px 0 6px"}}><strong style={{fontSize:20}}>Ask Gen-Z AI — अपना सवाल पूछें</strong><p style={{margin:"6px 0",fontSize:13}}>Text, photo या PDF से तुरंत पढ़ाई शुरू करें। Board और Class चुनना वैकल्पिक है।</p></div>
+      <section id="study-workspace" className="chatCard">
+        <div className="messages">
+          {messages.length === 0 ? (
+            <div className="empty">
+              <div className="spark">✦</div>
+              <h3>{screenCopy?.welcome || (isEnglish ? "Hi! I’m Gen-z AI." : "Namaste! Main Gen-z AI hoon.")}</h3>
+              <p>{screenCopy?.welcomeDesc || (isEnglish ? `Ask a question in ${effectiveStudentContext} context, or upload a photo or PDF. I’ll help in English.` : `${effectiveStudentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`)}</p>
+              <div className="quickGrid" style={{display:"none"}}>
+                <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ {responseLanguageName === "Hindi" ? "अध्याय समझें" : responseLanguageName === "Hinglish" ? "Chapter samjho" : "Explain a chapter"}</button>
+                <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 {responseLanguageName === "Hindi" ? "नोट्स बनाएँ" : responseLanguageName === "Hinglish" ? "Notes banao" : "Make notes"}</button>
+                <button onClick={() => setInput("Indian Constitution par 5 MCQ quiz lo")}>🎯 {responseLanguageName === "Hindi" ? "क्विज़ शुरू करें" : responseLanguageName === "Hinglish" ? "Quiz shuru karo" : "Start a quiz"}</button>
+                <button onClick={() => setInput("JEE ke liye quadratic equations revise karao")}>📚 {responseLanguageName === "Hindi" ? "परीक्षा की तैयारी" : responseLanguageName === "Hinglish" ? "Exam revision karo" : "Exam revision"}</button>
+              </div>
+            </div>
+          ) : (
+            messages.map((message, index) => (
+              <div key={index} className={message.role === "user" ? "message user" : "message assistant"}>
+                <strong>{message.role === "user" ? "You" : "Gen-z AI"}</strong>
+                {message.role === "assistant" && activeStudySource && (
+                  <div className="groundingProof" role="status">
+                    📚 Grounded in: <strong>{activeStudySource.title}</strong>
+                    {activeStudySource.chapter ? ` · ${activeStudySource.chapter}` : ""}
+                  </div>
+                )}
+                {message.role === "assistant" ? <FormattedAnswer text={message.content} /> : <p>{message.content}</p>}
+              </div>
+            ))
+          )}
+          {loading && <div className="message assistant"><strong>Gen-z AI</strong><p>{isEnglish ? "Thinking…" : "Soch raha hoon…"}</p></div>}
+          <div ref={messagesEndRef} className="messagesEnd" aria-hidden="true" />
+        </div>
+
+        {error && <div className="error">{error}</div>}
+
+        {practiceSeed && (
+          <AdaptivePracticeCard
+            sourceQuestion={practiceSeed.question}
+            sourceAnswer={practiceSeed.answer}
+            language={language}
+            studentContext={effectiveStudentContext}
+            signedIn={Boolean(user)}
+            sourceId={activeSourceId}
+          />
+        )}
+
+        <form className="composer" onSubmit={sendMessage}>
+          {photoDataUrl && (
+            <div className="photoPreview">
+              <img src={photoDataUrl} alt={composerUi.studyImage} />
+              <div>
+                <strong>{composerUi.photoReady}</strong>
+                <span>{photoName || composerUi.studyImage}</span>
+              </div>
+              <button type="button" onClick={removePhoto} aria-label={composerUi.removePhoto}>✕</button>
+            </div>
+          )}
+
+          {pdfDataUrl && (
+            <div className="pdfPreview">
+              <div className="pdfIcon">PDF</div>
+              <div>
+                <strong>{composerUi.pdfReady}</strong>
+                <span>{pdfName || composerUi.studyPdf}</span>
+              </div>
+              <button type="button" onClick={removePdf} aria-label={composerUi.removePdf}>✕</button>
+            </div>
+          )}
+
+          <div className="comingRow">
+            <label className="uploadLabel" htmlFor="photo-upload">📷 {composerUi.photoSolve}</label>
+            <input
+              id="photo-upload"
+              className="fileInput"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => handlePhotoChange(e.target.files?.[0])}
+            />
+            <label className="uploadLabel" htmlFor="pdf-upload">📄 {composerUi.askPdf}</label>
+
+
+            <input
+              id="pdf-upload"
+              className="fileInput"
+              type="file"
+              accept=".pdf,application/pdf,*/*"
+              onChange={async (e) => { const file = e.target.files?.[0]; await handlePdfChange(file); e.currentTarget.value = ""; }}
+            />
+            {user ? <span>☁️ {composerUi.historyOn}</span> : <span>👤 {composerUi.guestMode}</span>}
+          </div>
+
+          <div className="inputRow">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={placeholder}
+              rows={2}
+            />
+            <button type="submit" disabled={loading || (!input.trim() && !photoDataUrl && !pdfDataUrl)}>
+              {loading ? "…" : "➤"}
+            </button>
+          </div>
+        </form>
+      </section>
+
       <section className="hero">
         <span className="badge">{homeCopy.badge}</span>
         <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
@@ -1384,6 +1490,7 @@ export default function Home() {
         </div>
       </section>
 
+      <details style={{margin:"12px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>⚙️ Optional: Class, Board & Medium चुनें</summary>
       <section className="contextBar" aria-label="Student context">
         <div>
           <strong>{screenCopy?.context || "Study context"}</strong>
@@ -1455,6 +1562,7 @@ export default function Home() {
         {schoolBoard && <div className="boardActive">✓ {effectiveStudentContext}</div>}
       </section>
 
+      </details>
       <section className="modes" aria-label="Study modes">
         {MODES.map((item) => (
           <button
@@ -1478,111 +1586,6 @@ export default function Home() {
           sourceId={activeSourceId}
         />
       )}
-
-      <section id="study-workspace" className="chatCard">
-        <div className="messages">
-          {messages.length === 0 ? (
-            <div className="empty">
-              <div className="spark">✦</div>
-              <h3>{screenCopy?.welcome || (isEnglish ? "Hi! I’m Gen-z AI." : "Namaste! Main Gen-z AI hoon.")}</h3>
-              <p>{screenCopy?.welcomeDesc || (isEnglish ? `Ask a question in ${effectiveStudentContext} context, or upload a photo or PDF. I’ll help in English.` : `${effectiveStudentContext} context me question type karo, photo ya PDF upload karo. Main ${language} me help karunga.`)}</p>
-              <div className="quickGrid">
-                <button onClick={() => setInput("Class 10 electricity simple language me samjhao")}>⚡ {responseLanguageName === "Hindi" ? "अध्याय समझें" : responseLanguageName === "Hinglish" ? "Chapter samjho" : "Explain a chapter"}</button>
-                <button onClick={() => setInput("Photosynthesis ke short exam notes banao")}>📝 {responseLanguageName === "Hindi" ? "नोट्स बनाएँ" : responseLanguageName === "Hinglish" ? "Notes banao" : "Make notes"}</button>
-                <button onClick={() => setInput("Indian Constitution par 5 MCQ quiz lo")}>🎯 {responseLanguageName === "Hindi" ? "क्विज़ शुरू करें" : responseLanguageName === "Hinglish" ? "Quiz shuru karo" : "Start a quiz"}</button>
-                <button onClick={() => setInput("JEE ke liye quadratic equations revise karao")}>📚 {responseLanguageName === "Hindi" ? "परीक्षा की तैयारी" : responseLanguageName === "Hinglish" ? "Exam revision karo" : "Exam revision"}</button>
-              </div>
-            </div>
-          ) : (
-            messages.map((message, index) => (
-              <div key={index} className={message.role === "user" ? "message user" : "message assistant"}>
-                <strong>{message.role === "user" ? "You" : "Gen-z AI"}</strong>
-                {message.role === "assistant" && activeStudySource && (
-                  <div className="groundingProof" role="status">
-                    📚 Grounded in: <strong>{activeStudySource.title}</strong>
-                    {activeStudySource.chapter ? ` · ${activeStudySource.chapter}` : ""}
-                  </div>
-                )}
-                {message.role === "assistant" ? <FormattedAnswer text={message.content} /> : <p>{message.content}</p>}
-              </div>
-            ))
-          )}
-          {loading && <div className="message assistant"><strong>Gen-z AI</strong><p>{isEnglish ? "Thinking…" : "Soch raha hoon…"}</p></div>}
-          <div ref={messagesEndRef} className="messagesEnd" aria-hidden="true" />
-        </div>
-
-        {error && <div className="error">{error}</div>}
-
-        {practiceSeed && (
-          <AdaptivePracticeCard
-            sourceQuestion={practiceSeed.question}
-            sourceAnswer={practiceSeed.answer}
-            language={language}
-            studentContext={effectiveStudentContext}
-            signedIn={Boolean(user)}
-            sourceId={activeSourceId}
-          />
-        )}
-
-        <form className="composer" onSubmit={sendMessage}>
-          {photoDataUrl && (
-            <div className="photoPreview">
-              <img src={photoDataUrl} alt={composerUi.studyImage} />
-              <div>
-                <strong>{composerUi.photoReady}</strong>
-                <span>{photoName || composerUi.studyImage}</span>
-              </div>
-              <button type="button" onClick={removePhoto} aria-label={composerUi.removePhoto}>✕</button>
-            </div>
-          )}
-
-          {pdfDataUrl && (
-            <div className="pdfPreview">
-              <div className="pdfIcon">PDF</div>
-              <div>
-                <strong>{composerUi.pdfReady}</strong>
-                <span>{pdfName || composerUi.studyPdf}</span>
-              </div>
-              <button type="button" onClick={removePdf} aria-label={composerUi.removePdf}>✕</button>
-            </div>
-          )}
-
-          <div className="comingRow">
-            <label className="uploadLabel" htmlFor="photo-upload">📷 {composerUi.photoSolve}</label>
-            <input
-              id="photo-upload"
-              className="fileInput"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={(e) => handlePhotoChange(e.target.files?.[0])}
-            />
-            <label className="uploadLabel" htmlFor="pdf-upload">📄 {composerUi.askPdf}</label>
-            <button type="button" className="uploadLabel" onClick={loadSamplePdf}>📎 Use Sample PDF</button>
-            <a className="uploadLabel" href="/api/sample-pdf" target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"inline-flex",alignItems:"center"}}>👁 View Sample PDF</a>
-            <input
-              id="pdf-upload"
-              className="fileInput"
-              type="file"
-              accept=".pdf,application/pdf,*/*"
-              onChange={async (e) => { const file = e.target.files?.[0]; await handlePdfChange(file); e.currentTarget.value = ""; }}
-            />
-            {user ? <span>☁️ {composerUi.historyOn}</span> : <span>👤 {composerUi.guestMode}</span>}
-          </div>
-
-          <div className="inputRow">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={placeholder}
-              rows={2}
-            />
-            <button type="submit" disabled={loading || (!input.trim() && !photoDataUrl && !pdfDataUrl)}>
-              {loading ? "…" : "➤"}
-            </button>
-          </div>
-        </form>
-      </section>
 
       <section className="learningHubIntro" aria-label="Personal learning tools">
         <span>{learningUi.hubEyebrow}</span>
