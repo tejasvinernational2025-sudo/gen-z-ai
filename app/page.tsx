@@ -1367,7 +1367,7 @@ export default function Home() {
       </section>
 
       <InstallAppButton />
-      <details style={{margin:"12px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>✨ Free plan usage & plans</summary>
+      <details style={{margin:"12px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>{isEnglish ? "✨ Free plan usage & plans" : "✨ फ्री प्लान और बची हुई लिमिट"}</summary>
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
           <div>
@@ -1476,12 +1476,12 @@ export default function Home() {
       )}
 
       <section aria-label="Explore learning tools" style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"rgba(69,111,232,0.07)"}}>
-        <h3 style={{margin:"0 0 12px"}}>Explore Learning</h3>
-        <p style={{margin:"0 0 12px",fontSize:14}}>Choose a learning section below. Each option opens its own page.</p>
+        <h3 style={{margin:"0 0 12px"}}>{isEnglish ? "Explore Learning" : "पढ़ाई के विकल्प"}</h3>
+        <p style={{margin:"0 0 12px",fontSize:14}}>{isEnglish ? "Choose a learning section below." : "नीचे अपनी पढ़ाई का विकल्प चुनें।"}</p>
         <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
-          <a href="/ncert" aria-label="Open NCERT learning page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>📚 Open NCERT ↗</a>
-          <a href="/upsc" aria-label="Open UPSC preparation page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>🏛️ Open UPSC ↗</a>
-          <a href="/mock-tests" aria-label="Open mock tests page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>📝 Open Mock Tests ↗</a>
+          <a href="/ncert" aria-label="Open NCERT learning page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{isEnglish ? "📚 Open NCERT ↗" : "📚 NCERT खोलें ↗"}</a>
+          <a href="/upsc" aria-label="Open UPSC preparation page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{isEnglish ? "🏛️ Open UPSC ↗" : "🏛️ UPSC खोलें ↗"}</a>
+          <a href="/mock-tests" aria-label="Open mock tests page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{isEnglish ? "📝 Open Mock Tests ↗" : "📝 मॉक टेस्ट खोलें ↗"}</a>
         </div>
       </section>
 
