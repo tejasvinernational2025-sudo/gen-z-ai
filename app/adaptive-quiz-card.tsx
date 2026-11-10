@@ -215,6 +215,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
         topic: topic.trim(),
         subject: selectedSubject,
         studentContext,
+        schoolClass,
         language,
         sourceId: sourceId || undefined,
         difficulty: nextDifficulty,
