@@ -102,10 +102,25 @@ export async function POST(req: NextRequest) {
     const learningContext = await getLearningPromptContext(req);
     const latestQuestion = messages[messages.length - 1]?.content || "";
     const groundingContext = await getGroundingContext(req, body.sourceId, latestQuestion);
+    // Supply exact arithmetic checks for straightforward decimal subtraction found in
+    // the student's question or grounded worksheet. This supplements (not replaces)
+    // the model's reasoning and never claims to verify more complex expressions.
+    const arithmeticSource = `${latestQuestion}\n${groundingContext}`.slice(0, 16000);
+    const subtractionMatches = [...arithmeticSource.matchAll(/(?<![\\d.])(-?\\d{1,6}(?:\\.\\d{1,4})?)\\s*[−–-]\\s*(-?\\d{1,6}(?:\\.\\d{1,4})?)/g)].slice(0, 12);
+    const exactArithmetic = subtractionMatches.map(match => {
+      const left = Number(match[1]);
+      const right = Number(match[2]);
+      const result = Math.round((left - right) * 10000) / 10000;
+      return `${left} - ${right} = ${result}; check: ${result} + ${right} = ${left}`;
+    }).join("\n");
+    const arithmeticInstruction = exactArithmetic
+      ? `Verified decimal subtraction facts (use these exact answers whenever relevant; do not contradict them):\n${exactArithmetic}`
+      : "";
     const system = [
       buildSystemPrompt(language, mode, studentContext, learningContext),
       nativeLanguageInstruction,
       groundingContext,
+      arithmeticInstruction,
     ].filter(Boolean).join("\n\n");
     const aiMessages = studentContext.includes(" | ") ? messages.slice(-1) : messages;
 
