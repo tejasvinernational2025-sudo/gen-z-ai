@@ -268,6 +268,29 @@ async function generateQuiz(req: NextRequest, body: any) {
   }
 
   const adaptiveDifficulty = safeDifficulty(body?.difficulty || await getAdaptiveDifficulty(req));
+  // Deterministic, prechecked starter set: avoids AI timeouts and ambiguous
+  // equivalent-fraction distractors for the Class 6 Fractions lesson.
+  if (subject === "Mathematics" && topic.toLowerCase() === "fractions" && studentContext.toLowerCase().includes("class 6")) {
+    const hindi = /hindi|हिन्दी|हिंदी/i.test(language);
+    const rows = [
+      { en: "What is 3/4 as a decimal?", hi: "3/4 का दशमलव रूप क्या है?", options: ["0.75", "0.34", "0.25", "1.25"], correctIndex: 0, enExplain: "3 divided by 4 equals 0.75.", hiExplain: "3 को 4 से भाग देने पर 0.75 मिलता है." },
+      { en: "Which fraction is equivalent to 2/3?", hi: "कौन-सी भिन्न 2/3 के बराबर है?", options: ["3/5", "4/6", "5/8", "6/8"], correctIndex: 1, enExplain: "Multiplying numerator and denominator by 2 gives 4/6.", hiExplain: "अंश और हर दोनों को 2 से गुणा करने पर 4/6 मिलता है." },
+      { en: "What is 18/24 in simplest form?", hi: "18/24 का सरलतम रूप क्या है?", options: ["6/8", "9/12", "3/4", "2/3"], correctIndex: 2, enExplain: "Divide numerator and denominator by 6 to get 3/4.", hiExplain: "अंश और हर दोनों को 6 से भाग देने पर 3/4 मिलता है." },
+      { en: "A pizza has 12 equal slices. If 3 are eaten, what fraction is eaten in simplest form?", hi: "पिज्जा के 12 बराबर टुकड़ों में से 3 खाए गए। खाए गए भाग की सरलतम भिन्न क्या है?", options: ["1/3", "1/6", "1/2", "1/4"], correctIndex: 3, enExplain: "3/12 reduces to 1/4.", hiExplain: "3/12 को सरल करने पर 1/4 मिलता है." },
+      { en: "Which is a proper fraction?", hi: "इनमें से उचित भिन्न कौन-सी है?", options: ["7/4", "2/5", "5/5", "9/3"], correctIndex: 1, enExplain: "A proper fraction has a numerator smaller than its denominator.", hiExplain: "उचित भिन्न में अंश हर से छोटा होता है." }
+    ];
+    return NextResponse.json({
+      ok: true, subject, topic, adaptiveDifficulty,
+      questions: rows.map((item, index) => ({
+        id: `q${index + 1}`,
+        question: hindi ? item.hi : item.en,
+        options: item.options,
+        correctIndex: item.correctIndex,
+        explanation: hindi ? item.hiExplain : item.enExplain,
+        difficulty: adaptiveDifficulty
+      }))
+    });
+  }
   const groundingContext = await getGroundingContext(req, body?.sourceId, topic);
 
   let data: any = null;
