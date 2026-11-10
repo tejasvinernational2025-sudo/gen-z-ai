@@ -230,7 +230,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
     return () => window.removeEventListener("genz-learning-updated", handler);
   }, [signedIn]);
 
-  async function generateQuiz(nextDifficulty?: Difficulty) {
+  async function generateQuiz(nextDifficulty?: Difficulty, requestedSetNumber?: number) {
     if (!topic.trim()) {
       setError("Please select a chapter or enter a topic.");
       return;
@@ -238,15 +238,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
     setBusy("generate");
     setError("");
-    // Keep the previous completed set if network or AI generation fails.
-    // A fresh set replaces it only after a successful response.
-    // Clear stale persisted state when starting a new set.
-    try { localStorage.removeItem(quizStorageKey); } catch {}
-    setPack(null);
-    setIndex(0);
-    setSelected(null);
-    setResult(null);
-    setCorrectCount(0);
+    // Preserve the completed quiz until the next set has loaded successfully.
 
     try {
       const headers = await authHeaders();
@@ -257,7 +249,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
         studentContext,
         schoolClass,
         language: /hindi/i.test(medium) ? "Hindi" : language,
-        setNumber,
+        setNumber: requestedSetNumber ?? setNumber,
         sourceId: sourceId || undefined,
         difficulty: nextDifficulty,
       });
@@ -279,7 +271,11 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
       const data = await parseJson(response);
       setPack(data as QuizPack);
-      setSetNumber((value) => value + 1);
+      setIndex(0);
+      setSelected(null);
+      setResult(null);
+      setCorrectCount(0);
+      setSetNumber((requestedSetNumber ?? setNumber) + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Quiz generate nahi hua.");
     } finally {
@@ -354,7 +350,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
     }
 
     const next = result?.nextDifficulty as Difficulty | undefined;
-    void generateQuiz(next);
+    void generateQuiz(next, setNumber);
   }
 
   const progressText = useMemo(() => {
