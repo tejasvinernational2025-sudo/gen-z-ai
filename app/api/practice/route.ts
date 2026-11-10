@@ -313,9 +313,11 @@ async function generateQuiz(req: NextRequest, body: any) {
     JSON.stringify({ subject, topic, questions: data?.questions }),
     400
   );
-  if (!Array.isArray(verification?.valid) || verification.valid.length !== 5 ||
-      verification.valid.some((value: unknown) => value !== true)) {
-    throw new Error("Quiz answer-key verification failed. Please generate a new set; no marks were recorded.");
+  verified = Array.isArray(verification?.valid) && verification.valid.length === 5 &&
+    verification.valid.every((value: unknown) => value === true);
+  }
+  if (!verified) {
+    throw new Error("Quiz questions ki answer verification fail hui. Please retry; no marks were recorded.");
   }
 
   const rawQuestions = Array.isArray(data?.questions) ? data.questions.slice(0, 5) : [];
