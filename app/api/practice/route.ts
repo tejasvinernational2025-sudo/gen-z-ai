@@ -279,15 +279,23 @@ async function generateQuiz(req: NextRequest, body: any) {
       { en: "A pizza has 12 equal slices. If 3 are eaten, what fraction is eaten in simplest form?", hi: "पिज्जा के 12 बराबर टुकड़ों में से 3 खाए गए। खाए गए भाग की सरलतम भिन्न क्या है?", options: ["1/3", "1/6", "1/2", "1/4"], correctIndex: 3, enExplain: "3/12 reduces to 1/4.", hiExplain: "3/12 को सरल करने पर 1/4 मिलता है." },
       { en: "Which is a proper fraction?", hi: "इनमें से उचित भिन्न कौन-सी है?", options: ["7/4", "2/5", "5/5", "9/3"], correctIndex: 1, enExplain: "A proper fraction has a numerator smaller than its denominator.", hiExplain: "उचित भिन्न में अंश हर से छोटा होता है." }
     ];
+    const extraRows = [
+      { en: "What is 1/2 + 1/4?", hi: "1/2 + 1/4 का योग क्या है?", options: ["2/6", "3/4", "1/8", "1/4"], correctIndex: 1, enExplain: "2/4 + 1/4 = 3/4.", hiExplain: "2/4 + 1/4 = 3/4 होता है." },
+      { en: "Which fraction is greater than 1/2?", hi: "कौन-सी भिन्न 1/2 से बड़ी है?", options: ["2/5", "3/8", "5/8", "1/4"], correctIndex: 2, enExplain: "5/8 is greater than 4/8, which equals 1/2.", hiExplain: "5/8, 4/8 से बड़ा है और 4/8 = 1/2 है." },
+      { en: "What is 7/10 as a decimal?", hi: "7/10 का दशमलव रूप क्या है?", options: ["0.07", "7.10", "0.17", "0.7"], correctIndex: 3, enExplain: "Seven tenths is 0.7.", hiExplain: "सात दशमांश का दशमलव रूप 0.7 है." },
+      { en: "What is 5/6 - 1/6 in simplest form?", hi: "5/6 - 1/6 का सरलतम रूप क्या है?", options: ["2/3", "4/12", "1/3", "5/12"], correctIndex: 0, enExplain: "4/6 simplifies to 2/3.", hiExplain: "4/6 का सरलतम रूप 2/3 है." },
+      { en: "A ribbon is divided into 8 equal parts. What fraction is 5 parts?", hi: "एक रिबन को 8 बराबर भागों में बाँटा गया। 5 भाग कितनी भिन्न होंगे?", options: ["3/8", "8/5", "5/8", "5/3"], correctIndex: 2, enExplain: "Five of eight equal parts is 5/8.", hiExplain: "आठ बराबर भागों में से पाँच भाग 5/8 होते हैं." }
+    ];
+    const chosenRows = (Number(body?.setNumber) || 0) % 2 === 0 ? rows : extraRows;
     return NextResponse.json({
       ok: true, subject, topic, adaptiveDifficulty,
-      questions: rows.map((item, index) => ({
+      questions: chosenRows.map((item, index) => ({
         id: `q${index + 1}`,
         question: hindi ? item.hi : item.en,
         options: item.options,
         correctIndex: item.correctIndex,
         explanation: hindi ? item.hiExplain : item.enExplain,
-        difficulty: adaptiveDifficulty
+        difficulty: "easy" as const
       }))
     });
   }
