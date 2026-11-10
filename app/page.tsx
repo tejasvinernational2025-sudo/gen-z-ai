@@ -10,6 +10,7 @@ import type { StudyMode } from "@/lib/prompt";
 import HomeTutorCard from "@/app/home-tutor-card";
 import AdaptivePracticeCard from "@/app/adaptive-practice-card";
 import AdaptiveQuizCard from "@/app/adaptive-quiz-card";
+import InstallAppButton from "@/app/install-app-button";
 import StudySourcesCard from "@/app/study-sources-card";
 import { listStudySourcesClient, type StudySourceSummary } from "@/lib/source-client";
 import ProgressDashboardCard from "@/app/progress-dashboard-card";
@@ -1258,6 +1259,7 @@ export default function Home() {
         <p style={{ margin: "0 0 10px" }}>{homeCopy.langBody}</p>
         <small>अपनी भाषा में सवाल पूछें और आसान तरीके से समझें।</small>
       </section>
+      <InstallAppButton />
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
           <div>
