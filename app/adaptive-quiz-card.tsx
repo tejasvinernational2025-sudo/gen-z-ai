@@ -369,33 +369,33 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
         {pack && <em>{ui.level[pack.adaptiveDifficulty]}</em>}
       </div>
 
-      {!pack && (
-        <div className="quizSetup">
+      <div className="quizSetup">
           <p style={{margin:"0 0 8px"}}>{examTopics ? <>Exam: <strong>{studentContext}</strong> · Exam-wise topics</> : <>Selected class: <strong>{schoolClass}</strong>{!classTopics ? " · General topic suggestions (class-wise chapters coming soon)" : " · Suggested class topics (verify textbook edition)"}</>}</p>
           {!examTopics && <p style={{margin:"0 0 10px",fontSize:"0.88rem"}}>
             Chapter suggestions may differ by board, textbook edition and academic year. Confirm your chapter in the <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer">official NCERT textbook catalogue</a>. You can type your exact chapter below.
           </p>}
-          <label style={{fontWeight:700}}>1. Choose Subject</label>
+          {pack && <p style={{margin:"8px 0",fontWeight:700}}>{/hindi/i.test(language) || /hindi/i.test(medium) ? "चल रहा क्विज़:" : "Current quiz:"} {pack.subject} · {pack.topic} · {index + 1}/{pack.questions.length}</p>}
+          <label style={{fontWeight:700}}>{/hindi/i.test(language) || /hindi/i.test(medium) ? "1. विषय चुनें" : "1. Choose Subject"}</label>
           <select aria-label="Quiz subject" value={selectedSubject} onChange={(e) => {setSubject(e.target.value);setTopic("");}} style={{width:"100%",padding:12,borderRadius:10}}>
             {availableSubjects.map((name)=><option key={name} value={name}>{name}</option>)}
           </select>
-          <label style={{fontWeight:700}}>2. Choose Topic</label>
+          <label style={{fontWeight:700}}>{/hindi/i.test(language) || /hindi/i.test(medium) ? "2. अध्याय चुनें" : "2. Choose Topic"}</label>
           <select aria-label="Quiz topic" value={selectedTopics.includes(topic) ? topic : ""} onChange={(e)=>setTopic(e.target.value)} style={{width:"100%",padding:12,borderRadius:10}}>
-            <option value="">Select a topic</option>
+            <option value="">{/hindi/i.test(language) || /hindi/i.test(medium) ? "अध्याय चुनें" : "Select a topic"}</option>
             {selectedTopics.map((name)=><option key={name} value={name}>{name}</option>)}
           </select>
           <input
             aria-label="Custom quiz topic (optional)"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Or type your own topic (optional)"
+            placeholder={/hindi/i.test(language) || /hindi/i.test(medium) ? "या अपना अध्याय लिखें" : "Or type your own topic (optional)"}
             maxLength={140}
           />
           <button type="button" onClick={() => void generateQuiz()} disabled={busy === "generate"}>
-            {busy === "generate" ? ui.generating : ui.start}
+            {busy === "generate" ? ui.generating : pack ? (/hindi/i.test(language) || /hindi/i.test(medium) ? "नया क्विज़ शुरू करें" : "Start a new quiz") : ui.start}
           </button>
         </div>
-      )}
+
 
       {question && pack && (
         <div className="quizQuestionCard">
