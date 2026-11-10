@@ -164,13 +164,13 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   const quizStorageKey = "genz-adaptive-quiz-v1";
   const [restored, setRestored] = useState(false);
   const [restoreKey, setRestoreKey] = useState("");
-  const currentRestoreKey = `${schoolClass}:${studentContext}`;
+  const currentRestoreKey = `${schoolClass}:${studentContext}:${language}:${medium}`;
   useEffect(() => {
     try {
       const raw = localStorage.getItem(quizStorageKey);
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved.schoolClass === schoolClass && saved.studentContext === studentContext &&
+        if (saved.schoolClass === schoolClass && saved.studentContext === studentContext && saved.language === language && saved.medium === medium &&
             saved.pack && Array.isArray(saved.pack.questions) && saved.pack.questions.length > 0) {
           setSubject(saved.pack.subject);
           setTopic(saved.pack.topic);
@@ -190,10 +190,10 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
     if (!restored || restoreKey !== currentRestoreKey) return;
     try {
       if (pack) localStorage.setItem(quizStorageKey, JSON.stringify({
-        schoolClass, studentContext, pack, index, selected, result, correctCount, setNumber
+        schoolClass, studentContext, language, medium, pack, index, selected, result, correctCount, setNumber
       }));
     } catch { /* storage may be disabled */ }
-  }, [restored, restoreKey, currentRestoreKey, schoolClass, studentContext, pack, index, selected, result, correctCount, setNumber]);
+  }, [restored, restoreKey, currentRestoreKey, schoolClass, studentContext, language, medium, pack, index, selected, result, correctCount, setNumber]);
   const ui = getQuizUiText(studentContext, language);
   const examTopics = UPSC_TOPICS[studentContext];
   const classTopics = examTopics || CLASS_TOPICS[schoolClass];
