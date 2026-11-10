@@ -1468,6 +1468,7 @@ export default function Home() {
 
       {mode === "quiz" && (
         <AdaptiveQuizCard
+          medium={studyMedium}
           signedIn={Boolean(user)}
           language={language}
           studentContext={effectiveStudentContext}
