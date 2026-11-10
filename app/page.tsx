@@ -1367,22 +1367,22 @@ export default function Home() {
       </section>
 
       <InstallAppButton />
-      <details style={{margin:"12px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>{isEnglish ? "✨ Free plan usage & plans" : "✨ फ्री प्लान और बची हुई लिमिट"}</summary>
+      <details style={{margin:"12px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>{responseLanguageName === "Hindi" ? "✨ फ्री प्लान और बची हुई लिमिट" : "✨ Free plan usage & plans"}</summary>
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
           <div>
-            <span className="usageEyebrow">{screenCopy?.plan || (user ? `${displayPlanName(quota?.plan || "free")} plan` : "Free plan")}</span>
-            <strong>{screenCopy?.remaining || (user ? (isEnglish ? "Today’s remaining uses" : "Aaj ke remaining uses") : homeCopy.allowance)}</strong>
+            <span className="usageEyebrow">{responseLanguageName === "Hindi" ? "मुफ्त प्लान" : (screenCopy?.plan || (user ? `${displayPlanName(quota?.plan || "free")} plan` : "Free plan"))}</span>
+            <strong>{responseLanguageName === "Hindi" ? "आज के बचे हुए उपयोग" : (screenCopy?.remaining || (user ? (isEnglish ? "Today’s remaining uses" : "Aaj ke remaining uses") : homeCopy.allowance))}</strong>
             <small>
               {user
                 ? quotaLoading
                   ? (isEnglish ? "Refreshing usage…" : "Usage refresh ho rahi hai…")
-                  : (isEnglish ? "Daily limits reset on India time." : "Daily limits India time par reset hoti hain.")
+                  : (responseLanguageName === "Hindi" ? "दैनिक लिमिट भारतीय समय के अनुसार रीसेट होती है।" : isEnglish ? "Daily limits reset on India time." : "Daily limits India time par reset hoti hain.")
                 : (isEnglish ? "Guest usage is shown for this browser only. Sign in to save history." : "इस ब्राउज़र का इस्तेमाल दिखाया गया है। हिस्ट्री सेव करने के लिए लॉगिन करें।")}
             </small>
           </div>
           <button type="button" className="plansButton" onClick={() => setPlansOpen((value) => !value)}>
-            {plansOpen ? (screenCopy?.hidePlans || "Hide plans") : homeCopy.plans}
+            {responseLanguageName === "Hindi" ? (plansOpen ? "प्लान छिपाएँ" : "प्लान देखें") : (plansOpen ? (screenCopy?.hidePlans || "Hide plans") : homeCopy.plans)}
           </button>
         </div>
 
@@ -1390,17 +1390,17 @@ export default function Home() {
           <div className="usageStat">
             <span>✨ {screenCopy?.chat || "Chat"}</span>
             <strong>{user && quota ? quota.chat.remaining : Math.max(0,20-guestUsage.chat)}</strong>
-            <small>{user && quota ? `of ${quota.chat.limit} left` : (isEnglish ? `${guestUsage.chat}/20 used on this browser` : `इस ब्राउज़र में ${guestUsage.chat}/20 इस्तेमाल`)}</small>
+            <small>{user && quota ? (responseLanguageName === "Hindi" ? `${quota.chat.limit} में से बाकी` : `of ${quota.chat.limit} left`) : (isEnglish ? `${guestUsage.chat}/20 used on this browser` : `इस ब्राउज़र में ${guestUsage.chat}/20 इस्तेमाल`)}</small>
           </div>
           <div className="usageStat">
             <span>📷 {screenCopy?.photo || "Photo Solve"}</span>
             <strong>{user && quota ? quota.photo.remaining : Math.max(0,3-guestUsage.photo)}</strong>
-            <small>{user && quota ? `of ${quota.photo.limit} left` : (isEnglish ? `${guestUsage.photo}/3 used on this browser` : `${guestUsage.photo}/3 इस ब्राउज़र में इस्तेमाल`)}</small>
+            <small>{user && quota ? (responseLanguageName === "Hindi" ? `${quota.photo.limit} में से बाकी` : `of ${quota.photo.limit} left`) : (isEnglish ? `${guestUsage.photo}/3 used on this browser` : `${guestUsage.photo}/3 इस ब्राउज़र में इस्तेमाल`)}</small>
           </div>
           <div className="usageStat">
             <span>📄 {screenCopy?.pdf || "PDF Study"}</span>
             <strong>{user && quota ? quota.pdf.remaining : Math.max(0,2-guestUsage.pdf)}</strong>
-            <small>{user && quota ? `of ${quota.pdf.limit} left` : (isEnglish ? `${guestUsage.pdf}/2 used on this browser` : `${guestUsage.pdf}/2 इस ब्राउज़र में इस्तेमाल`)}</small>
+            <small>{user && quota ? (responseLanguageName === "Hindi" ? `${quota.pdf.limit} में से बाकी` : `of ${quota.pdf.limit} left`) : (isEnglish ? `${guestUsage.pdf}/2 used on this browser` : `${guestUsage.pdf}/2 इस ब्राउज़र में इस्तेमाल`)}</small>
           </div>
         </div>
 
@@ -1476,12 +1476,12 @@ export default function Home() {
       )}
 
       <section aria-label="Explore learning tools" style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"rgba(69,111,232,0.07)"}}>
-        <h3 style={{margin:"0 0 12px"}}>{isEnglish ? "Explore Learning" : "पढ़ाई के विकल्प"}</h3>
-        <p style={{margin:"0 0 12px",fontSize:14}}>{isEnglish ? "Choose a learning section below." : "नीचे अपनी पढ़ाई का विकल्प चुनें।"}</p>
+        <h3 style={{margin:"0 0 12px"}}>{responseLanguageName === "Hindi" ? "पढ़ाई के विकल्प" : "Explore Learning"}</h3>
+        <p style={{margin:"0 0 12px",fontSize:14}}>{responseLanguageName === "Hindi" ? "नीचे अपनी पढ़ाई का विकल्प चुनें।" : "Choose a learning section below."}</p>
         <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
-          <a href="/ncert" aria-label="Open NCERT learning page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{isEnglish ? "📚 Open NCERT ↗" : "📚 NCERT खोलें ↗"}</a>
-          <a href="/upsc" aria-label="Open UPSC preparation page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{isEnglish ? "🏛️ Open UPSC ↗" : "🏛️ UPSC खोलें ↗"}</a>
-          <a href="/mock-tests" aria-label="Open mock tests page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{isEnglish ? "📝 Open Mock Tests ↗" : "📝 मॉक टेस्ट खोलें ↗"}</a>
+          <a href="/ncert" aria-label="Open NCERT learning page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{responseLanguageName === "Hindi" ? "📚 NCERT खोलें ↗" : "📚 Open NCERT ↗"}</a>
+          <a href="/upsc" aria-label="Open UPSC preparation page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{responseLanguageName === "Hindi" ? "🏛️ UPSC खोलें ↗" : "🏛️ Open UPSC ↗"}</a>
+          <a href="/mock-tests" aria-label="Open mock tests page" style={{display:"inline-block",padding:"12px 16px",borderRadius:10,background:"white",color:"#173b83",fontWeight:700,textDecoration:"none",cursor:"pointer",position:"relative",zIndex:2}}>{responseLanguageName === "Hindi" ? "📝 मॉक टेस्ट खोलें ↗" : "📝 Open Mock Tests ↗"}</a>
         </div>
       </section>
 
