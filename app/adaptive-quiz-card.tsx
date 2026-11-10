@@ -158,6 +158,36 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   const [error, setError] = useState("");
   const [performance, setPerformance] = useState<Performance | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  // Keep the in-progress quiz on this device when Android reloads the page after a call.
+  const quizStorageKey = "genz-adaptive-quiz-v1";
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(quizStorageKey);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.schoolClass === schoolClass && saved.studentContext === studentContext &&
+            saved.pack && Array.isArray(saved.pack.questions) && saved.pack.questions.length > 0) {
+          setSubject(saved.pack.subject);
+          setTopic(saved.pack.topic);
+          setPack(saved.pack);
+          setIndex(Math.max(0, Math.min(Number(saved.index) || 0, saved.pack.questions.length - 1)));
+          setSelected(typeof saved.selected === "number" ? saved.selected : null);
+          setResult(saved.result || null);
+          setCorrectCount(Number(saved.correctCount) || 0);
+        }
+      }
+    } catch { /* ignore corrupted browser state */ }
+    setRestored(true);
+  }, [schoolClass, studentContext]);
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      if (pack) sessionStorage.setItem(quizStorageKey, JSON.stringify({
+        schoolClass, studentContext, pack, index, selected, result, correctCount
+      }));
+    } catch { /* storage may be disabled */ }
+  }, [restored, schoolClass, studentContext, pack, index, selected, result, correctCount]);
   const ui = getQuizUiText(studentContext, language);
   const examTopics = UPSC_TOPICS[studentContext];
   const classTopics = examTopics || CLASS_TOPICS[schoolClass];
