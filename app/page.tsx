@@ -1242,7 +1242,6 @@ export default function Home() {
 
       {notice && <div className="notice">{notice}</div>}
 
-      <section style={{margin:"16px 0",padding:"16px 20px",borderRadius:16,background:"#edf3ff",color:"#172b58"}}><strong>📚 {resourceCopy.title}</strong><p style={{margin:"8px 0"}}>{resourceCopy.description}</p><a href="/resources" style={{fontWeight:800,color:"#234bd4"}}>{resourceCopy.link}</a></section>
       <div style={{margin:"12px 0 6px"}}><strong style={{fontSize:20}}>Ask Gen-Z AI — अपना सवाल पूछें</strong><p style={{margin:"6px 0",fontSize:13}}>Text, photo या PDF से तुरंत पढ़ाई शुरू करें। Board और Class चुनना वैकल्पिक है।</p></div>
       <section id="study-workspace" className="chatCard">
         <div className="messages">
@@ -1349,22 +1348,6 @@ export default function Home() {
         </form>
       </section>
 
-      <section className="hero">
-        <span className="badge">{homeCopy.badge}</span>
-        <h2>{homeCopy.heading} <span>{homeCopy.accent}</span></h2>
-        <p>{homeCopy.description}</p>
-        {!user && <p style={{marginTop:12,fontWeight:700}}>{isEnglish ? "Try your first AI question without signing in. Sign in later to save your learning progress." : "बिना लॉगिन अपना पहला AI सवाल पूछें। पढ़ाई की प्रगति सेव करने के लिए बाद में लॉगिन करें।"}</p>}
-        <a className="usageSignIn" href="#study-workspace" style={{ display: "inline-block", marginTop: 12, padding: "14px 22px", textDecoration: "none", fontWeight: 800 }}>
-          {homeCopy.cta}
-        </a>
-        <p style={{ marginTop: 10, fontSize: "0.9rem" }}>{homeCopy.free}</p>
-      </section>
-
-      <section aria-label="Learn in your language" style={{ padding: "18px 20px", margin: "16px 0", borderRadius: 16, background: "rgba(99,102,241,0.09)" }}>
-        <h3 style={{ margin: "0 0 8px" }}>{homeCopy.langTitle}</h3>
-        <p style={{ margin: "0 0 10px" }}>{homeCopy.langBody}</p>
-        <small>अपनी भाषा में सवाल पूछें और आसान तरीके से समझें।</small>
-      </section>
       <InstallAppButton />
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
@@ -1563,6 +1546,7 @@ export default function Home() {
       </section>
 
       </details>
+      <details style={{margin:"12px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>📚 More study modes & quizzes</summary>
       <section className="modes" aria-label="Study modes">
         {MODES.map((item) => (
           <button
@@ -1587,6 +1571,8 @@ export default function Home() {
         />
       )}
 
+      </details>
+      <details style={{margin:"14px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>🎓 Advanced learning tools & progress</summary>
       <section className="learningHubIntro" aria-label="Personal learning tools">
         <span>{learningUi.hubEyebrow}</span>
         <h3>{learningUi.hubFlow}</h3>
@@ -1651,6 +1637,7 @@ export default function Home() {
         />
       </div>
 
+      </details>
       <footer>
         <div><strong>Gen-z AI</strong> · {tuitionCopy.footer}</div>
         <nav className="footerLinks" aria-label="Legal and support">
