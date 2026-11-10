@@ -49,6 +49,7 @@ type Props = {
   studentContext: string;
   sourceId: string;
   schoolClass: string;
+  medium: string;
 };
 
 async function parseJson(response: Response) {
@@ -136,7 +137,7 @@ const UPSC_TOPICS: Record<string, Record<string, string[]>> = {
   }
 };
 
-export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId, schoolClass }: Props) {
+export default function AdaptiveQuizCard({ signedIn, language, studentContext, sourceId, schoolClass, medium }: Props) {
   const [topic, setTopic] = useState("");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -158,6 +159,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   const [error, setError] = useState("");
   const [performance, setPerformance] = useState<Performance | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const [setNumber, setSetNumber] = useState(0);
   // Keep the in-progress quiz on this device when Android reloads the page after a call.
   const quizStorageKey = "genz-adaptive-quiz-v1";
   const [restored, setRestored] = useState(false);
@@ -177,6 +179,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
           setSelected(typeof saved.selected === "number" ? saved.selected : null);
           setResult(saved.result || null);
           setCorrectCount(Number(saved.correctCount) || 0);
+          setSetNumber(Number(saved.setNumber) || 0);
         }
       }
     } catch { /* ignore corrupted browser state */ }
@@ -187,10 +190,10 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
     if (!restored || restoreKey !== currentRestoreKey) return;
     try {
       if (pack) localStorage.setItem(quizStorageKey, JSON.stringify({
-        schoolClass, studentContext, pack, index, selected, result, correctCount
+        schoolClass, studentContext, pack, index, selected, result, correctCount, setNumber
       }));
     } catch { /* storage may be disabled */ }
-  }, [restored, restoreKey, currentRestoreKey, schoolClass, studentContext, pack, index, selected, result, correctCount]);
+  }, [restored, restoreKey, currentRestoreKey, schoolClass, studentContext, pack, index, selected, result, correctCount, setNumber]);
   const ui = getQuizUiText(studentContext, language);
   const examTopics = UPSC_TOPICS[studentContext];
   const classTopics = examTopics || CLASS_TOPICS[schoolClass];
@@ -253,7 +256,8 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
         subject: selectedSubject,
         studentContext,
         schoolClass,
-        language,
+        language: /hindi/i.test(medium) ? "Hindi" : language,
+        setNumber,
         sourceId: sourceId || undefined,
         difficulty: nextDifficulty,
       });
@@ -275,6 +279,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
       const data = await parseJson(response);
       setPack(data as QuizPack);
+      setSetNumber((value) => value + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Quiz generate nahi hua.");
     } finally {
