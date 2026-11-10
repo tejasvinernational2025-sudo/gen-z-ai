@@ -270,7 +270,7 @@ async function generateQuiz(req: NextRequest, body: any) {
   const adaptiveDifficulty = safeDifficulty(body?.difficulty || await getAdaptiveDifficulty(req));
   // Deterministic, prechecked starter set: avoids AI timeouts and ambiguous
   // equivalent-fraction distractors for the Class 6 Fractions lesson.
-  if (subject === "Mathematics" && topic.toLowerCase() === "fractions" && studentContext.toLowerCase().includes("class 6")) {
+  if (subject === "Mathematics" && topic.toLowerCase() === "fractions" && cleanText(body?.schoolClass, 40) === "Class 6") {
     const hindi = /hindi|हिन्दी|हिंदी/i.test(language);
     const rows = [
       { en: "What is 3/4 as a decimal?", hi: "3/4 का दशमलव रूप क्या है?", options: ["0.75", "0.34", "0.25", "1.25"], correctIndex: 0, enExplain: "3 divided by 4 equals 0.75.", hiExplain: "3 को 4 से भाग देने पर 0.75 मिलता है." },
