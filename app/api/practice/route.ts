@@ -270,7 +270,10 @@ async function generateQuiz(req: NextRequest, body: any) {
   const adaptiveDifficulty = safeDifficulty(body?.difficulty || await getAdaptiveDifficulty(req));
   const groundingContext = await getGroundingContext(req, body?.sourceId, topic);
 
-  const data = await groqJson(
+  let data: any = null;
+  let verified = false;
+  for (let generationAttempt = 0; generationAttempt < 2 && !verified; generationAttempt += 1) {
+    data = await groqJson(
     [
       "You are Gen-z AI adaptive quiz engine for Indian students.",
       "Return ONLY JSON with this exact shape:",
@@ -292,7 +295,7 @@ async function generateQuiz(req: NextRequest, body: any) {
       `Subject: ${subject}`,
       `Topic: ${topic}`,
     ].join("\n"),
-    1400
+    1900
   );
 
   // Verify the generated answer key independently before students can be graded.
@@ -306,7 +309,7 @@ async function generateQuiz(req: NextRequest, body: any) {
       "A question is INVALID if two or more options satisfy its wording, including unsimplified fractions when simplest form was not explicitly requested.",
       "A question is INVALID if its keyed answer is wrong or the wording is ambiguous.",
       "Do not assume the provided correctIndex is trustworthy. Return exactly five booleans."
-    ].join("\\n"),
+    ].join("\n"),
     JSON.stringify({ subject, topic, questions: data?.questions }),
     400
   );
