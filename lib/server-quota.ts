@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 export type QuotaFeature = "chat" | "photo" | "pdf";
@@ -35,8 +36,25 @@ export async function consumePersistentQuota(
 ): Promise<QuotaResult | null> {
   const authorization = req.headers.get("authorization");
 
-  // Guest traffic stays on the existing IP limiter.
-  if (!authorization?.startsWith("Bearer ")) return null;
+  if (!authorization?.startsWith("Bearer ")) {
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) throw new Error("Guest quota configuration unavailable");
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
+    const agent = req.headers.get("user-agent") || "unknown";
+    const visitorHash = createHmac("sha256", serviceKey).update(ip + "|" + agent).digest("hex");
+    const guestResponse = await fetch(SUPABASE_URL + "/rest/v1/rpc/consume_genz_guest_quota", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: serviceKey, Authorization: "Bearer " + serviceKey },
+      body: JSON.stringify({p_visitor_hash: visitorHash,p_feature:feature}),
+      cache: "no-store",
+    });
+    if (!guestResponse.ok) throw new Error("Guest quota check failed (" + guestResponse.status + ")");
+    const data = await guestResponse.json() as {allowed:boolean;used:number;limit:number};
+    if (typeof data.allowed !== "boolean" || !Number.isFinite(data.used)) throw new Error("Guest quota response invalid");
+    const ist = new Date(Date.now()+330*60*1000);
+    ist.setUTCHours(24,0,0,0);
+    return {allowed:data.allowed,plan:"free",feature,used:data.used,limit:data.limit,remaining:Math.max(0,data.limit-data.used),resets_at:new Date(ist.getTime()-330*60*1000).toISOString()};
+  }
 
   const response = await fetch(
     `${SUPABASE_URL}/rest/v1/rpc/consume_daily_quota`,
