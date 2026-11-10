@@ -161,9 +161,11 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
   // Keep the in-progress quiz on this device when Android reloads the page after a call.
   const quizStorageKey = "genz-adaptive-quiz-v1";
   const [restored, setRestored] = useState(false);
+  const [restoreKey, setRestoreKey] = useState("");
+  const currentRestoreKey = `${schoolClass}:${studentContext}`;
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem(quizStorageKey);
+      const raw = localStorage.getItem(quizStorageKey);
       if (raw) {
         const saved = JSON.parse(raw);
         if (saved.schoolClass === schoolClass && saved.studentContext === studentContext &&
@@ -178,16 +180,17 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
         }
       }
     } catch { /* ignore corrupted browser state */ }
+    setRestoreKey(currentRestoreKey);
     setRestored(true);
-  }, [schoolClass, studentContext]);
+  }, [currentRestoreKey]);
   useEffect(() => {
-    if (!restored) return;
+    if (!restored || restoreKey !== currentRestoreKey) return;
     try {
-      if (pack) sessionStorage.setItem(quizStorageKey, JSON.stringify({
+      if (pack) localStorage.setItem(quizStorageKey, JSON.stringify({
         schoolClass, studentContext, pack, index, selected, result, correctCount
       }));
     } catch { /* storage may be disabled */ }
-  }, [restored, schoolClass, studentContext, pack, index, selected, result, correctCount]);
+  }, [restored, restoreKey, currentRestoreKey, schoolClass, studentContext, pack, index, selected, result, correctCount]);
   const ui = getQuizUiText(studentContext, language);
   const examTopics = UPSC_TOPICS[studentContext];
   const classTopics = examTopics || CLASS_TOPICS[schoolClass];
@@ -232,6 +235,10 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
 
     setBusy("generate");
     setError("");
+    // Keep the previous completed set if network or AI generation fails.
+    // A fresh set replaces it only after a successful response.
+    // Clear stale persisted state when starting a new set.
+    try { localStorage.removeItem(quizStorageKey); } catch {}
     setPack(null);
     setIndex(0);
     setSelected(null);
@@ -464,7 +471,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
           {performance.weakTopics.length > 0 && (
             <div className="mistakeBlock">
               <strong>{ui.weakTopics}</strong>
-              {performance.weakTopics.slice(0, 4).map((item) => (
+              {performance.weakTopics.filter((item) => item.subject === selectedSubject).slice(0, 4).map((item) => (
                 <div key={`${item.subject}-${item.topic}`} className="weakPerformanceRow">
                   <span>{item.subject} · {item.topic}</span>
                   <em>{item.accuracy}% accuracy</em>
@@ -476,7 +483,7 @@ export default function AdaptiveQuizCard({ signedIn, language, studentContext, s
           {performance.recentMistakes.length > 0 && (
             <div className="mistakeBlock">
               <strong>{ui.recentMistakes}</strong>
-              {performance.recentMistakes.slice(0, 3).map((item, mistakeIndex) => (
+              {performance.recentMistakes.filter((item) => item.subject === selectedSubject).slice(0, 3).map((item, mistakeIndex) => (
                 <div key={mistakeIndex} className="mistakeRow">
                   <span>{item.topic}</span>
                   <small>{item.question}</small>
