@@ -1279,17 +1279,17 @@ export default function Home() {
         <div className="usageGrid">
           <div className="usageStat">
             <span>✨ {screenCopy?.chat || "Chat"}</span>
-            <strong>{user && quota ? quota.chat.remaining : "—"}</strong>
-            <small>{user && quota ? `of ${quota.chat.limit} left` : (isEnglish ? "Sign in to track" : "लॉगिन पर ट्रैक होगा")}</small>
+            <strong>{user && quota ? quota.chat.remaining : 20}</strong>
+            <small>{user && quota ? `of ${quota.chat.limit} left` : (isEnglish ? "Free daily limit · sign in to track remaining" : "रोज़ की मुफ्त लिमिट · बाकी उपयोग देखने के लिए लॉगिन")}</small>
           </div>
           <div className="usageStat">
             <span>📷 {screenCopy?.photo || "Photo Solve"}</span>
-            <strong>{user && quota ? quota.photo.remaining : "—"}</strong>
+            <strong>{user && quota ? quota.photo.remaining : 3}</strong>
             <small>{user && quota ? `of ${quota.photo.limit} left` : (isEnglish ? "Sign in to track" : "लॉगिन पर ट्रैक होगा")}</small>
           </div>
           <div className="usageStat">
             <span>📄 {screenCopy?.pdf || "PDF Study"}</span>
-            <strong>{user && quota ? quota.pdf.remaining : "—"}</strong>
+            <strong>{user && quota ? quota.pdf.remaining : 2}</strong>
             <small>{user && quota ? `of ${quota.pdf.limit} left` : (isEnglish ? "Sign in to track" : "लॉगिन पर ट्रैक होगा")}</small>
           </div>
         </div>
