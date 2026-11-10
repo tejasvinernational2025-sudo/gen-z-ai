@@ -405,6 +405,24 @@ export default function Home() {
   const [supabaseReady, setSupabaseReady] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [guestAnswered, setGuestAnswered] = useState(false);
+  const [guestUsage, setGuestUsage] = useState({ chat: 0, photo: 0, pdf: 0 });
+  useEffect(() => {
+    try {
+      const today = new Intl.DateTimeFormat("en-CA", {timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      const saved = JSON.parse(localStorage.getItem("genz-guest-usage") || "{}");
+      if (saved.day === today) setGuestUsage({chat:Math.max(0,Number(saved.chat)||0),photo:Math.max(0,Number(saved.photo)||0),pdf:Math.max(0,Number(saved.pdf)||0)});
+    } catch {}
+  }, []);
+  const recordGuestUsage = (kind: "chat" | "photo" | "pdf") => {
+    setGuestUsage(current => {
+      const today = new Intl.DateTimeFormat("en-CA", {timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      let previous = current;
+      try { const saved = JSON.parse(localStorage.getItem("genz-guest-usage") || "{}"); if (saved.day !== today) previous = {chat:0,photo:0,pdf:0}; } catch {}
+      const next = {...previous,[kind]:previous[kind]+1};
+      try { localStorage.setItem("genz-guest-usage",JSON.stringify({day:today,...next})); } catch {}
+      return next;
+    });
+  };
   const [authEmail, setAuthEmail] = useState("");
   const [authCooldown, setAuthCooldown] = useState(0);
   const [notice, setNotice] = useState("");
@@ -1091,7 +1109,7 @@ export default function Home() {
         setMessages((current) => [...current, assistantMessage]);
       }
 
-      if (!user && finalReply.trim()) setGuestAnswered(true);
+      if (!user && finalReply.trim()) { setGuestAnswered(true); recordGuestUsage(endpoint === "/api/photo-solve" ? "photo" : pdfDataUrl ? "pdf" : "chat"); }
 
       if (endpoint === "/api/photo-solve" && finalReply.trim()) {
         setPracticeSeed({ question: userText, answer: finalReply });
@@ -1359,7 +1377,7 @@ export default function Home() {
                 ? quotaLoading
                   ? (isEnglish ? "Refreshing usage…" : "Usage refresh ho rahi hai…")
                   : (isEnglish ? "Daily limits reset on India time." : "Daily limits India time par reset hoti hain.")
-                : (isEnglish ? "Try AI without an account. Sign in to track daily limits and save history." : "बिना अकाउंट AI आज़माएँ। दैनिक लिमिट और हिस्ट्री सेव करने के लिए लॉगिन करें।")}
+                : (isEnglish ? "Guest usage is shown for this browser only. Sign in to save history." : "इस ब्राउज़र का इस्तेमाल दिखाया गया है। हिस्ट्री सेव करने के लिए लॉगिन करें।")}
             </small>
           </div>
           <button type="button" className="plansButton" onClick={() => setPlansOpen((value) => !value)}>
@@ -1370,18 +1388,18 @@ export default function Home() {
         <div className="usageGrid">
           <div className="usageStat">
             <span>✨ {screenCopy?.chat || "Chat"}</span>
-            <strong>{user && quota ? quota.chat.remaining : 20}</strong>
-            <small>{user && quota ? `of ${quota.chat.limit} left` : (isEnglish ? "Free daily limit · sign in to track remaining" : "रोज़ की मुफ्त लिमिट · बाकी उपयोग देखने के लिए लॉगिन")}</small>
+            <strong>{user && quota ? quota.chat.remaining : Math.max(0,20-guestUsage.chat)}</strong>
+            <small>{user && quota ? `of ${quota.chat.limit} left` : (isEnglish ? `${guestUsage.chat}/20 used on this browser` : `इस ब्राउज़र में ${guestUsage.chat}/20 इस्तेमाल`)}</small>
           </div>
           <div className="usageStat">
             <span>📷 {screenCopy?.photo || "Photo Solve"}</span>
-            <strong>{user && quota ? quota.photo.remaining : 3}</strong>
-            <small>{user && quota ? `of ${quota.photo.limit} left` : (isEnglish ? "Sign in to track" : "लॉगिन पर ट्रैक होगा")}</small>
+            <strong>{user && quota ? quota.photo.remaining : Math.max(0,3-guestUsage.photo)}</strong>
+            <small>{user && quota ? `of ${quota.photo.limit} left` : (isEnglish ? `${guestUsage.photo}/3 used on this browser` : `${guestUsage.photo}/3 इस ब्राउज़र में इस्तेमाल`)}</small>
           </div>
           <div className="usageStat">
             <span>📄 {screenCopy?.pdf || "PDF Study"}</span>
-            <strong>{user && quota ? quota.pdf.remaining : 2}</strong>
-            <small>{user && quota ? `of ${quota.pdf.limit} left` : (isEnglish ? "Sign in to track" : "लॉगिन पर ट्रैक होगा")}</small>
+            <strong>{user && quota ? quota.pdf.remaining : Math.max(0,2-guestUsage.pdf)}</strong>
+            <small>{user && quota ? `of ${quota.pdf.limit} left` : (isEnglish ? `${guestUsage.pdf}/2 used on this browser` : `${guestUsage.pdf}/2 इस ब्राउज़र में इस्तेमाल`)}</small>
           </div>
         </div>
 
@@ -1391,14 +1409,6 @@ export default function Home() {
           </button>
         )}
       </section>
-
-      {!user && guestAnswered && supabaseReady && (
-        <section className="usageCard" aria-label="Save your learning progress" style={{marginTop:12}}>
-          <strong>{isEnglish ? "Great! Your first AI answer is ready." : "बहुत बढ़िया! आपका पहला AI जवाब तैयार है।"}</strong>
-          <p>{isEnglish ? "Keep learning as a guest, or sign in to save future chats and track your progress. Previous guest answers are not automatically saved." : "बिना लॉगिन पढ़ाई जारी रखें, या आगे की चैट और प्रगति सेव करने के लिए लॉगिन करें। पिछली गेस्ट चैट अपने आप सेव नहीं होगी।"}</p>
-          <button type="button" className="usageSignIn" onClick={() => setAuthOpen(true)}>{isEnglish ? "Save future progress — Sign in" : "आगे की प्रगति सेव करें — लॉगिन"}</button>
-        </section>
-      )}
 
       {plansOpen && (
         <section className="plansPanel" aria-label="Gen-z AI plans">
