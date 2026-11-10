@@ -1367,6 +1367,7 @@ export default function Home() {
       </section>
 
       <InstallAppButton />
+      <details style={{margin:"12px 0",padding:"12px",border:"1px solid #dbe2f1",borderRadius:12}}><summary style={{cursor:"pointer",fontWeight:700}}>✨ Free plan usage & plans</summary>
       <section className="usageCard" aria-label="Daily free usage">
         <div className="usageTop">
           <div>
@@ -1410,6 +1411,7 @@ export default function Home() {
         )}
       </section>
 
+      </details>
       {plansOpen && (
         <section className="plansPanel" aria-label="Gen-z AI plans">
           <div className="plansHeader">
