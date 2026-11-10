@@ -277,6 +277,7 @@ async function generateQuiz(req: NextRequest, body: any) {
       '{"subject":"...","topic":"...","questions":[{"id":"q1","question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"...","difficulty":"easy|medium|hard"}]}',
       "Create exactly 5 fresh multiple-choice questions.",
       "Each question must have exactly 4 concise options and exactly one correct answer.",
+      "IMPORTANT: For fractions, reduce every option and check equivalence. Never include two equivalent correct answers. For simplest-form questions, explicitly say simplest form.",
       "Do not reveal the answer inside the question.",
       "Match the selected board/class context.",
       outputLanguage.instruction,
@@ -293,6 +294,26 @@ async function generateQuiz(req: NextRequest, body: any) {
     ].join("\n"),
     1400
   );
+
+  // Verify the generated answer key independently before students can be graded.
+  // AI-written distractors can be mathematically equivalent to the keyed answer.
+  const verification = await groqJson(
+    [
+      "You are an independent mathematics and school MCQ answer-key auditor.",
+      "Return ONLY JSON: {\"valid\":[true,false,false,false,false]}.",
+      "For each question, verify the keyed answer is correct AND every other option is unambiguously incorrect.",
+      "Check fractions by reducing to lowest terms; check all mathematically equivalent answers.",
+      "A question is INVALID if two or more options satisfy its wording, including unsimplified fractions when simplest form was not explicitly requested.",
+      "A question is INVALID if its keyed answer is wrong or the wording is ambiguous.",
+      "Do not assume the provided correctIndex is trustworthy. Return exactly five booleans."
+    ].join("\\n"),
+    JSON.stringify({ subject, topic, questions: data?.questions }),
+    400
+  );
+  if (!Array.isArray(verification?.valid) || verification.valid.length !== 5 ||
+      verification.valid.some((value: unknown) => value !== true)) {
+    throw new Error("Quiz answer-key verification failed. Please generate a new set; no marks were recorded.");
+  }
 
   const rawQuestions = Array.isArray(data?.questions) ? data.questions.slice(0, 5) : [];
   const questions = rawQuestions.map((item: any, index: number) => {
