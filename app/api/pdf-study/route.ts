@@ -54,6 +54,29 @@ function canFallback(status: number) {
   return [404, 408, 429, 500, 502, 503, 504].includes(status);
 }
 
+function optionKey(value: string): string {
+  const clean = value.replace(/^\\s*[A-Da-d][.)\\-:]\\s*/, "").trim().replace(/,/g, "").replace(/%$/, "").replace(/\\s+/g, " ").toLowerCase();
+  const numeric = clean.match(/^(-?\\d+(?:\\.\\d+)?)\\s*([/:])\\s*(-?\\d+(?:\\.\\d+)?)$/);
+  if (numeric) {
+    const a = Number(numeric[1]), b = Number(numeric[3]);
+    if (b !== 0) return "number:" + String(a / b);
+  }
+  if (/^-?\\d+(?:\\.\\d+)?$/.test(clean)) return "number:" + String(Number(clean));
+  return "text:" + clean.normalize("NFKC");
+}
+
+function validMcq(mcq: StructuredMcq): boolean {
+  if (!mcq.question?.trim() || !Array.isArray(mcq.options) || mcq.options.length !== 4 || !mcq.answer?.trim()) return false;
+  const options = mcq.options.map(option => String(option).replace(/^\\s*[A-Da-d][.)\\-:]\\s*/, "").trim());
+  if (options.some(option => !option)) return false;
+  const keys = options.map(optionKey);
+  if (new Set(keys).size !== 4) return false;
+  const answer = mcq.answer.trim().replace(/^(?:correct\\s*)?(?:answer|उत्तर|सही उत्तर)\\s*[:：]\\s*/i, "").trim();
+  const letter = answer.match(/^([A-Da-d])(?:[.)])?$/);
+  const answerKey = letter ? keys[letter[1].toUpperCase().charCodeAt(0) - 65] : optionKey(answer);
+  return keys.filter(key => key === answerKey).length === 1;
+}
+
 function formatStructured(result: StructuredPdfResult, requestedCount: number) {
   const summary = typeof result.summary === "string" ? result.summary.trim() : "";
   const mcqs = Array.isArray(result.mcqs) ? result.mcqs.slice(0, requestedCount) : [];
@@ -66,7 +89,7 @@ function formatStructured(result: StructuredPdfResult, requestedCount: number) {
           String(option).replace(/^\s*[A-D][.)\-:]\s*/i, "").trim()
         )
       : [];
-    if (!mcq.question || !mcq.answer || options.length !== 4) return null;
+    if (!validMcq(mcq) || options.length !== 4) return null;
 
     const cleanAnswer = String(mcq.answer)
       .replace(/^\s*Answer\s*:\s*/i, "")
