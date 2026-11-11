@@ -1260,7 +1260,7 @@ export default function Home() {
 
       {notice && <div className="notice">{notice}</div>}
 
-      <div style={{margin:"12px 0 6px"}}><strong style={{fontSize:20}}>Ask Gen-Z AI — अपना सवाल पूछें</strong><p style={{margin:"6px 0",fontSize:13}}>Text, photo या PDF से तुरंत पढ़ाई शुरू करें। Board और Class चुनना वैकल्पिक है।</p></div>
+      <div style={{margin:"12px 0 6px"}}><strong style={{fontSize:20}}>{responseLanguageName === "Hindi" ? "Gen-Z AI से पूछें — अपना सवाल लिखें" : responseLanguageName === "Hinglish" ? "Ask Gen-Z AI — apna sawaal poochho" : "Ask Gen-Z AI — Ask your question"}</strong><p style={{margin:"6px 0",fontSize:13}}>{responseLanguageName === "Hindi" ? "टेक्स्ट, फोटो या PDF से तुरंत पढ़ाई शुरू करें। बोर्ड और कक्षा चुनना वैकल्पिक है।" : responseLanguageName === "Hinglish" ? "Text, photo ya PDF se padhai shuru karo. Board aur Class chunna optional hai." : "Start learning instantly with text, a photo, or a PDF. Choosing a board and class is optional."}</p></div>
       <section id="study-workspace" className="chatCard">
         <div className="messages">
           {messages.length === 0 ? (
