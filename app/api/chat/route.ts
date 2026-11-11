@@ -116,8 +116,19 @@ export async function POST(req: NextRequest) {
     const arithmeticInstruction = exactArithmetic
       ? `Verified decimal subtraction facts (use these exact answers whenever relevant; do not contradict them):\n${exactArithmetic}`
       : "";
+    const mcqValidationInstruction = /(?:\\bmcqs?\\b|multiple[ -]?choice|बहुविकल्पीय|विकल्पों|चार विकल्प|quiz|क्विज़)/i.test(latestQuestion)
+      ? [
+          "CRITICAL MCQ QUALITY CHECK: Before responding, independently solve every proposed question and check all four options.",
+          "Exactly ONE option must be correct. Reject and replace any question with two equivalent answers (e.g. 0.7 and 0.70, 1/2 and 2/4, or differently formatted equivalent ratios).",
+          "For numerical answers, compare mathematical values rather than text; for fractions, simplify before comparing. Check answer keys, arithmetic, and PDF-grounded facts.",
+          "Avoid repeated options and ambiguous wording. Regenerate flawed questions internally before showing the final answer.",
+          "When the user asks for Hindi MCQs, write question text, labels, and answer explanations in Hindi even if the site language selector is English; do not translate mathematical symbols.",
+          "If the uploaded source lacks enough facts, use fewer well-grounded questions rather than inventing source claims.",
+        ].join("\n")
+      : "";
     const system = [
       buildSystemPrompt(language, mode, studentContext, learningContext),
+      mcqValidationInstruction,
       nativeLanguageInstruction,
       groundingContext,
       arithmeticInstruction,
