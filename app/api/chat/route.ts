@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     const arithmeticInstruction = exactArithmetic
       ? `Verified decimal subtraction facts (use these exact answers whenever relevant; do not contradict them):\n${exactArithmetic}`
       : "";
-    const mcqValidationInstruction = /(?:\\bmcqs?\\b|multiple[ -]?choice|बहुविकल्पीय|विकल्पों|चार विकल्प|quiz|क्विज़)/i.test(latestQuestion)
+    const mcqValidationInstruction = /(?:\bmcqs?\b|multiple[ -]?choice|बहुविकल्पीय|विकल्पों|चार विकल्प|quiz|क्विज़)/i.test(latestQuestion)
       ? [
           "CRITICAL MCQ QUALITY CHECK: Before responding, independently solve every proposed question and check all four options.",
           "Exactly ONE option must be correct. Reject and replace any question with two equivalent answers (e.g. 0.7 and 0.70, 1/2 and 2/4, or differently formatted equivalent ratios).",
@@ -128,8 +128,8 @@ export async function POST(req: NextRequest) {
       : "";
     const system = [
       buildSystemPrompt(language, mode, studentContext, learningContext),
-      mcqValidationInstruction,
       nativeLanguageInstruction,
+      mcqValidationInstruction,
       groundingContext,
       arithmeticInstruction,
     ].filter(Boolean).join("\n\n");
