@@ -404,7 +404,8 @@ export async function POST(req: NextRequest) {
       ? `Exactly ${requestedCount} MCQs do. Summary short but complete rakho. Har MCQ me 4 options aur correct answer hona chahiye.`
       : "Student ki request complete karo.";
 
-    const modelPrompt = `Student request:\n${prompt}\n\nRequired output:\n${contract}`;
+    const mcqCheck = requestedCount ? `\n\nMANDATORY MCQ VALIDATION: For each MCQ independently calculate the answer and compare all four choices by mathematical value, not appearance. Exactly one choice may be correct. Treat 0.7 and 0.70, 1/2 and 2/4, and equivalent ratios as duplicates; replace any ambiguous or duplicated option before responding. Verify the marked answer against the PDF. Do not invent chapter numbers or unsupported facts. If the student requests Hindi, write questions, answer labels and explanations in Hindi.` : "";
+    const modelPrompt = `Student request:\n${prompt}\n\nRequired output:\n${contract}${mcqCheck}`;
 
     if (process.env.GROQ_API_KEY) {
       try {
