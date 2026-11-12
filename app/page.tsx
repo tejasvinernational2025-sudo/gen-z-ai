@@ -386,6 +386,26 @@ export default function Home() {
 
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("startLesson") !== "1") return;
+    const school = params.get("studyClass") || "";
+    const subject = params.get("studySubject") || "";
+    const chapter = params.get("studyTopic") || "";
+    if (!/^(?:[6-9]|1[0-2])$/.test(school) || !subject || !chapter) return;
+    setSchoolClass("Class " + school);
+    setMode("explain");
+    setInput("Teach me Class " + school + " " + subject + " chapter " + chapter + " in simple language. Explain concepts step by step with examples, then ask me one practice question at a time.");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("startLesson");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    const timeout = window.setTimeout(() => {
+      const form = document.getElementById("chat-composer");
+      if (form instanceof HTMLFormElement) form.requestSubmit();
+    }, 900);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(false);
 
